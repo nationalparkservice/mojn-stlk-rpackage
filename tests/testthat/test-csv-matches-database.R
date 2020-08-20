@@ -15,7 +15,7 @@ for (d.name in data.names) {
     CloseDatabaseConnection(c)
     csv <- ReadAndFilterData(path.to.data = dir, data.source = "local", data.name = d.name)
 
-    expect_mapequal(db, csv)
+    expect_dataframe_equal(db, csv)
   })
 }
 

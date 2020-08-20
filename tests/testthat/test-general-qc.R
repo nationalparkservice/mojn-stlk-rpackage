@@ -27,9 +27,9 @@ test_that("QcCompleteness works as expected", {
   result_GRBA <- QcCompleteness(path.to.data = dir, data.source = "local", park = "GRBA")
   result_2019 <- QcCompleteness(path.to.data = dir, data.source = "local", field.season = "2019")
   result_CAMO <- QcCompleteness(path.to.data = dir, data.source = "local", park = "CAMO")
-  expect_mapequal(result, expected)
-  expect_mapequal(result_GRBA, dplyr::filter(expected, Park == "GRBA"))
-  expect_mapequal(result_2019, dplyr::filter(expected, FieldSeason == "2019"))
+  expect_dataframe_equal(result, expected)
+  expect_dataframe_equal(result_GRBA, dplyr::filter(expected, Park == "GRBA"))
+  expect_dataframe_equal(result_2019, dplyr::filter(expected, FieldSeason == "2019"))
   expect_equal(nrow(result_CAMO), 0)
 })
 
