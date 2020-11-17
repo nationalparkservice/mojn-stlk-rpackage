@@ -60,9 +60,8 @@ GetColSpec <- function() {
     ),
     Visit = readr::cols(
       VisitDate = readr::col_date(),
-      StartTime = readr::col_datetime(),
-      DataStoreReferenceCode = readr::col_integer(),
       IsLakeDry = readr::col_logical(),
+      DataStoreReferenceCode = readr::col_integer(),
       .default = readr::col_character()
     ),
     Clarity = readr::cols(
@@ -72,7 +71,7 @@ GetColSpec <- function() {
       SecchiDepth_m = readr::col_double(),
       .default = readr::col_character()
     ),
-    BMIAll = readr::cols(
+    BMI = readr::cols(
       VisitDate = readr::col_date(),
       DateCollected = readr::col_date(),
       FieldSplit = readr::col_integer(),
@@ -110,13 +109,13 @@ GetColSpec <- function() {
       ClingerTaxaCount = readr::col_integer(),
       LongLivedTaxa = readr::col_integer(),
       EphemoeropteraTaxaCount = readr::col_integer(),
-      EphemoeropteraAbundance = readr::col_integer(),
+      EphemoeropteraTaxaAbundance = readr::col_integer(),
       PlecopteraTaxa = readr::col_integer(),
       PlecopteraTaxaAbundance = readr::col_integer(),
       TrichopteraTaxaCount = readr::col_integer(),
       TrichopteraAbundance = readr::col_integer(),
       ColeopteraTaxaCount = readr::col_integer(),
-      ColeopteraTaxaAbundance = readr::col_integer(),
+      ColeopteraAbundance = readr::col_integer(),
       ElmidaeTaxaCount = readr::col_integer(),
       ElmidaeAbundance = readr::col_integer(),
       MegalopteraTaxaCount = readr::col_integer(),
@@ -135,29 +134,48 @@ GetColSpec <- function() {
       InsectAbundance = readr::col_integer(),
       NonInsectTaxaCount = readr::col_integer(),
       NonInsectAbundance = readr::col_integer(),
+      ID = readr::col_integer(),
       .default = readr::col_character()
     ),
-    ChannelCharacteristic = readr::cols(
+    Channel = readr::cols(
       VisitDate = readr::col_date(),
       .default = readr::col_character()
     ),
-    WaterChemistry = readr::cols(
+    Chemistry = readr::cols(
       VisitDate = readr::col_date(),
       LabValue = readr::col_double(),
       .default = readr::col_character()
     ),
-    WaterQuality = readr::cols(
+    WaterQualityDO = readr::cols(
       VisitDate = readr::col_date(),
-      IsLakeDry = readr::col_logical(),
+      MeasurementNum = readr::col_integer(),
       MeasurementDepth_m = readr::col_double(),
-      pH = readr::col_double(),
       DissolvedOxygen_percent = readr::col_double(),
       DissolvedOxygen_mg_per_L = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    WaterQualitypH = readr::cols(
+      VisitDate = readr::col_date(),
+      MeasurementNum = readr::col_integer(),
+      MeasurementDepth_m = readr::col_double(),
+      pH = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    WaterQualitySpCond = readr::cols(
+      VisitDate = readr::col_date(),
+      MeasurementNum = readr::col_integer(),
+      MeasurementDepth_m = readr::col_double(),
       SpecificConductance_microS_per_cm = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    WaterQualityTemperature = readr::cols(
+      VisitDate = readr::col_date(),
+      MeasurementNum = readr::col_integer(),
+      MeasurementDepth_m = readr::col_double(),
       WaterTemperature_C = readr::col_double(),
       .default = readr::col_character()
     ),
-    WaterQualityXSection = readr::cols(
+    WQStreamXSection = readr::cols(
       VisitDate = readr::col_date(),
       pH = readr::col_double(),
       DissolvedOxygen_mg_per_L = readr::col_double(),
