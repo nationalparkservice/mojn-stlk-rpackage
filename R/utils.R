@@ -210,7 +210,8 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
   } else if (data.source == "database") {
     filtered.data <- dplyr::tbl(conn, dbplyr::in_schema("analysis", data.name)) %>%
       dplyr::collect() %>%
-      dplyr::mutate_if(is.character, trimws)
+      dplyr::mutate_if(is.character, trimws) %>%
+      dplyr::mutate_if(is.character, dplyr::na_if, "")
   } else if (data.source == "local") {
     filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec[[data.name]])
   }
