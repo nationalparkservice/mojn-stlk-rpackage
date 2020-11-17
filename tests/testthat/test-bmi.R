@@ -2,6 +2,7 @@ context ("BMI")
 skip("Test not written yet")
 
 dummy.bmi <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA"),
+                                SiteShort = c("LHMN2","BAKR3","MILL1","PINE1","RDGE1","SHNG1","SNKE4","SFBW1","STRW2","STRW2","SFBW1","SNKE4","BAKR3","MILL1","LHMN2","RDGE1","PINE1","SHNG1"),
                                 SiteCode = c("GRBA_S_LHMN2","GRBA_S_BAKR3","GRBA_S_MILL1","GRBA_S_PINE1","GRBA_S_RDGE1","GRBA_S_SHNG1","GRBA_S_SNKE4","GRBA_S_SFBW1","GRBA_S_STRW2","GRBA_S_STRW2","GRBA_S_SFBW1","GRBA_S_SNKE4","GRBA_S_BAKR3","GRBA_S_MILL1","GRBA_S_LHMN2","GRBA_S_RDGE1","GRBA_S_PINE1","GRBA_S_SHNG1"),
                                 SiteName = c("Lehman Creek","Baker Creek (Main Stem)","Mill Creek","Pine Creek","Ridge Creek","Shingle Creek","Snake Creek","South Fork Big Wash","Strawberry Creek","Strawberry Creek","South Fork Big Wash","Snake Creek","Baker Creek (Main Stem)","Mill Creek","Lehman Creek","Ridge Creek","Pine Creek","Shingle Creek"),
                                 FieldSeason = c("2017","2017","2017","2017","2017","2017","2017","2017","2017","2018","2018","2018","2018","2018","2018","2018","2018","2018"),

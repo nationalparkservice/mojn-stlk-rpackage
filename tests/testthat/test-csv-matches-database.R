@@ -20,4 +20,4 @@ for (d.name in data.names) {
 }
 
 # Remove temporary csv's
-# unlink(dir, recursive = TRUE)
+unlink(dir, recursive = TRUE)
