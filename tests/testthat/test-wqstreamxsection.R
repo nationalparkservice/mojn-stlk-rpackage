@@ -1,6 +1,7 @@
-context ("WaterQualityXSection")
+context ("WQStreamXSection")
+skip("Test not written yet")
 
-dummy.xsection <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA"),
+dummy.wqxsection <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA"),
                                   SiteCode = c("GRBA_S_SFBW1","GRBA_S_SFBW1","GRBA_S_SFBW1","GRBA_S_BAKR3","GRBA_S_BAKR3","GRBA_S_BAKR3","GRBA_S_LHMN2","GRBA_S_LHMN2","GRBA_S_LHMN2","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_PINE1","GRBA_S_PINE1","GRBA_S_PINE1","GRBA_S_RDGE1","GRBA_S_RDGE1","GRBA_S_RDGE1","GRBA_S_SFBW1","GRBA_S_SFBW1","GRBA_S_SFBW1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SNKE4","GRBA_S_SNKE4","GRBA_S_SNKE4","GRBA_S_STRW2","GRBA_S_STRW2","GRBA_S_STRW2"),
                                   SiteName = c("South Fork Big Wash","South Fork Big Wash","South Fork Big Wash","Baker Creek (Main Stem)","Baker Creek (Main Stem)","Baker Creek (Main Stem)","Lehman Creek","Lehman Creek","Lehman Creek","Mill Creek","Mill Creek","Mill Creek","Pine Creek","Pine Creek","Pine Creek","Ridge Creek","Ridge Creek","Ridge Creek","South Fork Big Wash","South Fork Big Wash","South Fork Big Wash","Shingle Creek","Shingle Creek","Shingle Creek","Snake Creek","Snake Creek","Snake Creek","Strawberry Creek","Strawberry Creek","Strawberry Creek"),
                                   FieldSeason = c("2018","2018","2018","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017","2017"),
@@ -25,6 +26,4 @@ dummy.xsection <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GR
 
 dir <- "temp-test-csv"
 dir.create(dir)
-readr::write_csv(dummy.xsection, file.path(dir, "WaterQualityXSection.csv"))
-
-
+readr::write_csv(dummy.wqxsection, file.path(dir, "WQStreamXSection.csv"))

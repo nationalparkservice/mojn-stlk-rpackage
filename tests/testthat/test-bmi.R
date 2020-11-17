@@ -1,4 +1,5 @@
-context ("BMIAll")
+context ("BMI")
+skip("Test not written yet")
 
 dummy.bmi <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA"),
                                 SiteCode = c("GRBA_S_LHMN2","GRBA_S_BAKR3","GRBA_S_MILL1","GRBA_S_PINE1","GRBA_S_RDGE1","GRBA_S_SHNG1","GRBA_S_SNKE4","GRBA_S_SFBW1","GRBA_S_STRW2","GRBA_S_STRW2","GRBA_S_SFBW1","GRBA_S_SNKE4","GRBA_S_BAKR3","GRBA_S_MILL1","GRBA_S_LHMN2","GRBA_S_RDGE1","GRBA_S_PINE1","GRBA_S_SHNG1"),
@@ -82,6 +83,6 @@ dummy.bmi <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","
 
 dir <- "temp-test-csv"
 dir.create(dir)
-readr::write_csv(dummy.bmi, file.path(dir, "BMIAll.csv"))
+readr::write_csv(dummy.bmi, file.path(dir, "BMI.csv"))
 
 

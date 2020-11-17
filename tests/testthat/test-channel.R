@@ -1,4 +1,5 @@
-context ("ChannelCharacteristic")
+context ("Channel")
+skip("Test not written yet")
 
 dummy.channelcharacteristic <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA"),
                                 SiteCode = c("GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_MILL1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1","GRBA_S_SHNG1"),
@@ -16,6 +17,6 @@ dummy.channelcharacteristic <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRB
 
 dir <- "temp-test-csv"
 dir.create(dir)
-readr::write_csv(dummy.channelcharacteristic, file.path(dir, "ChannelCharacteristic.csv"))
+readr::write_csv(dummy.channelcharacteristic, file.path(dir, "Channel.csv"))
 
 

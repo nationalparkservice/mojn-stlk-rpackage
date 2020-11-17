@@ -1,4 +1,5 @@
 context ("Clarity")
+skip("Test not written yet")
 
 dummy.clarity <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA"),
                                 SiteCode = c("GRBA_L_BAKR0","GRBA_L_BAKR0","GRBA_L_BAKR0","GRBA_L_BRWN0","GRBA_L_BRWN0","GRBA_L_BRWN0","GRBA_L_DEAD0","GRBA_L_DEAD0","GRBA_L_DEAD0","GRBA_L_JHNS0","GRBA_L_JHNS0","GRBA_L_JHNS0","GRBA_L_STLL0","GRBA_L_STLL0","GRBA_L_STLL0","GRBA_L_TRSA0","GRBA_L_TRSA0","GRBA_L_TRSA0"),

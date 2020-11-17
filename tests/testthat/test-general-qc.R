@@ -1,4 +1,5 @@
 context("Completeness")
+skip("Test not written yet")
 
 dummy.completeness <- tibble::tibble(Park = c("GRBA", "GRBA", "GRBA", "GRBA", "GRBA", "GRBA", "GRBA", "PARA"),
                                      Subunit = c("GRBA Unknown", "GRBA Unknown", "GRBA Unknown", "GRBA Unknown", "GRBA Unknown", "GRBA Unknown", "GRBA Unknown", "PARA Unknown"),

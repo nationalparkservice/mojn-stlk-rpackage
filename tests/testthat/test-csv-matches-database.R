@@ -3,7 +3,7 @@ context("Reading from database and csv")
 # Write temporary csv files
 conn <- OpenDatabaseConnection()
 dir <- "temp_test-csv"
-SaveDataToCsv(conn, dir, create.folders = TRUE, overwrite = FALSE)
+SaveDataToCsv(conn, dir, create.folders = TRUE, overwrite = TRUE)
 CloseDatabaseConnection(conn)
 
 data.names <- names(GetColSpec())
@@ -20,4 +20,4 @@ for (d.name in data.names) {
 }
 
 # Remove temporary csv's
-unlink(dir, recursive = TRUE)
+# unlink(dir, recursive = TRUE)
