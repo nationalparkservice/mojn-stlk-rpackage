@@ -25,7 +25,7 @@ qcSecchiGTDepth <- function(conn, path.to.data, park, site, field.season, data.s
   error.list <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "clarity")
 
   error.list %<>%
-    dplyr::filter(SecchiDepth_m > DepthToBottom_m) %>%
+    dplyr::filter(SecchiDepth_m > DepthToBottom_m)
 
   return(error.list)
 }
