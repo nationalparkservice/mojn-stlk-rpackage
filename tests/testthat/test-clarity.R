@@ -9,9 +9,9 @@ dummy.clarity <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRB
                                 FieldSeason = c("2016","2017","2018","2016","2017","2018","2016","2017","2018","2016","2017","2018","2016","2017","2018","2016","2017","2018"),
                                 IsLakeDry = c(FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE),
                                 SurfaceCalm = c("N","Y","Y","Y","N","N","Y","N","Y","Y","N","N","N","N","Y","Y","N","Y"),
-                                OnBottom = c("Y","Y","Y","Y","Y","Y","Y","N","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y"),
+                                OnBottom = c("N","Y","Y","Y","Y","Y","Y","N","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y"),
                                 DepthToBottom_m = c(1.95,1.6,2.04,0.34,0.76,0.37,0.27,2.21,0.09,4.36,4.42,3.96,0.64,0.76,0.55,0.79,1.34,0.7),
-                                SecchiDepth_m = c(,,,,,,,1.44,,,,,,,,,,),
+                                SecchiDepth_m = c(1.75,,,,,,,11.44,,,,,,,,,,),
                                 VisitType = c("Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary","Primary"),
                                 DPL = c("Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted","Accepted")
                                 )

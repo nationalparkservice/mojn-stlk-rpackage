@@ -64,13 +64,6 @@ GetColSpec <- function() {
       DataStoreReferenceCode = readr::col_integer(),
       .default = readr::col_character()
     ),
-    Clarity = readr::cols(
-      VisitDate = readr::col_date(),
-      IsLakeDry = readr::col_logical(),
-      DepthToBottom_m = readr::col_double(),
-      SecchiDepth_m = readr::col_double(),
-      .default = readr::col_character()
-    ),
     BMI = readr::cols(
       VisitDate = readr::col_date(),
       DateCollected = readr::col_date(),
@@ -144,6 +137,13 @@ GetColSpec <- function() {
     Chemistry = readr::cols(
       VisitDate = readr::col_date(),
       LabValue = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    Clarity = readr::cols(
+      VisitDate = readr::col_date(),
+      IsLakeDry = readr::col_logical(),
+      DepthToBottom_m = readr::col_double(),
+      SecchiDepth_m = readr::col_double(),
       .default = readr::col_character()
     ),
     WaterQualityDO = readr::cols(
