@@ -2,7 +2,7 @@
 % Please edit documentation in R/clarity-qc.R
 \name{qcSecchiGTDepth}
 \alias{qcSecchiGTDepth}
-\title{List occurrences of "TBD" unknown plant species in tree count data}
+\title{List secchi depth measurements that are greater than the recorded lake depth}
 \usage{
 qcSecchiGTDepth(
   conn,
@@ -20,24 +20,24 @@ qcSecchiGTDepth(
 
 \item{park}{Optional. Four-letter park code to filter on, e.g. "GRBA".}
 
-\item{site}{Optional. Site code to filter on, e.g. "LAKE_P_BLUE0".}
+\item{site}{Optional. Site code to filter on, e.g. "GRBA_L_DEAD0".}
 
 \item{field.season}{Optional. Field season name to filter on, e.g. "2019".}
 
-\item{data.source}{Character string indicating whether to access data in the spring veg database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.}
+\item{data.source}{Character string indicating whether to access data in the database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.}
 }
 \value{
-A tibble with columns Park, SpringCode, SpringName, VisitType, FieldSeason, StartDate, UnknownPlantCode, TransectNumber.
+A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, IsLakeDry, SurfaceCalm, OnBottom, DepthToBottom_m, SecchiDepth_m, VisitType, DPL.
 }
 \description{
-List occurrences of "TBD" unknown plant species in tree count data
+List secchi depth measurements that are greater than the recorded lake depth
 }
 \examples{
 \dontrun{
     conn <- OpenDatabaseConnection()
-    TreeCtQcTBDSpecies(conn, park = "LAKE")
-    TreeCtQcTBDSpecies(conn, spring = "LAKE_P_BLUE0", field.season = "2019")
-    TreeCtQcTBDSpecies(path.to.data = "path/to/data", data.source = "local")
+    qcSecchiGTDepth(conn)
+    qcSecchiGTDepth(conn, site = "GRBA_L_BAKR0", field.season = "2019")
+    qcSecchiGTDepth(path.to.data = "path/to/data", data.source = "local")
     CloseDatabaseConnection(conn)
 }
 }
