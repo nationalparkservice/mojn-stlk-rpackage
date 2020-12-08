@@ -63,7 +63,7 @@ qcLakeDryMeasurementsExist <- function(conn, path.to.data, park, site, field.sea
   return(error.list)
 }
 
-#' List clarity records where lake is not dry but measurements missing
+#' List clarity records where lake is not dry but measurements are missing
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
@@ -96,7 +96,7 @@ qcLakeNotDryMeasurementsMissing <- function(conn, path.to.data, park, site, fiel
   return(error.list)
 }
 
-#' List clarity records where secchi disk is not on bottom but lake depth or secchi depth is missing
+#' List clarity records where secchi disk is not on bottom but secchi depth is missing
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
@@ -118,13 +118,13 @@ qcLakeNotDryMeasurementsMissing <- function(conn, path.to.data, park, site, fiel
 #'     qcDepthMissing(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-qcDepthMissing <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcSecchiDepthMissing <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
   error.list <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "clarity")
 
   error.list %<>%
     dplyr::filter(OnBottom == "N") %>%
-    dplyr::filter(is.na(DepthToBottom_m) | is.na(SecchiDepth_m))
+    dplyr::filter(is.na(SecchiDepth_m))
 
   return(error.list)
 }
