@@ -1,4 +1,4 @@
-context ("BMI")
+context("BMI")
 skip("Test not written yet")
 
 dummy.bmi <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA"),

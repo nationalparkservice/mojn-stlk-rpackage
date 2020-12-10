@@ -2,7 +2,7 @@
 % Please edit documentation in R/clarity-qc.R
 \name{qcLakeNotDryMeasurementsMissing}
 \alias{qcLakeNotDryMeasurementsMissing}
-\title{List clarity records where lake is not dry but measurements missing}
+\title{List clarity records where lake is not dry but measurements are missing}
 \usage{
 qcLakeNotDryMeasurementsMissing(
   conn,
@@ -30,7 +30,7 @@ qcLakeNotDryMeasurementsMissing(
 A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, IsLakeDry, SurfaceCalm, OnBottom, DepthToBottom_m, SecchiDepth_m, VisitType, DPL.
 }
 \description{
-List clarity records where lake is not dry but measurements missing
+List clarity records where lake is not dry but measurements are missing
 }
 \examples{
 \dontrun{
