@@ -46,44 +46,44 @@ LakeWqMedian <- function(conn, path.to.data, park, site, field.season, data.sour
   temp.med <- temp %>%
     dplyr::left_join(dplyr::select(wq.visits, SiteType, Park, FieldSeason, SiteCode, VisitDate), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%
     dplyr::filter(MonitoringStatus == "Sampled") %>%
-    dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m) %>%
-    dplyr::summarise(TempMedian = median(WaterTemperature_C, na.rm = TRUE),
-                     TempCount = sum(!is.na(WaterTemperature_C)),
-                     TempDQFMax = MaxDQF(DataQualityFlag)) %>%
+    dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m, Flag, FlagNote, DPL) %>%
+    dplyr::summarise(TemperatureMedian = median(WaterTemperature_C, na.rm = TRUE),
+                     TemperatureCount = sum(!is.na(WaterTemperature_C))) %>%
+    dplyr::rename(TemperatureFlag = Flag) %>%
     dplyr::arrange(SiteCode, VisitDate)
 
   spcond.med <- spcond %>%
     dplyr::left_join(dplyr::select(wq.visits, SiteType, Park, FieldSeason, SiteCode, VisitDate), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%
     dplyr::filter(MonitoringStatus == "Sampled") %>%
-    dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m) %>%
+    dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m, Flag, FlagNote, DPL) %>%
     dplyr::summarise(SpCondMedian = median(SpecificConductance_microS_per_cm, na.rm = TRUE),
-                     SpCondCount = sum(!is.na(SpecificConductance_microS_per_cm)),
-                     SpCondDQFMax = MaxDQF(DataQualityFlag)) %>%
+                     SpCondCount = sum(!is.na(SpecificConductance_microS_per_cm))) %>%
+    dplyr::rename(SpCondFlag = Flag) %>%
     dplyr::arrange(SiteCode, VisitDate)
 
   ph.med <- ph %>%
     dplyr::left_join(dplyr::select(wq.visits, SiteType, Park, FieldSeason, SiteCode, VisitDate), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%
     dplyr::filter(MonitoringStatus == "Sampled") %>%
-    dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m) %>%
+    dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m, Flag, FlagNote, DPL) %>%
     dplyr::summarise(pHMedian = median(pH, na.rm = TRUE),
-                     pHCount = sum(!is.na(pH)),
-                     pHDQFMax = MaxDQF(DataQualityFlag)) %>%
+                     pHCount = sum(!is.na(pH))) %>%
+    dplyr::rename(pHFlag = Flag) %>%
     dplyr::arrange(SiteCode, VisitDate)
 
   do.med <- do %>%
     dplyr::left_join(dplyr::select(wq.visits, SiteType, Park, FieldSeason, SiteCode, VisitDate), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%
     dplyr::filter(MonitoringStatus == "Sampled") %>%
-    dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m) %>%
+    dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m, Flag, FlagNote, DPL) %>%
     dplyr::summarise(DOPercentMedian = median(DissolvedOxygen_percent), DOmgLMedian = median(DissolvedOxygen_mg_per_L),
                      DOPercentCount = sum(!is.na(DissolvedOxygen_percent)),
-                     DOmgLCount = sum(!is.na(DissolvedOxygen_mg_per_L)),
-                     DO_DQFMax = MaxDQF(DataQualityFlag)) %>%
+                     DOmgLCount = sum(!is.na(DissolvedOxygen_mg_per_L))) %>%
+    dplyr::rename(DOFlag = Flag) %>%
     dplyr::arrange(SiteCode, VisitDate)
 
   wq.med <- temp.med %>%
-    dplyr::full_join(spcond.med, by = c("Park", "FieldSeason", "SiteCode", "VisitDate", "VisitType", "SiteType", "MeasurementDepth_m")) %>%
-    dplyr::full_join(ph.med, by = c("Park", "FieldSeason", "SiteCode", "VisitDate", "VisitType", "SiteType", "MeasurementDepth_m")) %>%
-    dplyr::full_join(do.med, by = c("Park", "FieldSeason", "SiteCode", "VisitDate", "VisitType", "SiteType", "MeasurementDepth_m")) %>%
+    dplyr::full_join(spcond.med, by = c("Park", "FieldSeason", "SiteCode", "VisitDate", "VisitType", "SiteType", "MeasurementDepth_m", "FlagNote", "DPL")) %>%
+    dplyr::full_join(ph.med, by = c("Park", "FieldSeason", "SiteCode", "VisitDate", "VisitType", "SiteType", "MeasurementDepth_m", "FlagNote", "DPL")) %>%
+    dplyr::full_join(do.med, by = c("Park", "FieldSeason", "SiteCode", "VisitDate", "VisitType", "SiteType", "MeasurementDepth_m", "FlagNote", "DPL")) %>%
     dplyr::ungroup()
 
   return(wq.med)
@@ -108,19 +108,15 @@ StreamWqMedian <- function(conn, path.to.data, park, site, field.season, data.so
   stream_wq_med <- stream_wq %>%
     dplyr::left_join(dplyr::select(wq.visits, SiteType, Park, FieldSeason, SiteCode, VisitDate, MonitoringStatus), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%
     dplyr::filter(MonitoringStatus == "Sampled") %>%
-    dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType) %>%
-    dplyr::summarise(TempMedian = median(WaterTemperature_C),
-                     TempCount = sum(!is.na(WaterTemperature_C)),
-                     TempDQFMax = MaxDQF(Temperature_DQF),
+    dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, pHFlag, DOFlag, SpCondFlag, TemperatureFlag, FlagNote, DPL) %>%
+    dplyr::summarise(TemperatureMedian = median(WaterTemperature_C),
+                     TemperatureCount = sum(!is.na(WaterTemperature_C)),
                      pHMedian = median(pH),
                      pHCount = sum(!is.na(pH)),
-                     pHDQFMax = MaxDQF(PH_DQF),
                      DOmgLMedian = median(DissolvedOxygen_mg_per_L),
-                     DOCount = sum(!is.na(DissolvedOxygen_mg_per_L)),
-                     DO_DQFMax = MaxDQF(DO_DQF),
+                     DOmgLCount = sum(!is.na(DissolvedOxygen_mg_per_L)),
                      SpCondMedian = median(SpecificConductance_microS_per_cm),
-                     SpCondCount = sum(!is.na(SpecificConductance_microS_per_cm)),
-                     SpCondDQFMax = MaxDQF(SpCond_DQF)) %>%
+                     SpCondCount = sum(!is.na(SpecificConductance_microS_per_cm))) %>%
     dplyr::arrange(SiteCode, VisitDate)
 
 
