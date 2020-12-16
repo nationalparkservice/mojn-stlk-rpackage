@@ -1,89 +1,157 @@
-context("Waterquality")
+context("Water quality")
 skip("Test not written yet")
 
-dummy.do <- tibble::tibble(Park = c("DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "MOJA", "MOJA", "MOJA", "JOTR", "JOTR", "JOTR", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "MOJA", "MOJA", "MOJA"),
-                           SiteShort = c("S0001", "S0001", "S0001", "S0002", "S0002", "S0002", "S0003", "S0003", "S0003", "S0003", "S0003", "S0003", "S0004", "S0004", "S0004", "S0005", "S0005", "S0005", "S0005", "S0005", "S0005", "S0006", "S0006", "S0006", "S0007", "S0007", "S0007", "S0007", "S0007", "S0007", "S0008", "S0008", "S0008", "S0009", "S0009", "S0009", "S0010", "S0010", "S0010", "S0011", "S0011", "S0011", "S0012", "S0012", "S0012", "S0012", "S0012", "S0012", "S0099", "S0099", "S0099"),
-                           SiteCode = c("DEVA_S_S0001", "DEVA_S_S0001", "DEVA_S_S0001", "DEVA_S_S0002", "DEVA_S_S0002", "DEVA_S_S0002", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "LAKE_S_S0004", "LAKE_S_S0004", "LAKE_S_S0004", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "PARA_S_S0006", "PARA_S_S0006", "PARA_S_S0006", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "MOJA_S_S0008", "MOJA_S_S0008", "MOJA_S_S0008", "JOTR_S_S0009", "JOTR_S_S0009", "JOTR_S_S0009", "DEVA_S_S0010", "DEVA_S_S0010", "DEVA_S_S0010", "DEVA_S_S0011", "DEVA_S_S0011", "DEVA_S_S0011", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "MOJA_S_S0099", "MOJA_S_S0099", "MOJA_S_S0099"),
-                           SiteName = c("Site 01", "Site 01", "Site 01", "Site 02", "Site 02", "Site 02", "Site 03", "Site 03", "Site 03", "Site 03", "Site 03", "Site 03", "Site 04", "Site 04", "Site 04", "Site 05", "Site 05", "Site 05", "Site 05", "Site 05", "Site 05", "Site 06", "Site 06", "Site 06", "Site 07", "Site 07", "Site 07", "Site 07", "Site 07", "Site 07", "Site 08", "Site 08", "Site 08", "Site 09", "Site 09", "Site 09", "Site 10", "Site 10", "Site 10", "Site 11", "Site 11", "Site 11", "Site 12", "Site 12", "Site 12", "Site 12", "Site 12", "Site 12", "Site 99", "Site 99", "Site 99"),
-                           VisitDate = c("2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-21", "2018-11-21", "2018-11-21", "2019-11-19", "2019-11-19", "2019-11-19", "2018-11-14", "2018-11-14", "2018-11-14", "2018-11-15", "2018-11-15", "2018-11-15", "2019-11-07", "2019-11-07", "2019-11-07", "2019-04-09", "2019-04-09", "2019-04-09", "2019-04-10", "2019-04-10", "2019-04-10", "2020-04-07", "2020-04-07", "2020-04-07", "2020-03-02", "2020-03-02", "2020-03-02", "2020-01-29", "2020-01-29", "2020-01-29", "2019-02-12", "2019-02-12", "2019-02-12", "2019-02-13", "2019-02-13", "2019-02-13", "2019-02-14", "2019-02-14", "2019-02-14", "2019-02-21", "2019-02-21", "2019-02-21", "2020-03-02", "2020-03-02", "2020-03-02"),
-                           FieldSeason = c("2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020"),
-                           WQDataCollected = c("Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"),
-                           MeasurementNum = c(1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3),
-                           MeasurementDepth_m = c(0.6,0.6,0.6,0.8,0.8,0.8,0.4,0.4,0.4,0.5,0.5,0.5,0.9,0.9,0.9,1.1,1.1,1.1,1.5,1.5,1.5,0.7,0.7,0.7,0.6,0.6,0.6,0.4,0.4,0.4,0.5,0.5,0.5,0.2,0.2,0.2,1.1,1.1,1.1,1.3,1.3,1.3,0.9,0.9,0.9,0.5,0.5,0.5,1.9,1.9,1.9),
-                           DissolvedOxygen_percent = c(84.5, 84.3, 84.3, 140, 139, 137, NA, NA, NA, 88.9, 88.8, 88.7, 42.1, 42.0, 42.1, 172.4, 172.9, 171.8, 78.9, 78.9, 78.8, 90.7, 90.8, 90.6, 84.2, 84.4, 84.4, 82.5, 82.5, 82.5, 72.3, 72.2, 72.2, 29.4, 29.3, 29.2, 69.7, 69.7, 69.6, 85.6, 85.6, 85.6, 91.4, 91.3, 91.2, 90.1, 90.0, 90.0, 88.5, 86.3, 83.9),
-                           DissolvedOxygen_mg_per_L = c(5.76, 5.75, 5.75, 15.56, 15.55, 15.53, NA, NA, NA, 6.76, 6.76, 6.75, 2.34, 2.33, 2.33, 18.41, 18.50, 18.52, 5.05, 5.05, 5.05, 6.84, 6.84, 6.83, 5.45, 5.46, 5.46, 5.31, 5.30, 5.30, 4.96, 4.96, 4.96, 1.97, 1.96, 1.96, 4.70, 4.70, 4.70, 5.56, 5.57, 5.56, 6.92, 6.92, 6.90, 6.82, 6.82, 6.82, 6.21, 5.92, 5.40),
-                           DataQualityFlag = c("NF", "NF", "NF", "C", "C", "C", "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "I", "I", "I", NA, NA, NA, "NF", "NF", "NF", NA, NA, NA, NA, NA, NA, "W", "W", "W"),
-                           DataQualityFlagNote = c(NA, NA, NA, "DO probe failed calibration, not reading correctly", "DO probe failed calibration, not reading correctly", "DO probe failed calibration, not reading correctly", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, "a lot of organic matter in Site", "a lot of organic matter in Site", "a lot of organic matter in Site", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, "DO falling rapidly, readings would not stabilize", "DO falling rapidly, readings would not stabilize", "DO falling rapidly, readings would not stabilize"),
-                           DOInstrument = c("YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1"),
-                           VisitType = c("Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Replicate", "Replicate", "Replicate", "Primary", "Primary", "Primary"),
-                           DPL = c("Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Provisional", "Provisional", "Provisional", "Provisional", "Provisional", "Provisional", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Provisional", "Provisional", "Provisional", "Accepted", "Accepted", "Accepted"),
-                           MonitoringStatus = c("Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled"))
+dummy.do <- tibble::tibble(Park = "GRBA",
+                           SiteShort = c(rep("S0001", 6), rep("S0002", 3)),
+                           SiteCode = c(rep("GRBA_L_S0001", 6), rep("GRBA_L_S0002", 3)),
+                           SiteName = c(rep("Lake 1", 6), rep("Lake 2", 3)),
+                           VisitDate = c(rep("2020-11-01", 3), rep("2020-11-02", 3), rep("2019-11-01", 3)),
+                           FieldSeason = c(rep("2021", 6), rep("2020", 3)),
+                           WQDataCollected = "Yes",
+                           MeasurementNum = c(1:3, 1:3, 1:2, 1),
+                           MeasurementDepth_m = c(0:2, 0:2, 0:1, 0),
+                           DissolvedOxygen_percent = c(90:92, rep(NA, 3), 90:91, 90),
+                           DissolvedOxygen_mg_per_L = c(8:10, 8:10, 8:9, 8),
+                           Flag = c(rep("NF", 3), rep("C", 3), rep("W", 2), "I"),
+                           FlagNote = c(rep(NA, 3), rep("Broken instrument", 3), rep("Measurement did not stabilize", 2), "Bees"),
+                           DOInstrument = "MOJN YSI",
+                           VisitType = "Primary",
+                           DPL = c(rep("Accepted", 6), rep("Raw", 3)),
+                           MonitoringStatus = "Sampled")
 
-dummy.ph <- tibble::tibble(Park = c("DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "MOJA", "MOJA", "MOJA", "JOTR", "JOTR", "JOTR", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "MOJA", "MOJA", "MOJA"),
-                           SiteShort = c("S0001", "S0001", "S0001", "S0002", "S0002", "S0002", "S0003", "S0003", "S0003", "S0003", "S0003", "S0003", "S0004", "S0004", "S0004", "S0005", "S0005", "S0005", "S0005", "S0005", "S0005", "S0006", "S0006", "S0006", "S0007", "S0007", "S0007", "S0007", "S0007", "S0007", "S0008", "S0008", "S0008", "S0009", "S0009", "S0009", "S0010", "S0010", "S0010", "S0011", "S0011", "S0011", "S0012", "S0012", "S0012", "S0012", "S0012", "S0012", "S0099", "S0099", "S0099"),
-                           SiteCode = c("DEVA_S_S0001", "DEVA_S_S0001", "DEVA_S_S0001", "DEVA_S_S0002", "DEVA_S_S0002", "DEVA_S_S0002", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "LAKE_S_S0004", "LAKE_S_S0004", "LAKE_S_S0004", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "PARA_S_S0006", "PARA_S_S0006", "PARA_S_S0006", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "MOJA_S_S0008", "MOJA_S_S0008", "MOJA_S_S0008", "JOTR_S_S0009", "JOTR_S_S0009", "JOTR_S_S0009", "DEVA_S_S0010", "DEVA_S_S0010", "DEVA_S_S0010", "DEVA_S_S0011", "DEVA_S_S0011", "DEVA_S_S0011", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "MOJA_S_S0099", "MOJA_S_S0099", "MOJA_S_S0099"),
-                           SiteName = c("Site 01", "Site 01", "Site 01", "Site 02", "Site 02", "Site 02", "Site 03", "Site 03", "Site 03", "Site 03", "Site 03", "Site 03", "Site 04", "Site 04", "Site 04", "Site 05", "Site 05", "Site 05", "Site 05", "Site 05", "Site 05", "Site 06", "Site 06", "Site 06", "Site 07", "Site 07", "Site 07", "Site 07", "Site 07", "Site 07", "Site 08", "Site 08", "Site 08", "Site 09", "Site 09", "Site 09", "Site 10", "Site 10", "Site 10", "Site 11", "Site 11", "Site 11", "Site 12", "Site 12", "Site 12", "Site 12", "Site 12", "Site 12", "Site 99", "Site 99", "Site 99"),
-                           VisitDate = c("2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-21", "2018-11-21", "2018-11-21", "2019-11-19", "2019-11-19", "2019-11-19", "2018-11-14", "2018-11-14", "2018-11-14", "2018-11-15", "2018-11-15", "2018-11-15", "2019-11-07", "2019-11-07", "2019-11-07", "2019-04-09", "2019-04-09", "2019-04-09", "2019-04-10", "2019-04-10", "2019-04-10", "2020-04-07", "2020-04-07", "2020-04-07", "2020-03-02", "2020-03-02", "2020-03-02", "2020-01-29", "2020-01-29", "2020-01-29", "2019-02-12", "2019-02-12", "2019-02-12", "2019-02-13", "2019-02-13", "2019-02-13", "2019-02-14", "2019-02-14", "2019-02-14", "2019-02-21", "2019-02-21", "2019-02-21", "2020-03-02", "2020-03-02", "2020-03-02"),
-                           FieldSeason = c("2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020"),
-                           WQDataCollected = c("Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"),
-                           MeasurementNum = c(1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3),
-                           MeasurementDepth_m = c(0.6,0.6,0.6,0.8,0.8,0.8,0.4,0.4,0.4,0.5,0.5,0.5,0.9,0.9,0.9,1.1,1.1,1.1,1.5,1.5,1.5,0.7,0.7,0.7,0.6,0.6,0.6,0.4,0.4,0.4,0.5,0.5,0.5,0.2,0.2,0.2,1.1,1.1,1.1,1.3,1.3,1.3,0.9,0.9,0.9,0.5,0.5,0.5,1.9,1.9,1.9),
-                           pH = c(7.91, 7.90, 7.89, 3.85, 3.86, 3.86, 7.35, 7.35, 7.34, 7.42, 7.42, 7.42, 7.06, 7.06, 7.06, 7.65, 7.66, 7.65, 7.71, 7.71, 7.72, 10.81, 10.78, 10.85, 7.24, 7.24, 7.24, 7.34, 7.33, 7.32, 7.10, 7.11, 7.10, 6.89, 6.90, 6.89, 8.18, 8.17, 8.18, 5.83, 5.80, 5.76, 7.96, 7.96, 7.95, 7.92, 7.92, 7.92, 7.43, 7.43, 7.42),
-                           DataQualityFlag = c("NF", "NF", "NF", "I", "I", "I", "I", "I", "I", NA, NA, NA, "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", NA, NA, NA, "W", "W", "W", NA, NA, NA, NA, NA, NA, "NF", "NF", "NF"),
-                           DataQualityFlagNote = c(NA, NA, NA, "Site near mine tailings", "Site near mine tailings", "Site near mine tailings", "had to break through ice", "had to break through ice", "had to break through ice", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, "error during pH calibration, probe did not stabilize, might be old", "error during pH calibration, probe did not stabilize, might be old", "error during pH calibration, probe did not stabilize, might be old", NA, NA, NA, NA, NA, NA, NA, NA, NA),
-                           pHInstrument = c("YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1"),
-                           VisitType = c("Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Replicate", "Replicate", "Replicate", "Primary", "Primary", "Primary"),
-                           DPL = c("Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Provisional", "Provisional", "Provisional", "Provisional", "Provisional", "Provisional", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Provisional", "Provisional", "Provisional", "Accepted", "Accepted", "Accepted"),
-                           MonitoringStatus = c("Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled"))
+dummy.ph <- tibble::tibble(Park = "GRBA",
+                           SiteShort = c(rep("S0001", 6), rep("S0002", 3)),
+                           SiteCode = c(rep("GRBA_L_S0001", 6), rep("GRBA_L_S0002", 3)),
+                           SiteName = c(rep("Lake 1", 6), rep("Lake 2", 3)),
+                           VisitDate = c(rep("2020-11-01", 3), rep("2020-11-02", 3), rep("2019-11-01", 3)),
+                           FieldSeason = c(rep("2021", 6), rep("2020", 3)),
+                           WQDataCollected = "Yes",
+                           MeasurementNum = c(1:3, 1:3, 1:2, 1),
+                           MeasurementDepth_m = c(0:2, 0:2, 0:1, 0),
+                           pH = c(6:8, 6, NA, 8, 6:7, 7),
+                           Flag = c(rep("NF", 3), rep("I", 3), rep("C", 2), "W"),
+                           FlagNote = c(rep(NA, 3), rep("Broken instrument", 3), rep("Measurement did not stabilize", 2), "Bees"),
+                           pHInstrument = "MOJN YSI",
+                           VisitType = "Primary",
+                           DPL = c(rep("Accepted", 6), rep("Raw", 3)),
+                           MonitoringStatus = "Sampled")
 
-dummy.spcond <- tibble::tibble(Park = c("DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "MOJA", "MOJA", "MOJA", "JOTR", "JOTR", "JOTR", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "MOJA", "MOJA", "MOJA"),
-                               SiteShort = c("S0001", "S0001", "S0001", "S0002", "S0002", "S0002", "S0003", "S0003", "S0003", "S0003", "S0003", "S0003", "S0004", "S0004", "S0004", "S0005", "S0005", "S0005", "S0005", "S0005", "S0005", "S0006", "S0006", "S0006", "S0007", "S0007", "S0007", "S0007", "S0007", "S0007", "S0008", "S0008", "S0008", "S0009", "S0009", "S0009", "S0010", "S0010", "S0010", "S0011", "S0011", "S0011", "S0012", "S0012", "S0012", "S0012", "S0012", "S0012", "S0099", "S0099", "S0099"),
-                               SiteCode = c("DEVA_S_S0001", "DEVA_S_S0001", "DEVA_S_S0001", "DEVA_S_S0002", "DEVA_S_S0002", "DEVA_S_S0002", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "LAKE_S_S0004", "LAKE_S_S0004", "LAKE_S_S0004", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "PARA_S_S0006", "PARA_S_S0006", "PARA_S_S0006", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "MOJA_S_S0008", "MOJA_S_S0008", "MOJA_S_S0008", "JOTR_S_S0009", "JOTR_S_S0009", "JOTR_S_S0009", "DEVA_S_S0010", "DEVA_S_S0010", "DEVA_S_S0010", "DEVA_S_S0011", "DEVA_S_S0011", "DEVA_S_S0011", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "MOJA_S_S0099", "MOJA_S_S0099", "MOJA_S_S0099"),
-                               SiteName = c("Site 01", "Site 01", "Site 01", "Site 02", "Site 02", "Site 02", "Site 03", "Site 03", "Site 03", "Site 03", "Site 03", "Site 03", "Site 04", "Site 04", "Site 04", "Site 05", "Site 05", "Site 05", "Site 05", "Site 05", "Site 05", "Site 06", "Site 06", "Site 06", "Site 07", "Site 07", "Site 07", "Site 07", "Site 07", "Site 07", "Site 08", "Site 08", "Site 08", "Site 09", "Site 09", "Site 09", "Site 10", "Site 10", "Site 10", "Site 11", "Site 11", "Site 11", "Site 12", "Site 12", "Site 12", "Site 12", "Site 12", "Site 12", "Site 99", "Site 99", "Site 99"),
-                               VisitDate = c("2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-21", "2018-11-21", "2018-11-21", "2019-11-19", "2019-11-19", "2019-11-19", "2018-11-14", "2018-11-14", "2018-11-14", "2018-11-15", "2018-11-15", "2018-11-15", "2019-11-07", "2019-11-07", "2019-11-07", "2019-04-09", "2019-04-09", "2019-04-09", "2019-04-10", "2019-04-10", "2019-04-10", "2020-04-07", "2020-04-07", "2020-04-07", "2020-03-02", "2020-03-02", "2020-03-02", "2020-01-29", "2020-01-29", "2020-01-29", "2019-02-12", "2019-02-12", "2019-02-12", "2019-02-13", "2019-02-13", "2019-02-13", "2019-02-14", "2019-02-14", "2019-02-14", "2019-02-21", "2019-02-21", "2019-02-21", "2020-03-02", "2020-03-02", "2020-03-02"),
-                               FieldSeason = c("2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020"),
-                               WQDataCollected = c("Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"),
-                               MeasurementNum = c(1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3),
-                               MeasurementDepth_m = c(0.6,0.6,0.6,0.8,0.8,0.8,0.4,0.4,0.4,0.5,0.5,0.5,0.9,0.9,0.9,1.1,1.1,1.1,1.5,1.5,1.5,0.7,0.7,0.7,0.6,0.6,0.6,0.4,0.4,0.4,0.5,0.5,0.5,0.2,0.2,0.2,1.1,1.1,1.1,1.3,1.3,1.3,0.9,0.9,0.9,0.5,0.5,0.5,1.9,1.9,1.9),
-                               SpecificConductance_microS_per_cm = c(2340, 2345, 2342, 3863, 3865, 3863, NA, NA, NA, 976, 977, 976, 876, 876, 877, 3233, 3234, 3230, 3314, 3312, 3312, 1801, 1799, 1802, 320, 320, 320, 346, 346, 347, 51102, 51114, 51097, 780, 782, 782, 1320, 1320, 1320, 8643, 8641, 8644, 2678, 2676, 2676, 2628, 2629, 2628, 1904, 1905, 1904),
-                               DataQualityFlag = c("NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", "NF", "NF", "NF", "I", "I", "I", "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", NA, NA, NA, NA, NA, NA, "NF", "NF", "NF"),
-                               DataQualityFlagNote = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, "Site on salty playa", "Site on salty playa", "Site on salty playa", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-                               SpCondInstrument = c("YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1"),
-                               VisitType = c("Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Replicate", "Replicate", "Replicate", "Primary", "Primary", "Primary"),
-                               DPL = c("Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Provisional", "Provisional", "Provisional", "Provisional", "Provisional", "Provisional", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Provisional", "Provisional", "Provisional", "Accepted", "Accepted", "Accepted"),
-                               MonitoringStatus = c("Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled"))
+dummy.spcond <- tibble::tibble(Park = "GRBA",
+                           SiteShort = c(rep("S0001", 6), rep("S0002", 3)),
+                           SiteCode = c(rep("GRBA_L_S0001", 6), rep("GRBA_L_S0002", 3)),
+                           SiteName = c(rep("Lake 1", 6), rep("Lake 2", 3)),
+                           VisitDate = c(rep("2020-11-01", 3), rep("2020-11-02", 3), rep("2019-11-01", 3)),
+                           FieldSeason = c(rep("2021", 6), rep("2020", 3)),
+                           WQDataCollected = "Yes",
+                           MeasurementNum = c(1:3, 1:3, 1:2, 1),
+                           MeasurementDepth_m = c(0:2, 0:2, 0:1, 0),
+                           SpecificConductance_microS_per_cm = c(2000:2002, 2000:2002, 2000:2001, 2000),
+                           Flag = c(rep("I", 3), rep("C", 3), rep("W", 2), "I"),
+                           FlagNote = c(rep(NA, 3), rep("Broken instrument", 3), rep("Measurement did not stabilize", 2), "Bees"),
+                           SpCondInstrument = "MOJN YSI",
+                           VisitType = "Primary",
+                           DPL = c(rep("Accepted", 6), rep("Raw", 3)),
+                           MonitoringStatus = "Sampled")
 
-dummy.temp <- tibble::tibble(Park = c("DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "LAKE", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "PARA", "MOJA", "MOJA", "MOJA", "JOTR", "JOTR", "JOTR", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "DEVA", "MOJA", "MOJA", "MOJA"),
-                             SiteShort = c("S0001", "S0001", "S0001", "S0002", "S0002", "S0002", "S0003", "S0003", "S0003", "S0003", "S0003", "S0003", "S0004", "S0004", "S0004", "S0005", "S0005", "S0005", "S0005", "S0005", "S0005", "S0006", "S0006", "S0006", "S0007", "S0007", "S0007", "S0007", "S0007", "S0007", "S0008", "S0008", "S0008", "S0009", "S0009", "S0009", "S0010", "S0010", "S0010", "S0011", "S0011", "S0011", "S0012", "S0012", "S0012", "S0012", "S0012", "S0012", "S0099", "S0099", "S0099"),
-                             SiteCode = c("DEVA_S_S0001", "DEVA_S_S0001", "DEVA_S_S0001", "DEVA_S_S0002", "DEVA_S_S0002", "DEVA_S_S0002", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "DEVA_S_S0003", "LAKE_S_S0004", "LAKE_S_S0004", "LAKE_S_S0004", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "LAKE_S_S0005", "PARA_S_S0006", "PARA_S_S0006", "PARA_S_S0006", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "PARA_S_S0007", "MOJA_S_S0008", "MOJA_S_S0008", "MOJA_S_S0008", "JOTR_S_S0009", "JOTR_S_S0009", "JOTR_S_S0009", "DEVA_S_S0010", "DEVA_S_S0010", "DEVA_S_S0010", "DEVA_S_S0011", "DEVA_S_S0011", "DEVA_S_S0011", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "DEVA_S_S0012", "MOJA_S_S0099", "MOJA_S_S0099", "MOJA_S_S0099"),
-                             SiteName = c("Site 01", "Site 01", "Site 01", "Site 02", "Site 02", "Site 02", "Site 03", "Site 03", "Site 03", "Site 03", "Site 03", "Site 03", "Site 04", "Site 04", "Site 04", "Site 05", "Site 05", "Site 05", "Site 05", "Site 05", "Site 05", "Site 06", "Site 06", "Site 06", "Site 07", "Site 07", "Site 07", "Site 07", "Site 07", "Site 07", "Site 08", "Site 08", "Site 08", "Site 09", "Site 09", "Site 09", "Site 10", "Site 10", "Site 10", "Site 11", "Site 11", "Site 11", "Site 12", "Site 12", "Site 12", "Site 12", "Site 12", "Site 12", "Site 99", "Site 99", "Site 99"),
-                             VisitDate = c("2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-20", "2018-11-21", "2018-11-21", "2018-11-21", "2019-11-19", "2019-11-19", "2019-11-19", "2018-11-14", "2018-11-14", "2018-11-14", "2018-11-15", "2018-11-15", "2018-11-15", "2019-11-07", "2019-11-07", "2019-11-07", "2019-04-09", "2019-04-09", "2019-04-09", "2019-04-10", "2019-04-10", "2019-04-10", "2020-04-07", "2020-04-07", "2020-04-07", "2020-03-02", "2020-03-02", "2020-03-02", "2020-01-29", "2020-01-29", "2020-01-29", "2019-02-12", "2019-02-12", "2019-02-12", "2019-02-13", "2019-02-13", "2019-02-13", "2019-02-14", "2019-02-14", "2019-02-14", "2019-02-21", "2019-02-21", "2019-02-21", "2020-03-02", "2020-03-02", "2020-03-02"),
-                             FieldSeason = c("2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2019", "2020", "2020", "2020"),
-                             WQDataCollected = c("Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes"),
-                             MeasurementNum = c(1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3),
-                             MeasurementDepth_m = c(0.6,0.6,0.6,0.8,0.8,0.8,0.4,0.4,0.4,0.5,0.5,0.5,0.9,0.9,0.9,1.1,1.1,1.1,1.5,1.5,1.5,0.7,0.7,0.7,0.6,0.6,0.6,0.4,0.4,0.4,0.5,0.5,0.5,0.2,0.2,0.2,1.1,1.1,1.1,1.3,1.3,1.3,0.9,0.9,0.9,0.5,0.5,0.5,1.9,1.9,1.9),
-                             WaterTemperature_C = c(17.1, 17.2, 17.1, 8.90, 8.90, 8.89, 3.11, 3.13, 3.14, 6.23, 6.21, 6.24, 51.3, 51.3, 51.3, 18.4, 18.4, 18.4, 18.7, 18.8, 18.8, 14.6, 14.6, 14.6, 9.43, 9.41, 9.42, 10.8, 10.9, 10.9, 14.2, 14.2, 14.2, 12.1, 12.1, 12.1, 19.4, 19.4, 19.4, 13.8, 13.9, 13.9, 9.75, 9.75, 9.75, 9.81, 9.81, 9.81, 11.9, 11.9, 11.9),
-                             DataQualityFlag = c("NF", "NF", "NF", "NF", "NF", "NF", "I", "I", "I", NA, NA, NA, "I", "I", "I", NA, NA, NA, "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", "NF", NA, NA, NA, "NF", "NF", "NF", NA, NA, NA, NA, NA, NA, "NF", "NF", "NF"),
-                             DataQualityFlagNote = c(NA, NA, NA, NA, NA, NA, "had to break through ice", "had to break through ice", "had to break through ice", NA, NA, NA, "hot Site near river", "hot Site near river", "hot Site near river", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-                             TempInstrument = c("YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 2", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1", "YSI Multimeter 1"),
-                             VisitType = c("Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Replicate", "Replicate", "Replicate", "Primary", "Primary", "Primary"),
-                             DPL = c("Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Provisional", "Provisional", "Provisional", "Provisional", "Provisional", "Provisional", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Accepted", "Provisional", "Provisional", "Provisional", "Accepted", "Accepted", "Accepted"),
-                             MonitoringStatus = c("Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled"))
+dummy.temp <- tibble::tibble(Park = "GRBA",
+                               SiteShort = c(rep("S0001", 6), rep("S0002", 3)),
+                               SiteCode = c(rep("GRBA_L_S0001", 6), rep("GRBA_L_S0002", 3)),
+                               SiteName = c(rep("Lake 1", 6), rep("Lake 2", 3)),
+                               VisitDate = c(rep("2020-11-01", 3), rep("2020-11-02", 3), rep("2019-11-01", 3)),
+                               FieldSeason = c(rep("2021", 6), rep("2020", 3)),
+                               WQDataCollected = "Yes",
+                               MeasurementNum = c(1:3, 1:3, 1:2, 1),
+                               MeasurementDepth_m = c(0:2, 0:2, 0:1, 0),
+                               WaterTemperature_C = c(15:17, NA, NA, 15, 15:16, 15),
+                               Flag = c(rep("I", 3), rep("C", 3), rep("W", 2), "I"),
+                               FlagNote = c(rep(NA, 3), rep("Broken instrument", 3), rep("Measurement did not stabilize", 2), "Bees"),
+                               TempInstrument = "MOJN YSI",
+                               VisitType = "Primary",
+                               DPL = c(rep("Accepted", 6), rep("Raw", 3)),
+                               MonitoringStatus = "Sampled")
 
-dummy.visit <- tibble::tibble(Park = c("DEVA", "DEVA", "DEVA", "DEVA", "LAKE", "LAKE", "LAKE", "PARA", "PARA", "PARA", "MOJA", "JOTR", "DEVA", "DEVA", "DEVA", "DEVA", "MOJA"),
-                              Subunit = c("DEVA Unknown", "DEVA Unknown", "DEVA Unknown", "DEVA Unknown", "LAKE Unknown", "LAKE Unknown", "LAKE Unknown", "PARA Unknown",  "PARA Unknown", "PARA Unknown", "MOJA Unknown", "JOTR Unknown", "DEVA Unknown", "DEVA Unknown", "DEVA Unknown", "DEVA Unknown", "MOJA Unknown"),
-                              SiteShort = c("S0001", "S0002", "S0003", "S0003", "S0004", "S0005", "S0005", "S0006", "S0007", "S0007", "S0008", "S0009", "S0010", "S0011", "S0012", "S0012", "S0099"),
-                              SiteCode = c("DEVA_S_S0001", "DEVA_S_S0002", "DEVA_S_S0003", "DEVA_S_S0003", "LAKE_S_S0004", "LAKE_S_S0005", "LAKE_S_S0005", "PARA_S_S0006", "PARA_S_S0007", "PARA_S_S0007", "MOJA_S_S0008", "JOTR_S_S0009", "DEVA_S_S0010", "DEVA_S_S0011", "DEVA_S_S0012", "DEVA_S_S0012", "MOJA_S_S0099"),
-                              SiteName = c("Site 01", "Site 02", "Site 03", "Site 03", "Site 04", "Site 05", "Site 05", "Site 06", "Site 07", "Site 07", "Site 08", "Site 09", "Site 10", "Site 11", "Site 12", "Site 12", "Site 99"),
-                              VisitDate = c("2018-11-20", "2018-11-20", "2018-11-21", "2019-11-19", "2018-11-14", "2018-11-15", "2019-11-07", "2019-04-09", "2019-04-10", "2020-04-07", "2020-03-02", "2020-01-29", "2019-02-12", "2019-02-13", "2019-02-14", "2019-02-21", "2020-03-02"),
-                              FieldSeason = c("2019", "2019", "2019", "2020", "2019", "2019", "2020", "2019", "2019", "2020", "2020", "2020", "2019", "2019", "2019", "2019", "2020"),
-                              VisitType = c("Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Primary", "Replicate", "Primary"),
-                              MonitoringStatus = c("Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled", "Sampled"),
-                              SiteType = c("Lake", "Lake", "Stream", "Stream", "Lake", "Stream", "Stream", "Lake", "Stream", "Stream", "Stream", "Stream", "Lake", "Stream", "Stream", "Stream", "Lake"),
-                              IsLakeDry = c("F", "F", "NA", "NA", "F", "NA", "NA", "F", "NA", "NA", "NA", "NA", "F", "NA", "NA", "NA", "F"))
+dummy.streamwq <- tibble::tibble(Park = "GRBA",
+                                 SiteShort = c(rep("S0003", 3), "S0004"),
+                                 SiteCode = c(rep("GRBA_S_S0003", 3), "GRBA_S_S0004"),
+                                 SiteName = c(rep("Spring 3", 3), "Spring 4"),
+                                 FieldSeason = c(rep("2021", 3), "2020"),
+                                 VisitDate = c(rep("2020-11-03", 3), "2019-11-04"),
+                                 VisitType = "Primary",
+                                 DPL = "Accepted",
+                                 Notes = NA,
+                                 TransectSide = c("Center", "Left", "Right", "Not Applicable"),
+                                 pHInstrument = "MOJN YSI",
+                                 pH = c(7:9, 7),
+                                 pHFlag = "NF",
+                                 DOInstrument = "MOJN_YSI",
+                                 DissolvedOxygen_mg_per_L = c(8:10, 8),
+                                 DOFlag = "I",
+                                 SpCondInstrument = "MOJN_YSI",
+                                 SpecificConductance_microS_per_cm = c(1000:1002, 1000),
+                                 SpCondFlag = "NF",
+                                 TemperatureInstrument = "MOJN YSI",
+                                 WaterTemperature_C = c(20:22, 20),
+                                 TemperatureFlag = "NF",
+                                 FlagNote = "DO is weird")
+
+dummy.visit <- tibble::tibble(Park = "GRBA",
+                              Subunit = c(rep("Subunit 1", 6), rep("Subunit 2", 3)),
+                              SiteShort = c(rep("S0001", 6), rep("S0002", 3)),
+                              SiteCode = c(rep("GRBA_L_S0001", 6), rep("GRBA_L_S0002", 3)),
+                              SiteName = c(rep("Lake 1", 6), rep("Lake 2", 3)),
+                              VisitDate = c(rep("2020-11-01", 3), rep("2020-11-02", 3), rep("2019-11-01", 3)),
+                              FieldSeason = c(rep("2021", 6), rep("2020", 3)),
+                              VisitType = "Primary",
+                              MonitoringStatus = "Sampled",
+                              SiteType = "Lake",
+                              IsLakeDry = 0,
+                              SiteProtectedStatus = "Not Protected",
+                              CloudCover = "No Data",
+                              Precipitation = "No Data",
+                              Temperature = "No Data",
+                              WindSpeed = "No Data",
+                              Protocol = "STLK v1.0",
+                              DataStoreReferenceCode = "123000",
+                              Notes = "These are some notes",
+                              DataProcessingLevel = c(rep("Accepted", 6), rep("Raw", 3)))
 
 dir <- "temp-test-csv"
 dir.create(dir)
-readr::write_csv(dummy.waterquality, file.path(dir, "WaterQuality.csv"))
+readr::write_csv(dummy.do, file.path(dir, "WaterQualityDO.csv"))
+readr::write_csv(dummy.ph, file.path(dir, "WaterQualitypH.csv"))
+readr::write_csv(dummy.spcond, file.path(dir, "WaterQualitySpCond.csv"))
+readr::write_csv(dummy.temp, file.path(dir, "WaterQualityTemperature.csv"))
+readr::write_csv(dummy.streamwq, file.path(dir, "WQStreamXSection.csv"))
+readr::write_csv(dummy.visit, file.path(dir, "Visit.csv"))
+
+# test_that("Stream and lake wq median fxns output data frames with same column names", {
+#
+#
+# })
+
+# test_that("Lake wq median correctly handles diff. numbers of measurements", {
+#
+# })
+#
+# test_that("Lake wq median correctly handles NA values", {
+#
+# })
+#
+# test_that("Lake wq median filters by park and season", {
+#
+# })
+#
+# test_that("Stream wq median correctly handles diff. numbers of measurements", {
+#
+# })
+#
+# test_that("Stream wq median correctly handles NA values", {
+#
+# })
 
 
+# Remove temporary csv files
+unlink(dir, recursive = TRUE)
+test_that("Stream wq median filters by park and season", {
+
+})
