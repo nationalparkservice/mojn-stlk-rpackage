@@ -2,7 +2,7 @@
 % Please edit documentation in R/clarity-qc.R
 \name{qcSecchiDepthMissing}
 \alias{qcSecchiDepthMissing}
-\title{List clarity records where secchi disk is not on bottom but secchi depth is missing}
+\title{List clarity records where secchi disk is not on bottom but secchi depth measurement is missing}
 \usage{
 qcSecchiDepthMissing(
   conn,
@@ -30,7 +30,7 @@ qcSecchiDepthMissing(
 A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, IsLakeDry, SurfaceCalm, OnBottom, DepthToBottom_m, SecchiDepth_m, VisitType, DPL.
 }
 \description{
-List clarity records where secchi disk is not on bottom but secchi depth is missing
+List clarity records where secchi disk is not on bottom but secchi depth measurement is missing
 }
 \examples{
 \dontrun{
