@@ -47,7 +47,7 @@ LakeWqMedian <- function(conn, path.to.data, park, site, field.season, data.sour
     dplyr::left_join(dplyr::select(wq.visits, SiteType, Park, FieldSeason, SiteCode, VisitDate), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%
     dplyr::filter(MonitoringStatus == "Sampled") %>%
     dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m, Flag, FlagNote, DPL) %>%
-    dplyr::summarise(TemperatureMedian = median(WaterTemperature_C, na.rm = TRUE),
+    dplyr::summarise(TemperatureMedian_C = median(WaterTemperature_C, na.rm = TRUE),
                      TemperatureCount = sum(!is.na(WaterTemperature_C))) %>%
     dplyr::rename(TemperatureFlag = Flag) %>%
     dplyr::arrange(SiteCode, VisitDate)
@@ -56,7 +56,7 @@ LakeWqMedian <- function(conn, path.to.data, park, site, field.season, data.sour
     dplyr::left_join(dplyr::select(wq.visits, SiteType, Park, FieldSeason, SiteCode, VisitDate), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%
     dplyr::filter(MonitoringStatus == "Sampled") %>%
     dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m, Flag, FlagNote, DPL) %>%
-    dplyr::summarise(SpCondMedian = median(SpecificConductance_microS_per_cm, na.rm = TRUE),
+    dplyr::summarise(SpCondMedian_microS_per_cm = median(SpecificConductance_microS_per_cm, na.rm = TRUE),
                      SpCondCount = sum(!is.na(SpecificConductance_microS_per_cm))) %>%
     dplyr::rename(SpCondFlag = Flag) %>%
     dplyr::arrange(SiteCode, VisitDate)
@@ -74,7 +74,7 @@ LakeWqMedian <- function(conn, path.to.data, park, site, field.season, data.sour
     dplyr::left_join(dplyr::select(wq.visits, SiteType, Park, FieldSeason, SiteCode, VisitDate), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%
     dplyr::filter(MonitoringStatus == "Sampled") %>%
     dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, MeasurementDepth_m, Flag, FlagNote, DPL) %>%
-    dplyr::summarise(DOPercentMedian = median(DissolvedOxygen_percent), DOmgLMedian = median(DissolvedOxygen_mg_per_L),
+    dplyr::summarise(DOMedian_percent = median(DissolvedOxygen_percent), DOMedian_mg_per_L = median(DissolvedOxygen_mg_per_L),
                      DOPercentCount = sum(!is.na(DissolvedOxygen_percent)),
                      DOmgLCount = sum(!is.na(DissolvedOxygen_mg_per_L))) %>%
     dplyr::rename(DOFlag = Flag) %>%
@@ -109,13 +109,13 @@ StreamWqMedian <- function(conn, path.to.data, park, site, field.season, data.so
     dplyr::left_join(dplyr::select(wq.visits, SiteType, Park, FieldSeason, SiteCode, VisitDate, MonitoringStatus), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%
     dplyr::filter(MonitoringStatus == "Sampled") %>%
     dplyr::group_by(Park, FieldSeason, SiteCode, VisitDate, VisitType, SiteType, pHFlag, DOFlag, SpCondFlag, TemperatureFlag, FlagNote, DPL) %>%
-    dplyr::summarise(TemperatureMedian = median(WaterTemperature_C),
+    dplyr::summarise(TemperatureMedian_C = median(WaterTemperature_C),
                      TemperatureCount = sum(!is.na(WaterTemperature_C)),
                      pHMedian = median(pH),
                      pHCount = sum(!is.na(pH)),
-                     DOmgLMedian = median(DissolvedOxygen_mg_per_L),
+                     DOMedian_mg_per_L = median(DissolvedOxygen_mg_per_L),
                      DOmgLCount = sum(!is.na(DissolvedOxygen_mg_per_L)),
-                     SpCondMedian = median(SpecificConductance_microS_per_cm),
+                     SpCondMedian_microS_per_cm = median(SpecificConductance_microS_per_cm),
                      SpCondCount = sum(!is.na(SpecificConductance_microS_per_cm))) %>%
     dplyr::arrange(SiteCode, VisitDate)
 
