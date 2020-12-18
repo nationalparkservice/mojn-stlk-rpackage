@@ -237,6 +237,14 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
     filtered.data %<>% dplyr::mutate(FieldSeason = as.character(FieldSeason))
   }
 
+  if (!missing(field.season) & ("FieldSeason" %in% colnames(filtered.data)) & nrow(filtered.data) > 0) {
+    filtered.data %<>%
+      dplyr::filter(FieldSeason %in% field.season)
+    if (nrow(filtered.data) == 0) {
+      warning(paste0(data.name, ": Data are not available for one or more of the field seasons specified"))
+    }
+  }
+
   return(filtered.data)
 }
 
@@ -474,6 +482,6 @@ FormatPlot <- function(data, x.col, y.col, facet.col, n.col.facet = 2, sample.si
 #' @export
 #'
 expect_dataframe_equal <- function(result, expected, ignore_col_order = FALSE, ignore_row_order = TRUE, convert = FALSE) {
-  test_result <- dplyr::all_equal(result, expected, ignore_col_order = FALSE, ignore_row_order = TRUE, convert = FALSE)
+  test_result <- dplyr::all_equal(result, expected, ignore_col_order, ignore_row_order, convert)
   return(expect_true(test_result, label = test_result))
 }
