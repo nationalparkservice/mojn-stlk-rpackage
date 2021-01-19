@@ -117,7 +117,8 @@ StreamWqMedian <- function(conn, path.to.data, park, site, field.season, data.so
                      DOmgLCount = sum(!is.na(DissolvedOxygen_mg_per_L)),
                      SpCondMedian_microS_per_cm = median(SpecificConductance_microS_per_cm),
                      SpCondCount = sum(!is.na(SpecificConductance_microS_per_cm))) %>%
-    dplyr::arrange(SiteCode, VisitDate)
+    dplyr::arrange(SiteCode, VisitDate) %>%
+    dplyr::ungroup()
 
 
   return(stream_wq_med)
