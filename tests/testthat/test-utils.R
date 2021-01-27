@@ -10,3 +10,10 @@ test_that("GetSiteName retrieves the correct site name for the site code provide
 
   CloseDatabaseConnection(conn)
 })
+
+test_that("Names are unique across db col spec and Aquarius col spec", {
+  db <- names(GetColSpec())
+  aq <- names(GetAquariusColSpec())
+
+  expect_length(intersect(db, aq), 0)
+})

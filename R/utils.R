@@ -23,7 +23,13 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
     my.pool <- pool::dbPool(drv = drv, ...)
   }
 
-  return(my.pool)
+  #Connect to Aquarius
+  timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
+
+  conn <- list(db = my.pool,
+               aquarius = timeseries)
+
+  return(conn)
 }
 
 #' Close a connection to the Streams and Lakes Database
@@ -37,7 +43,8 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
 #' conn <- OpenDatabaseConnection()
 #' CloseDatabaseConnection(conn)
 CloseDatabaseConnection <- function(conn) {
-  pool::poolClose(conn)
+  pool::poolClose(conn$db)
+  conn$aquarius$disconnect()
 }
 
 #' Get column specifications
@@ -188,6 +195,42 @@ GetColSpec <- function() {
   return(col.spec)
 }
 
+#' Get column specifications for Aquarius data that have been written to csv.
+#'
+#' @return A list of column specifications for each csv of Aquarius data.
+#'
+#' @examples
+#' col.spec.aq <- GetAquariusColSpec()
+#'
+#' # Get the names of all Aquarius data tables:
+#' data.names <- names(GetAquariusColSpec())
+GetAquariusColSpec <- function() {
+  col.spec.aq <- list(
+    # TimeseriesDO = readr::cols(
+    #   DateTime = readr::col_datetime(),
+    #   DissolvedOxygen_mg_per_L = readr::col_double(),
+    #   .default = readr::col_character()
+    # ),
+    # TimeseriespH = readr::cols(
+    #   DateTime = readr::col_datetime(),
+    #   pH = readr::col_double(),
+    #   .default = readr::col_character()
+    # ),
+    # TimeseriesSpCond = readr::cols(
+    #   DateTime = readr::col_datetime(),
+    #   SpecificConductance_microS_per_cm = readr::col_double(),
+    #   .default = readr::col_character()
+    # ),
+    # TimeseriesTemperature = readr::cols(
+    #   DateTime = readr::col_datetime(),
+    #   WaterTemperature_C = readr::col_double(),
+    #   .default = readr::col_character()
+    # )
+  )
+
+  return(col.spec.aq)
+}
+
 #' Read Streams and Lakes data from database or .csv
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
@@ -204,16 +247,21 @@ GetColSpec <- function() {
 #'
 ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data.source = "database", data.name) {
   col.spec <- GetColSpec()
+  col.spec.aq <- GetAquariusColSpec()
+  col.spec.all <- c(col.spec, col.spec.aq)
 
   if (!(data.source %in% c("database", "local"))) {
     stop("Please choose either 'database' or 'local' for data.source")
-  } else if (data.source == "database") {
-    filtered.data <- dplyr::tbl(conn, dbplyr::in_schema("analysis", data.name)) %>%
+  } else if (data.source == "database" & data.name %in% names(col.spec)) {
+    filtered.data <- dplyr::tbl(conn$db, dbplyr::in_schema("analysis", data.name)) %>%
       dplyr::collect() %>%
       dplyr::mutate_if(is.character, trimws) %>%
       dplyr::mutate_if(is.character, dplyr::na_if, "")
+  } else if (data.source == "database" & data.name %in% names(col.spec.aq)) {
+    ## Read Aquarius data
+    #filtered.data <- ReadAquarius(conn, data.name)
   } else if (data.source == "local") {
-    filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec[[data.name]])
+    filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec.all[[data.name]])
   }
 
   if (!missing(park)) {
@@ -266,8 +314,10 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
 #' }
 SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite = FALSE) {
   analysis.views <- names(GetColSpec())
+  aq.data <- names(GetAquariusColSpec())
   dest.folder <- file.path(dirname(dest.folder), basename(dest.folder)) # Get destination directory in a consistent format. Seems like there should be a better way to do this.
-  file.paths <- file.path(dest.folder, paste0(analysis.views, ".csv"))
+  file.paths <- c(file.path(dest.folder, paste0(analysis.views, ".csv")),
+                  file.path(dest.folder, paste0(aq.data, ".csv")))
 
   # Validate inputs
   if (!dir.exists(dest.folder)) {
@@ -284,9 +334,15 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
 
   # Write each analysis view in the database to csv
   for (view.name in analysis.views) {
-    df <- dplyr::tbl(conn, dbplyr::in_schema("analysis", view.name)) %>%
+    df <- dplyr::tbl(conn$db, dbplyr::in_schema("analysis", view.name)) %>%
       dplyr::collect()
     readr::write_csv(df, file.path(dest.folder, paste0(view.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
+  }
+
+  # Write each Aquarius data table to csv
+  for (aq.name in aq.data) {
+    # df <- ReadAquarius(conn, aq.name)
+    # readr::write_csv(df, file.path(dest.folder, paste0(aq.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
   }
 }
 
@@ -304,7 +360,10 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
 #'
 GetRawData <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   data.dump <- list()
-  data.names <- names(GetColSpec())
+  db.names <- names(GetColSpec())
+  aq.names <- names(GetAquariusColSpec())
+
+  data.names <- c(db.names, aq.names)
 
   for (data.name in data.names) {
     data.dump[[data.name]] <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name)
