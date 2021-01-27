@@ -1,5 +1,5 @@
 context("Utility functions")
-skip_if_not(dir.exists('M:/MONITORING/StreamsLakes/Data/Database/ConnectFromR/stlk-database-conn.csv'), message = "Skipped - no VPN connection")
+skip_if_not(file.exists('M:/MONITORING/StreamsLakes/Data/Database/ConnectFromR/stlk-database-conn.csv'), message = "Skipped - no VPN connection")
 
 test_that("GetSiteName retrieves the correct site name for the site code provided", {
   conn <- OpenDatabaseConnection()

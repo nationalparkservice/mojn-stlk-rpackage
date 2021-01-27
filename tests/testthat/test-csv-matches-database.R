@@ -1,5 +1,5 @@
 context("Reading from database and csv")
-skip_if_not(dir.exists('M:/MONITORING/StreamsLakes/Data/Database/ConnectFromR/stlk-database-conn.csv'), message = "Skipped - no VPN connection")
+skip_if_not(file.exists('M:/MONITORING/StreamsLakes/Data/Database/ConnectFromR/stlk-database-conn.csv'), message = "Skipped - no VPN connection")
 
 # Write temporary csv files
 conn <- OpenDatabaseConnection()
