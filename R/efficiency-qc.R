@@ -18,43 +18,158 @@ source("timeseries_client.R")
 # Connects to https://aquarius.nps.gov/aquarius as "aqreadonly"
 timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
 
-# Import continuous water quality data from Aquarius for Baker Creek at the park boundary
-bakr1.wt.imp <- timeseries$getTimeSeriesData("Water Temp.Cumulative@GRBA_S_BAKR1")
-bakr1.ph.imp <- timeseries$getTimeSeriesData("pH.Cumulative@GRBA_S_BAKR1")
-bakr1.sc.imp <- timeseries$getTimeSeriesData("Sp Cond.Cumulative@GRBA_S_BAKR1")
-bakr1.do.imp <- timeseries$getTimeSeriesData("Dis Oxygen Sat.Cumulative@GRBA_S_BAKR1")
+# Designate permanent stream gaging locations with water quality sondes.
 
-# Import continuous water quality data from Aquarius for Lehman Creek at the park boundary
-lhmn1.wt.imp <- timeseries$getTimeSeriesData("Water Temp.Cumulative@GRBA_S_LHMN1")
-lhmn1.ph.imp <- timeseries$getTimeSeriesData("pH.Cumulative@GRBA_S_LHMN1")
-lhmn1.sc.imp <- timeseries$getTimeSeriesData("Sp Cond.Cumulative@GRBA_S_LHMN1")
-lhmn1.do.imp <- timeseries$getTimeSeriesData("Dis Oxygen Sat.Cumulative@GRBA_S_LHMN1")
+sites <- c("GRBA_S_BAKR1", "GRBA_S_LHMN1", "GRBA_S_SNKE1", "GRBA_S_SNKE3", "GRBA_S_STRW1")
 
-# Import continuous water quality data from Aquarius for Strawberry Creek at the park boundary
-strw1.wt.imp <- timeseries$getTimeSeriesData("Water Temp.Cumulative@GRBA_S_STRW1")
-strw1.ph.imp <- timeseries$getTimeSeriesData("pH.Cumulative@GRBA_S_STRW1")
-strw1.sc.imp <- timeseries$getTimeSeriesData("Sp Cond.Cumulative@GRBA_S_STRW1")
-strw1.do.imp <- timeseries$getTimeSeriesData("Dis Oxygen Sat.Cumulative@GRBA_S_STRW1")
+# Create tibble for continuous water temperature data. Import and tidy data from Aquarius.
 
-# Import continuous water quality data from Aquarius for Snake Creek (Lower) at the park boundary
-snke1.wt.imp <- timeseries$getTimeSeriesData("Water Temp.Cumulative@GRBA_S_SNKE1")
-snke1.ph.imp <- timeseries$getTimeSeriesData("pH.Cumulative@GRBA_S_SNKE1")
-snke1.sc.imp <- timeseries$getTimeSeriesData("Sp Cond.Cumulative@GRBA_S_SNKE1")
-snke1.do.imp <- timeseries$getTimeSeriesData("Dis Oxygen Sat.Cumulative@GRBA_S_SNKE1")
+wt.all.data <- tibble()
 
-# Import continuous water quality data from Aquarius for Snake Creek (Upper) above the pipeline
-snke3.wt.imp <- timeseries$getTimeSeriesData("Water Temp.Cumulative@GRBA_S_SNKE3")
-snke3.ph.imp <- timeseries$getTimeSeriesData("pH.Cumulative@GRBA_S_SNKE3")
-snke3.sc.imp <- timeseries$getTimeSeriesData("Sp Cond.Cumulative@GRBA_S_SNKE3")
-snke3.do.imp <- timeseries$getTimeSeriesData("Dis Oxygen Sat.Cumulative@GRBA_S_SNKE3")
+for (location in sites) {
+      wt.imp <- timeseries$getTimeSeriesData(paste0("Water Temp.Cumulative@", location))
+
+      wt.data <- wt.imp$Points
+
+      wt.data %<>%
+            dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
+            dplyr::rename(WaterTemperature_C = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
+            dplyr::filter(Approval == "Approved") %>%
+            dplyr::mutate(SiteCode = location) %>%
+            dplyr::mutate(Park = "GRBA", SiteType = "Stream")
+
+      wt.data$DateTime <- lubridate::ymd_hms(wt.data$DateTime, tz = "America/Los_Angeles")
+
+      wt.data %<>%
+            dplyr::mutate(FieldSeason = ifelse(lubridate::month(DateTime) < 10,
+                                               lubridate::year(DateTime),
+                                               lubridate::year(DateTime) + 1)) %>%
+            dplyr::select(Park,
+                          SiteType,
+                          SiteCode,
+                          FieldSeason,
+                          DateTime,
+                          WaterTemperature_C,
+                          Grade,
+                          Approval)
+
+      wt.all.data <- rbind(wt.all.data, wt.data) %>% tibble::as_tibble()
+}
+
+# Create tibble for continuous pH data. Import and tidy data from Aquarius.
+
+ph.all.data <- tibble()
+
+for (location in sites) {
+      ph.imp <- timeseries$getTimeSeriesData(paste0("pH.Cumulative@", location))
+
+      ph.data <- ph.imp$Points
+
+      ph.data %<>%
+            dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
+            dplyr::rename(pH = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
+            dplyr::filter(Approval == "Approved") %>%
+            dplyr::mutate(SiteCode = location) %>%
+            dplyr::mutate(Park = "GRBA", SiteType = "Stream")
+
+      ph.data$DateTime <- lubridate::ymd_hms(ph.data$DateTime, tz = "America/Los_Angeles")
+
+      ph.data %<>%
+            dplyr::mutate(FieldSeason = ifelse(lubridate::month(DateTime) < 10,
+                                               lubridate::year(DateTime),
+                                               lubridate::year(DateTime) + 1)) %>%
+            dplyr::select(Park,
+                          SiteType,
+                          SiteCode,
+                          FieldSeason,
+                          DateTime,
+                          pH,
+                          Grade,
+                          Approval)
+
+      ph.all.data <- rbind(ph.all.data, ph.data) %>% tibble::as_tibble()
+}
+
+# Create tibble for continuous specific conductance data. Import and tidy data from Aquarius.
+
+sc.all.data <- tibble()
+
+for (location in sites) {
+      sc.imp <- timeseries$getTimeSeriesData(paste0("Sp Cond.Cumulative@", location))
+
+      sc.data <- sc.imp$Points
+
+      sc.data %<>%
+            dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
+            dplyr::rename(SpecificConductance_microS_per_cm = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
+            dplyr::filter(Approval == "Approved") %>%
+            dplyr::mutate(SiteCode = location) %>%
+            dplyr::mutate(Park = "GRBA", SiteType = "Stream")
+
+      sc.data$SpecificConductance_microS_per_cm = sc.data$SpecificConductance_microS_per_cm*1000
+      sc.data$DateTime <- lubridate::ymd_hms(sc.data$DateTime, tz = "America/Los_Angeles")
+
+      sc.data %<>%
+            dplyr::mutate(FieldSeason = ifelse(lubridate::month(DateTime) < 10,
+                                         lubridate::year(DateTime),
+                                         lubridate::year(DateTime) + 1)) %>%
+            dplyr::select(Park,
+                          SiteType,
+                          SiteCode,
+                          FieldSeason,
+                          DateTime,
+                          SpecificConductance_microS_per_cm,
+                          Grade,
+                          Approval)
+
+        sc.all.data <- rbind(sc.all.data, sc.data) %>% tibble::as_tibble()
+    }
+
+# Create tibble for continuous dissolved oxygen data. Import and tidy data from Aquarius.
+
+do.all.data <- tibble()
+
+for (location in sites) {
+      do.percent.imp <- timeseries$getTimeSeriesData(paste0("Dis Oxygen Sat@", location))
+      do.mgl.imp <- timeseries$getTimeSeriesData(paste0("O2 (Dis)@", location))
+
+      do.percent.data <- do.percent.data$Points
+      do.mgl.data <- do.mgl.data$Points
+
+      do.percent.data %<>%
+            dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
+            dplyr::rename(DissolvedOxygen_percent = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
+            dplyr::filter(Approval == "Approved") %>%
+            dplyr::mutate(SiteCode = location) %>%
+            dplyr::mutate(Park = "GRBA", SiteType = "Stream")
+
+      do.percent.data$DateTime <- lubridate::ymd_hms(do.percent.data$DateTime, tz = "America/Los_Angeles")
+
+      do.percent.data %<>%
+            dplyr::mutate(FieldSeason = ifelse(lubridate::month(DateTime) < 10,
+                                               lubridate::year(DateTime),
+                                               lubridate::year(DateTime) + 1)) %>%
+            dplyr::select(Park,
+                          SiteType,
+                          SiteCode,
+                          FieldSeason,
+                          DateTime,
+                          DissolvedOxygen_percent,
+                          DissolvedOxygen_mgL,
+                          Grade,
+                          Approval)
+
+  do.all.data <- rbind(do.all.data, do.data) %>% tibble::as_tibble()
+}
+
 
 # Filter relevant data, specify column names, add metadata, and standardize time zones for Baker Creek parameter data
 bakr1.wt.data <- bakr1.wt.imp$Points
 bakr1.wt.data %<>%
       dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
-      dplyr::rename(Value = NumericValue1, Grade = GradeName1, Approval = ApprovalName1) %>%
+      dplyr::rename(WaterTemperature_C = NumericValue1, Grade = GradeName1, Approval = ApprovalName1) %>%
       dplyr::filter(Approval == "Approved") %>%
-      dplyr::mutate(Parameter = "WaterTemperature_C")
+      dplyr::mutate(SiteCode = "GRBA_S_BAKR1")
 
 bakr1.wt.data$Timestamp <- lubridate::ymd_hms(bakr1.wt.data$Timestamp, tz = "America/Los_Angeles")
 
@@ -104,6 +219,7 @@ bakr1.wq.data <- rbind(bakr1.wt.data, bakr1.ph.data, bakr1.sc.data, bakr1.do.dat
 # Calculate the mean (for water temperature, specific conductance, and dissolved oxygen)
 #     and median (for pH) values for each day based on hourly data.
 # Determine the most frequent data grade level for each day based on hourly data.
+# Include only those dates with greater than 80% completeness (greater than 19 hourly values).
 bakr1.wq.daily <- bakr1.wq.data %>%
       dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
       dplyr::group_by(Park,
@@ -112,104 +228,86 @@ bakr1.wq.daily <- bakr1.wq.data %>%
                       FieldSeason,
                       Date,
                       Parameter) %>%
-      dplyr::summarise(DailyValue = mean(Value, na.rm = TRUE),
-                       DailyGrade = statip::mfv1(Grade, na_rm = TRUE)) %>%
+      dplyr::summarise(DailyValue = case_when(Parameter == "pH" & sum(!is.na(Value)) > 19 ~ median(Value, na.rm = TRUE),
+                                              !Parameter == "pH" & sum(!is.na(Value)) > 19 ~ mean(Value, na.rm = TRUE),
+                                              TRUE ~ as.double(NA_integer_)),
+                      DailyGrade = case_when(!is.na(DailyValue) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
+      unique() %>%
       dplyr::arrange(Park, SiteCode, Parameter, Date)
 
-bakr1.wq.daily <- bakr1.wq.data %>%
-  dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
-  dplyr::group_by(Park,
-                  SiteCode,
-                  SiteType,
-                  FieldSeason,
-                  Date,
-                  Parameter) %>%
-      dplyr::summarise(DailyValue = ifelse(Parameter == "pH",
-                                           median(Value, na.rm = TRUE),
-                                           mean(Value, na.rm = TRUE)),
-                       DailyGrade = statip::mfv1(Grade, na_rm = TRUE)) %>%
-      dplyr::arrange(Park, SiteCode, Parameter, Date)
-
-
-
-# OLD CODE CHUNKS
-      dplyr::summarise(DailyValue = ifelse(Parameter %in% c("WaterTemperature_C", "SpecificConductance_microS_per_cm", "DissolvedOxygen_percent"),
-                                           mean(Value, na.rm = TRUE),
-                                           median(Value, na.rm = TRUE)),
-                       DailyGrade = ifelse(is.nan(statip::mfv1(Grade, na_rm = TRUE)),
-                                           NA,
-                                           statip::mfv1(Grade, na_rm = TRUE)))
-
-# If a day has at least 80% completeness (>19 of 24 possible events recorded),
-        # calculate the mean or median value and determine the most frequent data grade level for that day.
-# Otherwise, return NA.
-bak1.wq.daily <- bak1.wq.data %>%
-      dplyr::mutate(Date = as.Date(Timestamp, format = "%Y-%m-%d")) %>%
-      dplyr::group_by(Date) %>%
-      dplyr::summarise(wt.num.day = ifelse(count>19, mean(wt.num, na.rm = TRUE), NA),
-                       wt.grade.day = ifelse(count>19, max(wt.grade, na.rm = TRUE), NA),
-                       ph.num.day = ifelse(count>19, median(ph.num, na.rm = TRUE), NA))
-
-# Calculate the number of days of data for each parameter for each year.
-# Calculate the percentage of days with data for each parameter for each year.
+# Calculate the number of days of data for each parameter for each year
+#       between the index period of July 1 to September 15 (77 days).
+# Calculate the percentage of days with data for each parameter for each year
+#       between the index period of July 1 to September 15 (77 days).
 bakr1.wq.comp <- bakr1.wq.daily %>%
       dplyr::group_by(Park,
                       SiteCode,
                       SiteType,
                       FieldSeason,
                       Parameter) %>%
-      dplyr::summarise(Count = sum(!is.na(DailyValue)),
+      dplyr::filter
+      dplyr::summarise(CompletedDays = sum(!is.na(DailyValue)),
                        StartDate = min(Date),
                        EndDate = max(Date)) %>%
-      dplyr::mutate(Percent = Count/_____________)*100,
-                    ph.pct.yr = ph.ct.yr/pmax(wt.ct.yr, ph.ct.yr, sc.ct.yr, do.ct.yr)*100,
-                    sc.pct.yr = sc.ct.yr/pmax(wt.ct.yr, ph.ct.yr, sc.ct.yr, do.ct.yr)*100,
-                    do.pct.yr = do.ct.yr/pmax(wt.ct.yr, ph.ct.yr, sc.ct.yr, do.ct.yr)*100) %>%
-      dplyr::select(Year,
-                    date.start,
-                    date.end,
-                    wt.ct.yr,
-                    wt.pct.yr,
-                    ph.ct.yr,
-                    ph.pct.yr,
-                    sc.ct.yr,
-                    sc.pct.yr,
-                    do.ct.yr,
-                    do.pct.yr)
-
-test <- bakr1.wq.comp %>%
-        dplyr::mutate(Days = lubridate::time_length(interval(StartDate, EndDate), "days"))
+      dplyr::mutate(PossibleDays = lubridate::time_length(interval(StartDate, EndDate), "days") + 1,
+                    PercentCompleteness = CompletedDays/PossibleDays*100) %>%
+      dplyr::select(Park,
+                    SiteCode,
+                    SiteType,
+                    FieldSeason,
+                    Parameter,
+                    StartDate,
+                    EndDate,
+                    CompletedDays,
+                    PossibleDays,
+                    PercentCompleteness)
+      dplyr::arrange(Park, SiteCode, Parameter)
 
 # Calculate the percentage of data rated at each grade level for each year.
+# MAKE SKINNY. GIVE GRADE ITS OWN COLUMN.
 bakr1.wq.grds <- bakr1.wq.daily %>%
-      dplyr::mutate(Year = year(Date)) %>%
-      dplyr::group_by(Year) %>%
-      dplyr::summarise(excellent = sum(wt.grade.day == "Excellent" | wt.grade.day == "Est. Excellent"),
-                       good = sum(wt.grade.day == "Good" | wt.grade.day == "Est. Good"),
-                       fair = sum(wt.grade.day == "Fair" | wt.grade.day == "Est. Fair"),
-                       poor = sum(wt.grade.day == "Poor" | wt.grade.day == "Est. Poor")) %>%
-      dplyr::mutate(excellent.pct = excellent/rowSums(select(., excellent, good, fair, poor))*100,
-                    good.pct = good/rowSums(select(., excellent, good, fair, poor))*100,
-                    fair.pct = fair/rowSums(select(., excellent, good, fair, poor))*100,
-                    poor.pct = poor/rowSums(select(., excellent, good, fair, poor))*100) %>%
-      dplyr::select(Year,
-                    excellent.pct,
-                    good.pct,
-                    fair.pct,
-                    poor.pct) %>%
-      dplyr::rename(Year = Year,
-                    Excellent_or_Est_Percent = excellent.pct,
-                    Good_or_Est_Percent = good.pct,
-                    Fair_or_Est_Percent = fair.pct,
-                    Poor_or_Est_Percent = poor.pct)
+      dplyr::group_by(Park,
+                  SiteCode,
+                  SiteType,
+                  FieldSeason,
+                  Parameter) %>%
+      dplyr::summarise(DaysExcellent = sum(DailyGrade %in% c("Excellent", "Est. Excellent")),
+                       DaysGood = sum(DailyGrade %in% c("Good", "Est. Good")),
+                       DaysFair = sum(DailyGrade %in% c("Fair", "Est. Fair")),
+                       DaysPoor = sum(DailyGrade %in% c("Poor", "Est. Poor"))) %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(TotalDays = sum(c_across(where(is.integer)))) %>%
+      dplyr::mutate(PercentExcellent = DaysExcellent/TotalDays*100,
+                    PercentGood = DaysGood/TotalDays*100,
+                    PercentFair = DaysFair/TotalDays*100,
+                    PercentPoor = DaysPoor/TotalDays*100) %>%
+      dplyr::select(Park,
+                    SiteCode,
+                    SiteType,
+                    FieldSeason,
+                    Parameter,
+                    DaysExcellent,
+                    PercentExcellent,
+                    DaysGood,
+                    PercentGood,
+                    DaysFair,
+                    PercentFair,
+                    DaysPoor,
+                    PercentPoor) %>%
+      dplyr::arrange(Park, SiteCode, Parameter)
 
 # Import continuous discharge data from Aquarius
 
 #
-bak1.wq.plot <- bak1.wq.daily %>%
+bakr1.wq.plot <- bakr1.wq.daily %>%
       complete(Date = seq.Date(min(Date), max(Date), by = "day")) %>%
+      filter(Parameter == "WaterTemperature_C")
 
-ggplot(bak1.wq.plot) +
-  geom_line(aes(x = Date, y = ph.num.day))
+ggplot(bakr1.wq.plot) +
+  geom_line(aes(x = Date, y = DailyValue))
 
+bakr1.wq.plot2 <- bakr1.wq.grds %>%
+      filter(Parameter == "pH")
 
+ggplot(bakr1.wq.plot2) +
+  geom_bar(aes(x = Date, y = is.numeric))
