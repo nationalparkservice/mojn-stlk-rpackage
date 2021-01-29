@@ -36,5 +36,5 @@ A tibble of filtered data.
 Read Streams and Lakes data from database or .csv
 }
 \details{
-\code{data.name} options are: Site, Visit
+\code{data.name} options are: Site, Visit, BMI, Channel, Chemistry, Clarity, WaterQualityDO, WaterQualitypH, WaterQualitySpCond, WaterQualityTemperature, WQStreamXSection, TimeseriesDO, TimeseriesDOSat, TimeseriespH, TimeseriesSpCond, TimeseriesTemperature
 }
