@@ -7,7 +7,8 @@ dir <- "temp_test-csv"
 SaveDataToCsv(conn, dir, create.folders = TRUE, overwrite = TRUE)
 CloseDatabaseConnection(conn)
 
-data.names <- names(GetColSpec())
+data.names <- c(names(GetColSpec()),
+                names(GetAquariusColSpec()))
 
 for (d.name in data.names) {
   test_that(paste0(d.name, ".csv matches data read from database"), {

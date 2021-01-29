@@ -206,29 +206,87 @@ GetColSpec <- function() {
 #' data.names <- names(GetAquariusColSpec())
 GetAquariusColSpec <- function() {
   col.spec.aq <- list(
-    # TimeseriesDO = readr::cols(
-    #   DateTime = readr::col_datetime(),
-    #   DissolvedOxygen_mg_per_L = readr::col_double(),
-    #   .default = readr::col_character()
-    # ),
-    # TimeseriespH = readr::cols(
-    #   DateTime = readr::col_datetime(),
-    #   pH = readr::col_double(),
-    #   .default = readr::col_character()
-    # ),
-    # TimeseriesSpCond = readr::cols(
-    #   DateTime = readr::col_datetime(),
-    #   SpecificConductance_microS_per_cm = readr::col_double(),
-    #   .default = readr::col_character()
-    # ),
-    # TimeseriesTemperature = readr::cols(
-    #   DateTime = readr::col_datetime(),
-    #   WaterTemperature_C = readr::col_double(),
-    #   .default = readr::col_character()
-    # )
+    TimeseriesDO = readr::cols(
+      DateTime = readr::col_datetime(),
+      DissolvedOxygen_mg_per_L = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    TimeseriesDOSat = readr::cols(
+      DateTime = readr::col_datetime(),
+      DissolvedOxygen_percent = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    TimeseriespH = readr::cols(
+      DateTime = readr::col_datetime(),
+      pH = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    TimeseriesSpCond = readr::cols(
+      DateTime = readr::col_datetime(),
+      SpecificConductance_microS_per_cm = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    TimeseriesTemperature = readr::cols(
+      DateTime = readr::col_datetime(),
+      WaterTemperature_C = readr::col_double(),
+      .default = readr::col_character()
+    )
   )
 
   return(col.spec.aq)
+}
+
+#' Read Streams and Lakes data from Aquarius
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param data.name The name of the data table. E.g. "TimeseriesDO". See details for full list of data name options.
+#'
+#' @return A tibble of Aquarius data, wrangled and formatted.
+#'
+#' @details \code{data.name} options are: TimeseriesDO, TimeseriesDOSat, TimeseriespH, TimeseriesSpCond, TimeseriesTemperature
+#'
+ReadAquarius <- function(conn, data.name) {
+  timeseries <- conn$aquarius
+  aq_data <- tibble::tibble()
+  sites <- c("GRBA_S_BAKR1", "GRBA_S_LHMN1", "GRBA_S_SNKE1", "GRBA_S_SNKE3", "GRBA_S_STRW1")
+  identifiers <- tibble::tibble(data_name = c("TimeseriesDO", "TimeseriesDOSat", "TimeseriespH", "TimeseriesSpCond", "TimeseriesTemperature"),
+                                identifier = c("O2 (Dis).Cumulative@", "Dis Oxygen Sat.Cumulative@", "pH.Cumulative@", "Sp Cond.Cumulative@", "Water Temp.Cumulative@"),
+                                col_name = c("DissolvedOxygen_mg_per_L", "DissolvedOxygen_percent", "pH", "SpecificConductance_microS_per_cm", "WaterTemperature_C"))
+
+  aq_identifier <- identifiers[identifiers$data_name == data.name, ]$identifier
+  aq_col_name <- identifiers[identifiers$data_name == data.name, ]$col_name
+
+  for (location in sites) {
+    wt.imp <- timeseries$getTimeSeriesData(paste0(aq_identifier, location))
+
+    wt.data <- wt.imp$Points
+
+    wt.data %<>%
+      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
+      dplyr::rename(!!aq_col_name := NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
+      dplyr::filter(Approval == "Approved") %>%
+      dplyr::mutate(SiteCode = location) %>%
+      dplyr::mutate(Park = "GRBA", SiteType = "Stream")
+
+    wt.data$DateTime <- lubridate::ymd_hms(wt.data$DateTime, tz = "America/Los_Angeles", quiet = TRUE)
+
+    wt.data %<>%
+      dplyr::mutate(FieldSeason = ifelse(lubridate::month(DateTime) < 10,
+                                         lubridate::year(DateTime),
+                                         lubridate::year(DateTime) + 1)) %>%
+      dplyr::select(Park,
+                    SiteType,
+                    SiteCode,
+                    FieldSeason,
+                    DateTime,
+                    !!aq_col_name,
+                    Grade,
+                    Approval)
+
+    aq_data <- rbind(aq_data, wt.data) %>% tibble::as_tibble()
+  }
+
+  return(aq_data)
 }
 
 #' Read Streams and Lakes data from database or .csv
@@ -243,7 +301,7 @@ GetAquariusColSpec <- function() {
 #'
 #' @return A tibble of filtered data.
 #'
-#' @details \code{data.name} options are: Site, Visit
+#' @details \code{data.name} options are: Site, Visit, BMI, Channel, Chemistry, Clarity, WaterQualityDO, WaterQualitypH, WaterQualitySpCond, WaterQualityTemperature, WQStreamXSection
 #'
 ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data.source = "database", data.name) {
   col.spec <- GetColSpec()
@@ -259,7 +317,7 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
       dplyr::mutate_if(is.character, dplyr::na_if, "")
   } else if (data.source == "database" & data.name %in% names(col.spec.aq)) {
     ## Read Aquarius data
-    #filtered.data <- ReadAquarius(conn, data.name)
+    filtered.data <- ReadAquarius(conn, data.name)
   } else if (data.source == "local") {
     filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec.all[[data.name]])
   }
@@ -341,8 +399,8 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
 
   # Write each Aquarius data table to csv
   for (aq.name in aq.data) {
-    # df <- ReadAquarius(conn, aq.name)
-    # readr::write_csv(df, file.path(dest.folder, paste0(aq.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
+    df <- ReadAquarius(conn, aq.name)
+    readr::write_csv(df, file.path(dest.folder, paste0(aq.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
   }
 }
 
