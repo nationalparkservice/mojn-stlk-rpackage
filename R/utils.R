@@ -207,27 +207,27 @@ GetColSpec <- function() {
 GetAquariusColSpec <- function() {
   col.spec.aq <- list(
     TimeseriesDO = readr::cols(
-      DateTime = readr::col_datetime(),
+      DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
       DissolvedOxygen_mg_per_L = readr::col_double(),
       .default = readr::col_character()
     ),
     TimeseriesDOSat = readr::cols(
-      DateTime = readr::col_datetime(),
+      DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
       DissolvedOxygen_percent = readr::col_double(),
       .default = readr::col_character()
     ),
     TimeseriespH = readr::cols(
-      DateTime = readr::col_datetime(),
+      DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
       pH = readr::col_double(),
       .default = readr::col_character()
     ),
     TimeseriesSpCond = readr::cols(
-      DateTime = readr::col_datetime(),
+      DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
       SpecificConductance_microS_per_cm = readr::col_double(),
       .default = readr::col_character()
     ),
     TimeseriesTemperature = readr::cols(
-      DateTime = readr::col_datetime(),
+      DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
       WaterTemperature_C = readr::col_double(),
       .default = readr::col_character()
     )
@@ -257,20 +257,20 @@ ReadAquarius <- function(conn, data.name) {
   aq_col_name <- identifiers[identifiers$data_name == data.name, ]$col_name
 
   for (location in sites) {
-    wt.imp <- timeseries$getTimeSeriesData(paste0(aq_identifier, location))
+    site.imp <- timeseries$getTimeSeriesData(paste0(aq_identifier, location))
 
-    wt.data <- wt.imp$Points
+    site.data <- site.imp$Points
 
-    wt.data %<>%
+    site.data %<>%
       dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
       dplyr::rename(!!aq_col_name := NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
       dplyr::filter(Approval == "Approved") %>%
       dplyr::mutate(SiteCode = location) %>%
       dplyr::mutate(Park = "GRBA", SiteType = "Stream")
 
-    wt.data$DateTime <- lubridate::ymd_hms(wt.data$DateTime, tz = "America/Los_Angeles", quiet = TRUE)
+    site.data$DateTime <- lubridate::ymd_hms(site.data$DateTime, tz = "America/Los_Angeles", quiet = TRUE)
 
-    wt.data %<>%
+    site.data %<>%
       dplyr::mutate(FieldSeason = ifelse(lubridate::month(DateTime) < 10,
                                          lubridate::year(DateTime),
                                          lubridate::year(DateTime) + 1)) %>%
@@ -283,7 +283,8 @@ ReadAquarius <- function(conn, data.name) {
                     Grade,
                     Approval)
 
-    aq_data <- rbind(aq_data, wt.data) %>% tibble::as_tibble()
+    aq_data <- rbind(aq_data, site.data) %>%
+      tibble::as_tibble()
   }
 
   return(aq_data)
@@ -310,7 +311,9 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
 
   if (!(data.source %in% c("database", "local"))) {
     stop("Please choose either 'database' or 'local' for data.source")
-  } else if (data.source == "database" & data.name %in% names(col.spec)) {
+  }
+
+  if (data.source == "database" & data.name %in% names(col.spec)) {
     filtered.data <- dplyr::tbl(conn$db, dbplyr::in_schema("analysis", data.name)) %>%
       dplyr::collect() %>%
       dplyr::mutate_if(is.character, trimws) %>%
@@ -320,6 +323,9 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
     filtered.data <- ReadAquarius(conn, data.name)
   } else if (data.source == "local") {
     filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec.all[[data.name]])
+    if(data.name %in% names(col.spec.aq) & "DateTime" %in% names(filtered.data)) {
+      filtered.data$DateTime <- lubridate::with_tz(filtered.data$DateTime, "America/Los_Angeles")
+    }
   }
 
   if (!missing(park)) {
@@ -400,6 +406,10 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
   # Write each Aquarius data table to csv
   for (aq.name in aq.data) {
     df <- ReadAquarius(conn, aq.name)
+    # Include time zone in dates
+    if("DateTime" %in% names(df)) {
+      df$DateTime <- format(df$DateTime, "%y-%m-%d %H:%M:%S %z")
+    }
     readr::write_csv(df, file.path(dest.folder, paste0(aq.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
   }
 }
