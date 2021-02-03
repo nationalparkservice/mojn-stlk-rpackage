@@ -13,11 +13,11 @@ library(tidyr)
 
 
 # Read in water quality data from Aquarius.
-wt <- ReadAquarius(c, "TimeSeries___")
+wt <- ReadAquarius(c, "TimeSeriesTemperature")
 ph <- ReadAquarius(c, "TimeseriespH")
-sc <- ReadAquarius(c, "Timeseries___")
-do.pct <- ReadAquarius(c, "Timeseries___")
-do.mgl <- ReadAquarius(c, "Timeseries___")
+sc <- ReadAquarius(c, "TimeseriesSpCond")
+do.pct <- ReadAquarius(c, "TimeseriesDOSat")
+do.mgl <- ReadAquarius(c, "TimeseriesDO")
 
 # Calculate the mean (for water temperature, specific conductance, and dissolved oxygen)
 #     and median (for pH) values for each day based on hourly data.
