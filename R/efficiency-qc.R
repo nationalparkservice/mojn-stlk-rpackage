@@ -9,6 +9,7 @@ library(tidyr)
 
 # Read in water quality data from Aquarius.
 source("timeseries_client.R")
+
 wt <- ReadAquarius(c, "TimeSeriesTemperature")
 ph <- ReadAquarius(c, "TimeseriespH")
 sc <- ReadAquarius(c, "TimeseriesSpCond")
