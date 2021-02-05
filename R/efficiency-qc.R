@@ -1,7 +1,3 @@
-# You must have the packages "jsonlite" and "httr" installed.
-install.packages("jsonlite") # Fast JSON parser
-install.packages("httr") # Hadley's nice HTTP requests library
-
 # Make sure the following packages are in your library.
 library(jsonlite)
 library(httr)
@@ -10,7 +6,6 @@ library(magrittr)
 library(lubridate)
 library(statip)
 library(tidyr)
-
 
 # Read in water quality data from Aquarius.
 source("timeseries_client.R")
@@ -121,13 +116,12 @@ wt.comp.new <- wt.daily %>%
                   FieldSeason) %>%
   dplyr::mutate(Month = lubridate::month(Date),
                 Day = lubridate::day(Date)) %>%
-  dplyr::filter(Month ==6 | Month == 7 | Month == 8 | Month == 9 ) %>%
+  dplyr::filter(Month == 6 | Month == 7 | Month == 8 | Month == 9 ) %>%
   dplyr::summarise(CompletedDays = sum(!is.na(WaterTemperature_C))) %>%
   dplyr::mutate(PercentCompleteness = CompletedDays/122*100)
 
 
 # Calculate the percentage of data rated at each grade level for each year.
-# MAKE SKINNY. GIVE GRADE ITS OWN COLUMN.
 wt.grds <- wt.daily %>%
       dplyr::group_by(Park,
                       SiteCode,
@@ -174,20 +168,14 @@ wt.grds2 <- wt.daily %>%
   dplyr::mutate(Percent = Days/TotalDays*100)
 
 # TEST OF VARIOUS PLOTS
-bakr1.wq.plot <- bakr1.wq.daily %>%
-      complete(Date = seq.Date(min(Date), max(Date), by = "day")) %>%
-      filter(Parameter == "WaterTemperature_C")
-
-ggplot(bakr1.wq.plot) +
-  geom_line(aes(x = Date, y = DailyValue))
-
-bakr1.wq.plot2 <- bakr1.wq.grds %>%
-      filter(Parameter == "pH")
-
-ggplot(bakr1.wq.plot2) +
-  geom_bar(aes(x = Date, y = is.numeric))
-
 ggplot(data = wt.comp.new, aes(x = FieldSeason, y = PercentCompleteness)) +
-      geom_bar(stat="identity", position=position_dodge(), color="black") +
+      geom_bar(stat = "identity", position = position_dodge(), color = "black") +
       facet_grid(~SiteCode) +
       scale_x_discrete()
+
+ggplot(data = wt.grds2, aes(x = FieldSeason, y = Percent, fill = factor(Grade, levels = c("Excellent", "Est. Excellent", "Good", "Est. Good", "Fair", "Est. Fair", "Poor", "Est. Poor")))) +
+  geom_col() +
+  facet_grid(~SiteCode) +
+  labs(fill = "Grade") +
+  scale_fill_manual(values = c("forestgreen", "gold", "khaki1", "darkorange", "Red")) +
+  scale_x_discrete()
