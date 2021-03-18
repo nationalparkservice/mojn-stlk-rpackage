@@ -1,25 +1,21 @@
-# Make sure the following packages are in your library.
-library(jsonlite)
-library(httr)
-library(dplyr)
-library(magrittr)
-library(lubridate)
-library(statip)
-library(tidyr)
 
 # Read in water quality data from Aquarius.
-source("timeseries_client.R")
+wt <- ReadAndFilterData(c, "TimeSeriesTemperature")
+ph <- ReadAndFilterData(c, "TimeseriespH")
+sc <- ReadAndFilterData(c, "TimeseriesSpCond")
+do.pct <- ReadAndFilterData(c, "TimeseriesDOSat")
+do.mgl <- ReadAndFilterData(c, "TimeseriesDO")
 
-wt <- ReadAquarius(c, "TimeSeriesTemperature")
-ph <- ReadAquarius(c, "TimeseriespH")
-sc <- ReadAquarius(c, "TimeseriesSpCond")
-do.pct <- ReadAquarius(c, "TimeseriesDOSat")
-do.mgl <- ReadAquarius(c, "TimeseriesDO")
 
 # Calculate the mean (for water temperature, specific conductance, and dissolved oxygen)
 #     and median (for pH) values for each day based on hourly data.
 # Determine the most frequent data grade level for each day based on hourly data.
 # Include only those dates with greater than 80% completeness (greater than 19 hourly values).
+
+DailyWQ <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+
+
+
 wt.daily <- wt %>%
             dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
             dplyr::group_by(Park,
@@ -28,8 +24,8 @@ wt.daily <- wt %>%
                             FieldSeason,
                             Date) %>%
             dplyr::summarise(WaterTemperature_C = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(WaterTemperature_C)) > 77 ~ median(WaterTemperature_C, na.rm = TRUE),
-                                                                  !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(WaterTemperature_C)) > 19 ~ median(WaterTemperature_C, na.rm = TRUE),
-                                                                  TRUE ~ as.double(NA_integer_)),
+                                                            !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(WaterTemperature_C)) > 19 ~ median(WaterTemperature_C, na.rm = TRUE),
+                                                            TRUE ~ as.double(NA_integer_)),
                              Grade = case_when(!is.na(WaterTemperature_C) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
             unique() %>%
             dplyr::arrange(Park, SiteCode, Date) %>%
@@ -43,8 +39,8 @@ ph.daily <- ph %>%
                             FieldSeason,
                             Date) %>%
             dplyr::summarise(pH = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(pH)) > 77 ~ median(pH, na.rm = TRUE),
-                                                  !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(pH)) > 19 ~ median(pH, na.rm = TRUE),
-                                                  TRUE ~ as.double(NA_integer_)),
+                                            !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(pH)) > 19 ~ median(pH, na.rm = TRUE),
+                                            TRUE ~ as.double(NA_integer_)),
                              Grade = case_when(!is.na(pH) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
             unique() %>%
             dplyr::arrange(Park, SiteCode, Date) %>%
@@ -73,8 +69,8 @@ do.pct.daily <- do.pct %>%
                                 FieldSeason,
                                 Date) %>%
                 dplyr::summarise(DissolvedOxygen_percent = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(DissolvedOxygen_percent)) > 77 ~ median(DissolvedOxygen_percent, na.rm = TRUE),
-                                                                               !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(DissolvedOxygen_percent)) > 19 ~ median(DissolvedOxygen_percent, na.rm = TRUE),
-                                                                               TRUE ~ as.double(NA_integer_)),
+                                                                     !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(DissolvedOxygen_percent)) > 19 ~ median(DissolvedOxygen_percent, na.rm = TRUE),
+                                                                     TRUE ~ as.double(NA_integer_)),
                                  Grade = case_when(!is.na(DissolvedOxygen_percent) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
                 unique() %>%
                 dplyr::arrange(Park, SiteCode, Date) %>%
@@ -94,6 +90,8 @@ do.mgl.daily <- do.mgl %>%
                 unique() %>%
                 dplyr::arrange(Park, SiteCode, Date) %>%
                 dplyr::filter(!is.na(DissolvedOxygen_mgL))
+
+}
 
 # Calculate the number of days of data for each parameter for each year
 #       between the index period of July 1 to September 15 (77 days).
