@@ -312,9 +312,11 @@ WqPlotPHDepthProfile <- function(conn, path.to.data, park, site, field.season, i
     n.col.facet = 2,
     transform.y = "reverse"
   ) +
-    ggplot2::aes(color = Median, size = Median) +
-    ggplot2::geom_point()
-
+    ggplot2::aes(color = Median) +
+    ggplot2::geom_point(size = 6) +
+    ggplot2::scale_color_gradient2(low = "#00e2f2", mid = "#E6FFFF", high = "#f28500", midpoint = 7.0) +
+    ggplot2::theme_dark() +
+    ggplot2::theme(panel.grid = ggplot2::element_line(color = "#a6a6a6"))
   if (plotly) {
     plot_ph <- plotly::ggplotly(plot_ph)
   }
