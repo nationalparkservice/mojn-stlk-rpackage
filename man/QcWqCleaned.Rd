@@ -2,7 +2,7 @@
 % Please edit documentation in R/wq-qc.R
 \name{QcWqCleaned}
 \alias{QcWqCleaned}
-\title{Intermediate step used to clean water quality data for stats and plotting functions. Limit data to primary visits of annual and 3Yr springs, and exclude data with "W" and "C" flags.}
+\title{Intermediate step used to clean water quality data for stats and plotting functions. Limit data to primary visits, and exclude data with "W" and "C" flags.}
 \usage{
 QcWqCleaned(
   conn,
@@ -19,9 +19,9 @@ QcWqCleaned(
 
 \item{path.to.data}{The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.}
 
-\item{park}{Optional. Four-letter park code to filter on, e.g. "MOJA".}
+\item{park}{Optional. Four-letter park code to filter on, e.g. "GRBA".}
 
-\item{site}{Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".}
+\item{site}{Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".}
 
 \item{field.season}{Optional. Field season name to filter on, e.g. "2019".}
 
@@ -33,5 +33,5 @@ QcWqCleaned(
 A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
 }
 \description{
-Intermediate step used to clean water quality data for stats and plotting functions. Limit data to primary visits of annual and 3Yr springs, and exclude data with "W" and "C" flags.
+Intermediate step used to clean water quality data for stats and plotting functions. Limit data to primary visits, and exclude data with "W" and "C" flags.
 }

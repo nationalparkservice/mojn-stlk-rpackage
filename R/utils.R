@@ -8,6 +8,7 @@
 #' @export
 #'
 #' @importFrom magrittr %>% %<>%
+#' @importFrom stats median
 #'
 #' @examples
 #' \dontrun{
@@ -40,8 +41,10 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' conn <- OpenDatabaseConnection()
 #' CloseDatabaseConnection(conn)
+#' }
 CloseDatabaseConnection <- function(conn) {
   pool::poolClose(conn$db)
   conn$aquarius$disconnect()
@@ -51,11 +54,6 @@ CloseDatabaseConnection <- function(conn) {
 #'
 #' @return A list of column specifications for each table of data.
 #'
-#' @examples
-#' col.spec <- GetColSpec()
-#'
-#' # Get the names of all data tables:
-#' data.names <- names(GetColSpec())
 GetColSpec <- function() {
   col.spec <- list(
     Site = readr::cols(
@@ -199,11 +197,6 @@ GetColSpec <- function() {
 #'
 #' @return A list of column specifications for each csv of Aquarius data.
 #'
-#' @examples
-#' col.spec.aq <- GetAquariusColSpec()
-#'
-#' # Get the names of all Aquarius data tables:
-#' data.names <- names(GetAquariusColSpec())
 GetAquariusColSpec <- function() {
   col.spec.aq <- list(
     TimeseriesDO = readr::cols(

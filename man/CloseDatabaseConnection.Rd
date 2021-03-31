@@ -16,6 +16,8 @@ None.
 Close a connection to the Streams and Lakes Database
 }
 \examples{
+\dontrun{
 conn <- OpenDatabaseConnection()
 CloseDatabaseConnection(conn)
+}
 }

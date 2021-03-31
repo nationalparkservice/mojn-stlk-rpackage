@@ -3,10 +3,10 @@
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "MOJA".
-#' @param site Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param data.source Character string indicating whether to access data in the live desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m, Parameter, Units, Median, Flag, and FlagNote.
 #' @export
@@ -21,10 +21,10 @@ LakeQcWqSanity <- function(conn, path.to.data, park, site, field.season, data.so
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "MOJA".
-#' @param site Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param data.source Character string indicating whether to access data in the live desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, Parameter, Units, Median, Flag, and FlagNote.
 #' @export
@@ -40,10 +40,10 @@ StreamQcWqSanity <- function(conn, path.to.data, park, site, field.season, data.
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "MOJA".
-#' @param site Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param data.source Character string indicating whether to access data in the live desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #' @param wq.type Either "stream" or "lake". Indicates whether to use stream or lake water quality data.
 #'
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
@@ -99,10 +99,10 @@ QcWqSanity <- function(conn, path.to.data, park, site, field.season, data.source
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "MOJA".
-#' @param site Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param data.source Character string indicating whether to access data in the live desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
 #' @export
@@ -116,10 +116,10 @@ LakeQcWqFlags <- function(conn, path.to.data, park, site, field.season, data.sou
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "MOJA".
-#' @param site Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param data.source Character string indicating whether to access data in the live desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
 #' @export
@@ -133,10 +133,10 @@ StreamQcWqFlags <- function(conn, path.to.data, park, site, field.season, data.s
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "MOJA".
-#' @param site Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param data.source Character string indicating whether to access data in the live desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #' @param wq.type Either "stream" or "lake". Indicates whether to use stream or lake water quality data.
 #'
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
@@ -193,10 +193,10 @@ QcWqFlags <- function(conn, path.to.data, park, site, field.season, data.source 
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "MOJA".
-#' @param site Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param data.source Character string indicating whether to access data in the live desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
 #' @export
@@ -211,10 +211,10 @@ LakeQcWqCleaned <- function(conn, path.to.data, park, site, field.season, data.s
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "MOJA".
-#' @param site Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param data.source Character string indicating whether to access data in the live desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, Parameter, Units, Median, Flag, and FlagNote.
 #' @export
@@ -224,12 +224,12 @@ StreamQcWqCleaned <- function(conn, path.to.data, park, site, field.season, data
   return(stream_cleaned)
 }
 
-#' Intermediate step used to clean water quality data for stats and plotting functions. Limit data to primary visits of annual and 3Yr springs, and exclude data with "W" and "C" flags.
+#' Intermediate step used to clean water quality data for stats and plotting functions. Limit data to primary visits, and exclude data with "W" and "C" flags.
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "MOJA".
-#' @param site Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
 #' @param data.source Character string indicating whether to access data in the live desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #' @param wq.type Either "stream" or "lake". Indicates whether to use stream or lake water quality data.

@@ -12,9 +12,3 @@ A list of column specifications for each table of data.
 \description{
 Get column specifications
 }
-\examples{
-col.spec <- GetColSpec()
-
-# Get the names of all data tables:
-data.names <- names(GetColSpec())
-}
