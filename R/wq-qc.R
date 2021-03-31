@@ -282,44 +282,151 @@ QcWqCleaned <- function(conn, path.to.data, park, site, field.season, data.sourc
   }
 }
 
-#' Generate box plots for pH for each park and year. Includes annual and 3Yr springs only.
+#' Generate lake pH depth profile plots.
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "MOJA".
-#' @param site Optional. Site code to filter on, e.g. "LAKE_P_HOR0042".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
 #' @param include.title Include plot title? Defaults to true.
 #' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
-#' @param data.source Character string indicating whether to access data in the live desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return Depth profile plot for lake water quality.
 #' @export
 #'
 WqPlotPHDepthProfile <- function(conn, path.to.data, park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
 
-  ph <- LakeQcWqCleaned(conn, path.to.data, park, site, field.season, data.source) %>%
-    dplyr::filter(Parameter == "pH" & !is.na(Median))
+  plot_ph <- WqPlotDepthProfile(conn = conn, path.to.data = path.to.data, param = "pH", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly, data.source = data.source)
 
-  plot_ph <- FormatPlot(
-    data = ph,
+  return(plot_ph)
+}
+
+#' Generate lake DO depth profile plots.
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param units Dissolved oxygen units. One of "mg/L" (default) or "%".
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param include.title Include plot title? Defaults to true.
+#' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return Depth profile plot for lake water quality.
+#' @export
+#'
+WqPlotDODepthProfile <- function(conn, path.to.data, units = "mg/L", park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
+
+  plot_do <- WqPlotDepthProfile(conn = conn, path.to.data = path.to.data, param = "DO", units = units, park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly, data.source = data.source)
+
+  return(plot_do)
+}
+
+#' Generate lake specific conductance depth profile plots.
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param include.title Include plot title? Defaults to true.
+#' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return Depth profile plot for lake water quality.
+#' @export
+#'
+WqPlotSpCondDepthProfile <- function(conn, path.to.data, park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
+
+  plot_spcond <- WqPlotDepthProfile(conn = conn, path.to.data = path.to.data, param = "SpCond", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly, data.source = data.source)
+
+  return(plot_spcond)
+}
+
+#' Generate lake temperature depth profile plots.
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param include.title Include plot title? Defaults to true.
+#' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return Depth profile plot for lake water quality.
+#' @export
+#'
+WqPlotTemperatureDepthProfile <- function(conn, path.to.data, park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
+
+  plot_temp <- WqPlotDepthProfile(conn = conn, path.to.data = path.to.data, param = "Temperature", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly, data.source = data.source)
+
+  return(plot_temp)
+}
+
+#' Generate lake depth profile plots.
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param param The water quality parameter to plot. One of "pH", "DO", "SpCond", or "Temperature".
+#' @param units Units of dissolved oxygen. Either "mg/L" or "%". Ignored if `param != "DO"`.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param include.title Include plot title? Defaults to true.
+#' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return Depth profile plot for lake water quality.
+#'
+WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
+
+  wq <- LakeQcWqCleaned(conn, path.to.data, park, site, field.season, data.source) %>%
+    dplyr::filter(tolower(Parameter) == tolower(param), !is.na(Median))
+
+  # Filter on unit if looking at DO. If not DO, set units
+  if (tolower(param) == "do") {
+    if (missing(units) | !(units %in% c("mg/L", "%"))) {
+      stop("Please specify correct units for DO. Must be mg/L or %.")
+    }
+    wq %<>% dplyr::filter(tolower(Units) == tolower(units))
+  } else {
+    units <- unique(wq$Units)
+  }
+
+  plot_wq <- FormatPlot(
+    data = wq,
     x.col = VisitDate,
     y.col = MeasurementDepth_m,
     facet.col = SiteCode,
-    plot.title = dplyr::if_else(include.title, "pH Depth Profile", ""),
+    plot.title = dplyr::if_else(include.title, paste(param, "Depth Profile"), ""),
     x.lab = "Visit Date",
     y.lab = "Measurement Depth (m)",
     n.col.facet = 2,
     transform.y = "reverse"
   ) +
     ggplot2::aes(fill = Median) +
-    ggplot2::geom_point(size = 6, pch = 21, color = "#3b3b3b") +
-    ggplot2::scale_fill_gradient2(low = "#f28500", mid = "#E6FFFF", high = "#00e2f2", midpoint = 7.0) #+
-    # ggplot2::theme_dark() +
-    # ggplot2::theme(panel.grid = ggplot2::element_line(color = "#a6a6a6"))
-  if (plotly) {
-    plot_ph <- plotly::ggplotly(plot_ph)
+    ggplot2::labs(fill = paste0("Median ", param, ifelse(tolower(param) == "ph", "", paste0(" (", units, ")")))) +
+    ggplot2::geom_point(size = 6, pch = 21, color = "#3b3b3b")
+
+  if (tolower(param) == "ph") {
+    plot_wq <- plot_wq +
+      ggplot2::scale_fill_gradient2(low = "#f28500", mid = "#E6FFFF", high = "#00e2f2", midpoint = 7.0)
+  } else if (tolower(param) == "temperature") {
+    plot_wq <- plot_wq +
+      ggplot2::scale_fill_gradient(low = "#59dae3", high = "#f28500")
+  } else {
+    plot_wq <- plot_wq +
+      ggplot2::scale_fill_gradient(low = "#003e42", high = "#edfeff")
   }
 
-  return(plot_ph)
+
+  if (plotly) {
+    plot_wq <- plotly::ggplotly(plot_wq)
+  }
+
+  return(plot_wq)
 }
