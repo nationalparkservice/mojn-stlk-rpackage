@@ -1,4 +1,4 @@
-#' List all laboratory values that were given an "Information," "Warning," or "Critical" flag.
+#' List all laboratory values that have an "Information," "Warning," or "Critical" flag.
 #'
 #' @param conn
 #' @param path.to.data
@@ -7,24 +7,24 @@
 #' @param field.season
 #' @param data.source
 #'
-#' @return A tibble with columns SampleFrame, ...
+#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType, DQF, DQFNote.
 #' @export
 #'
 #' @examples
 qcChemFlags <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
-    flags <- chem %>%
+    flags.list <- chem %>%
         filter(DQF %in% c("I", "W", "C")) %>%
         select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType, DQF, DQFNote) %>%
         arrange(SampleFrame, VisitDate, SiteCode)
 
-return(flags)
+return(flags.list)
 
 }
 
 
-#' Calculate the relative percent difference (RPD) for laboratory duplicates, and list results that exceed the 30% MQO threshold.
+#' Calculate the relative percent difference (RPD) for laboratory duplicates and triplicates, flag results that exceed the 30% MQO threshold, and list all RPD values and flags.
 #'
 #' @param conn
 #' @param path.to.data
@@ -33,7 +33,7 @@ return(flags)
 #' @param field.season
 #' @param data.source
 #'
-#' @return
+#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, Routine, LabDuplicate, LabTriplicate, RPD, RPD2, RPDFLag.
 #' @export
 #'
 #' @examples
@@ -41,23 +41,44 @@ qcChemLabDupes <- function(conn, path.to.data, park, site, field.season, data.so
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     lab.dupes <- chem %>%
-        select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType) %>%
-        filter(SiteCode != "GRBA_L_STLL0s", SampleType %in% c("Routine", "Lab Duplicate", "Lab Triplicate"))
+        dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType) %>%
+        dplyr::filter(SiteCode != "GRBA_L_STLL0s", SampleType %in% c("Routine", "Lab Duplicate", "Lab Triplicate"))
 
-    lab.dupes.wide <- pivot_wider(data = lab.dupes, names_from = SampleType, values_from = LabValue) %>%
-        rename(LabDuplicate = `Lab Duplicate`, LabTriplicate = `Lab Triplicate`) %>%
-        filter(!is.na(LabDuplicate)) %>%
-        mutate(RPD = ((pmax(Routine, LabDuplicate) - pmin(Routine, LabDuplicate))/((pmax(Routine, LabDuplicate) + pmin(Routine, LabDuplicate))/2))*100) %>%
-        mutate(RPD2 = ((pmax(Routine, LabTriplicate) - pmin(Routine, LabTriplicate))/((pmax(Routine, LabTriplicate) + pmin(Routine, LabTriplicate))/2))*100) %>%
-        mutate(RPDFlag = ifelse(RPD > 30 | RPD2 > 30, "RPD above laboratory precision MQO of 30%", NA)) %>%
-        arrange(desc(RPD))
+    lab.dupes.wide <- tidyr::pivot_wider(data = lab.dupes, names_from = SampleType, values_from = LabValue)
 
-    return(lab.dupes.wide)
+    lab.dupes.wide <- if ("Lab Duplicate" %in% names(lab.dupes.wide)) {
+
+        dplyr::rename(lab.dupes.wide, LabDuplicate = `Lab Duplicate`)
+
+    } else {
+
+        dplyr::mutate(lab.dupes.wide, LabDuplicate = NA)
+
+    }
+
+    lab.dupes.wide <- if ("Lab Triplicate" %in% names(lab.dupes.wide)) {
+
+        dplyr::rename(lab.dupes.wide, LabTriplicate = `Lab Triplicate`)
+
+    } else {
+
+        dplyr::mutate(lab.dupes.wide, LabTriplicate = NA)
+
+    }
+
+    lab.dupes.list <- lab.dupes.wide %>%
+        dplyr::filter(!is.na(LabDuplicate)) %>%
+        dplyr::mutate(RPD = round(((pmax(Routine, LabDuplicate) - pmin(Routine, LabDuplicate))/((pmax(Routine, LabDuplicate) + pmin(Routine, LabDuplicate))/2))*100, 2)) %>%
+        dplyr::mutate(RPD2 = round(((pmax(Routine, LabTriplicate) - pmin(Routine, LabTriplicate))/((pmax(Routine, LabTriplicate) + pmin(Routine, LabTriplicate))/2))*100, 2)) %>%
+        dplyr::mutate(RPDFlag = ifelse(RPD > 30 | RPD2 > 30, "RPD above laboratory precision MQO of 30%", NA)) %>%
+        dplyr::arrange(desc(RPD))
+
+    return(lab.dupes.list)
 
 }
 
 
-#' Calculate the relative percent difference (RPD) for field duplicates, and list results that exceed the 30% MQO threshold.
+#' Calculate the relative percent difference (RPD) for field duplicates, flag results that exceed the 30% MQO threshold, and list all RPD values and flags.
 #'
 #' @param conn
 #' @param path.to.data
@@ -66,7 +87,7 @@ qcChemLabDupes <- function(conn, path.to.data, park, site, field.season, data.so
 #' @param field.season
 #' @param data.source
 #'
-#' @return
+#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, Routine, FieldDuplicate, RPD, RPDFLag.
 #' @export
 #'
 #' @examples
@@ -74,22 +95,34 @@ qcChemFieldDupes <- function(conn, path.to.data, park, site, field.season, data.
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     field.dupes <- chem %>%
-        select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType) %>%
-        filter(SiteCode != "GRBA_L_STLL0s", SampleType %in% c("Routine", "Field Duplicate"))
+        dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType) %>%
+        dplyr::filter(SiteCode != "GRBA_L_STLL0s", SampleType %in% c("Routine", "Field Duplicate"))
 
-    field.dupes.wide <- pivot_wider(data = field.dupes, names_from = SampleType, values_from = LabValue) %>%
-        rename(FieldDuplicate = `Field Duplicate`) %>%
-        filter(!is.na(FieldDuplicate)) %>%
-        mutate(RPD = ((pmax(Routine, FieldDuplicate) - pmin(Routine, FieldDuplicate))/((pmax(Routine, FieldDuplicate) + pmin(Routine, FieldDuplicate))/2))*100) %>%
-        mutate(RPDFlag = ifelse(RPD > 30, "RPD above laboratory precision MQO of 30%", NA)) %>%
-        arrange(desc(RPD))
+    field.dupes.wide <- tidyr::pivot_wider(data = field.dupes, names_from = SampleType, values_from = LabValue)
 
-    return(field.dupes.wide)
+
+    field.dupes.wide <- if ("Field Duplicate" %in% names(field.dupes.wide)) {
+
+        dplyr::rename(field.dupes.wide, FieldDuplicate = `Field Duplicate`)
+
+    } else {
+
+        dplyr::mutate(field.dupes.wide, FieldDuplicate = NA)
+
+    }
+
+    field.dupes.list <- field.dupes.wide %>%
+        dplyr::filter(!is.na(FieldDuplicate)) %>%
+        dplyr::mutate(RPD = round(((pmax(Routine, FieldDuplicate) - pmin(Routine, FieldDuplicate))/((pmax(Routine, FieldDuplicate) + pmin(Routine, FieldDuplicate))/2))*100, 2)) %>%
+        dplyr::mutate(RPDFlag = ifelse(RPD > 30, "RPD above laboratory precision MQO of 30%", NA)) %>%
+        dplyr::arrange(desc(RPD))
+
+    return(field.dupes.list)
 
 }
 
 
-#' Calculate the relative percent difference (RPD) for field blanks, and list results that exceed the 30% MQO threshold.
+#' Calculate the relative percent difference (RPD) for field blanks, flag results that exceed the 30% MQO threshold, and list all RPD values and flags.
 #'
 #' @param conn
 #' @param path.to.data
@@ -98,7 +131,7 @@ qcChemFieldDupes <- function(conn, path.to.data, park, site, field.season, data.
 #' @param field.season
 #' @param data.source
 #'
-#' @return
+#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, Routine, FieldBlank, RPD, RPDFLag.
 #' @export
 #'
 #' @examples
@@ -106,17 +139,29 @@ qcChemFieldBlanks <- function(conn, path.to.data, park, site, field.season, data
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     field.blanks <- chem %>%
-        select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, unit, LabValue, SampleType) %>%
-        filter(SiteCode != "GRBA_L_STLL0s", SampleType %in% c("Routine", "Field Blank"))
+        dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType) %>%
+        dplyr::filter(SiteCode != "GRBA_L_STLL0s", SampleType %in% c("Routine", "Field Blank"))
 
-    field.blanks.wide <- pivot_wider(data = field.blanks, names_from = SampleType, values_from = LabValue) %>%
-        rename(FieldBlank = `Field Blank`) %>%
-        filter(!is.na(FieldBlank)) %>%
-        mutate(RPD = ((pmax(Routine, FieldBlank) - pmin(Routine, FieldBlank))/((pmax(Routine, FieldBlank) + pmin(Routine, FieldBlank))/2))*100) %>%
-        mutate(RPDFlag = ifelse(RPD > 30, "RPD above laboratory precision MQO of 30%", NA)) %>%
-        arrange(desc(RPD))
+    field.blanks.wide <- tidyr::pivot_wider(data = field.blanks, names_from = SampleType, values_from = LabValue)
 
-    return(field.blanks.wide)
+
+    field.blanks.wide <- if ("Field Blank" %in% names(field.blanks.wide)) {
+
+        dplyr::rename(field.blanks.wide, FieldBlank = `Field Blank`)
+
+    } else {
+
+        dplyr::mutate(field.blanks.wide, FieldBlank = NA)
+
+    }
+
+    field.blanks.list <- field.blanks.wide %>%
+        dplyr::filter(!is.na(FieldBlank)) %>%
+        dplyr::mutate(RPD = round(((pmax(Routine, FieldBlank) - pmin(Routine, FieldBlank))/((pmax(Routine, FieldBlank) + pmin(Routine, FieldBlank))/2))*100, 2)) %>%
+        dplyr::mutate(RPDFlag = ifelse(RPD > 30, "RPD above laboratory precision MQO of 30%", NA)) %>%
+        dplyr::arrange(desc(RPD))
+
+    return(field.blanks.list)
 
 }
 
@@ -131,7 +176,7 @@ qcChemFieldBlanks <- function(conn, path.to.data, park, site, field.season, data
 #' @param field.season
 #' @param data.source
 #'
-#' @return
+#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Unit, UTN, TDN, TDNvUTN, TDNFlag.
 #' @export
 #'
 #' @examples
@@ -139,16 +184,18 @@ qcChemTDN <- function(conn, path.to.data, park, site, field.season, data.source 
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     TDN <- chem %>%
-        filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTN", "TDN", "NO3NO2-N")) %>%
-        select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, Unit, LabValue)
+        dplyr::filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTN", "TDN", "NO3NO2-N")) %>%
+        dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, Unit, LabValue)
 
-    TDN.wide <- pivot_wider(data = TDN, names_from = Characteristic, values_from = LabValue) %>%
-        rename(NO3NO2 = `NO3NO2-N`) %>%
-        mutate(TDPvUTP = ifelse(TDN>UTN, round(TDN - UTN, 2), NA)) %>%
-        mutate(TDNvUTNFlag = ifelse(TDNvUTN > 0.02, "TDN is greater than UTN outside of the expected error", "TDN is greater than UTN within limits of precision")) %>%
-        filter(!is.na(TDNvUTN))
+    TDN.wide <- tidyr::pivot_wider(data = TDN, names_from = Characteristic, values_from = LabValue)
 
-    return(TDN.wide)
+    TDN.list <- TDN.wide %>%
+        dplyr::rename(NO3NO2 = `NO3NO2-N`) %>%
+        dplyr::mutate(TDNvUTN = ifelse(TDN > UTN, round(TDN - UTN, 2), NA)) %>%
+        dplyr::mutate(TDNFlag = ifelse(TDNvUTN > 0.01, "TDN is greater than UTN outside the normal limits of variability", "TDN is greater than UTN within precision limits")) %>%
+        dplyr::filter(!is.na(TDNvUTN))
+
+    return(TDN.list)
 
 }
 
@@ -163,7 +210,7 @@ qcChemTDN <- function(conn, path.to.data, park, site, field.season, data.source 
 #' @param field.season
 #' @param data.source
 #'
-#' @return
+#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Unit, UTN, TDN, NO3NO2, NO3NO2vUTN, NO3NO2vTDN, NO3NO2Flag.
 #' @export
 #'
 #' @examples
@@ -171,16 +218,19 @@ qcChemNO3NO2 <- function(conn, path.to.data, park, site, field.season, data.sour
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     NO3NO2 <- chem %>%
-        filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTN", "TDN", "NO3NO2-N")) %>%
-        select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, Unit, LabValue)
+        dplyr::filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTN", "TDN", "NO3NO2-N")) %>%
+        dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, Unit, LabValue)
 
-    NO3NO2.wide <- pivot_wider(data = NO3NO2, names_from = Characteristic, values_from = LabValue) %>%
-        rename(NO3NO2 = `NO3NO2-N`) %>%
-        mutate(NO3NO2vN = ifelse(NO3NO2 > UTN, round(NO3NO2 - UTN, 2), ifelse(NO3NO2 > TDN, round(NO3NO2 - TDN, 2), NA))) %>%
-        mutate(NO3NO2vNFlag = ifelse(NO3NO2vN > 0.02, "NO3NO2 is greater than UTN and/or TDN outside of the expected error", "NO3NO2 is greater than UTN and/or TDN within limits of precision")) %>%
-        filter(!is.na(NO3NO2vN))
+    NO3NO2.wide <- tidyr::pivot_wider(data = NO3NO2, names_from = Characteristic, values_from = LabValue)
 
-    return(NO3NO2.wide)
+    NO3NO2.list <- NO3NO2.wide %>%
+        dplyr::rename(NO3NO2 = `NO3NO2-N`) %>%
+        dplyr::mutate(NO3NO2vUTN = ifelse(NO3NO2 > UTN, round(NO3NO2 - UTN, 3), NA)) %>%
+        dplyr::mutate(NO3NO2vTDN = ifelse(NO3NO2 > TDN, round(NO3NO2 - TDN, 3), NA)) %>%
+        dplyr::mutate(NO3NO2Flag = ifelse(NO3NO2vUTN > 0.01 | NO3NO2vTDN > 0.01, "NO3NO2 is greater than UTN and/or TDN outside the normal limits of variability", "NO3NO2 is greater than TDN and/or UTN within precision limits")) %>%
+        dplyr::filter(!is.na(NO3NO2vUTN | NO3NO2vTDN))
+
+    return(NO3NO2.list)
 
 }
 
@@ -195,7 +245,7 @@ qcChemNO3NO2 <- function(conn, path.to.data, park, site, field.season, data.sour
 #' @param field.season
 #' @param data.source
 #'
-#' @return
+#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Unit, UTP, TDP, TDPvUTP, TDPFlag.
 #' @export
 #'
 #' @examples
@@ -203,22 +253,24 @@ qcChemTDP <- function(conn, path.to.data, park, site, field.season, data.source 
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     TDP <- chem %>%
-        filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTP", "TDP")) %>%
-        select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, Unit, LabValue)
+        dplyr::filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTP", "TDP")) %>%
+        dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, Unit, LabValue)
 
-    TDP.wide <- pivot_wider(data = TDP, names_from = Characteristic, values_from = LabValue) %>%
-        mutate(TDPvUTP = ifelse(TDP>UTP, round(TDP - UTP, 2), NA)) %>%
-        mutate(TDPvUTPFlag = ifelse(TDPvUTP > 0.02, "TDP is greater than UTP outside of the expected error", "TDP is greater than UTP within limits of precision")) %>%
-        filter(!is.na(TDPvUTP))
+    TDP.wide <- tidyr::pivot_wider(data = TDP, names_from = Characteristic, values_from = LabValue)
 
-    return(TDP.wide)
+    TDP.list <- TDP.wide %>%
+        dplyr::mutate(TDPvUTP = ifelse(TDP>UTP, round(TDP - UTP, 3), NA)) %>%
+        dplyr::mutate(TDPFlag = ifelse(TDPvUTP > 0.002, "TDP is greater than UTP outside the limits of normal variability", "TDP is greater than UTP within precision limits")) %>%
+        dplyr::filter(!is.na(TDPvUTP))
+
+    return(TDP.list)
 
 }
 
 
 #' Create data frame with MDL and ML values for each characteristic.
 #'
-#' @return
+#' @return A data frame with columns Characteristic, Unit, StartYear, EndYear, MDL, ML.
 #' @export
 #'
 #' @examples
@@ -244,7 +296,7 @@ getMDLLookup <- function() {
 #' @param field.season
 #' @param data.source
 #'
-#' @return
+#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, MDL, MDLFlag.
 #' @export
 #'
 #' @examples
@@ -258,14 +310,16 @@ qcMDL <- function(conn, path.to.data, park, site, field.season, data.source = "d
     mdl.merged <- fuzzyjoin::fuzzy_inner_join(x = mdl,
                                             y = lookup,
                                             by = c("Characteristic" = "Characteristic", "Unit" = "Unit", "FieldSeason" = "StartYear", "FieldSeason" = "EndYear"),
-                                            match_fun = list(`==`, `==`, `>=`, `<=`)) %>%
+                                            match_fun = list(`==`, `==`, `>=`, `<=`))
+
+    mdl.list <- mdl.merged %>%
         dplyr::rename(Characteristic = Characteristic.x, Unit = Unit.x) %>%
         dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, MDL) %>%
         dplyr::mutate(MDLFlag = ifelse(LabValue <= MDL, "Value is less than or equal to the minimum detection level (MDL)", NA)) %>%
         dplyr::filter(!is.na(MDLFlag)) %>%
         dplyr::arrange(SampleFrame, VisitDate, SiteCode)
 
-    return(mdl.merged)
+    return(mdl.list)
 
 }
 
@@ -279,7 +333,7 @@ qcMDL <- function(conn, path.to.data, park, site, field.season, data.source = "d
 #' @param field.season
 #' @param data.source
 #'
-#' @return
+#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, ML, MLFlag.
 #' @export
 #'
 #' @examples
@@ -287,19 +341,21 @@ qcML <- function(conn, path.to.data, park, site, field.season, data.source = "da
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     ml <- chem %>%
-        filter(VisitType == "Primary", SampleType == "Routine") %>%
-        select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue)
+        dplyr::filter(VisitType == "Primary", SampleType == "Routine") %>%
+        dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue)
 
     ml.merged <- fuzzyjoin::fuzzy_inner_join(x = ml,
                                               y = lookup,
                                               by = c("Characteristic" = "Characteristic", "Unit" = "Unit", "FieldSeason" = "StartYear", "FieldSeason" = "EndYear"),
-                                              match_fun = list(`==`, `==`, `>=`, `<=`)) %>%
+                                              match_fun = list(`==`, `==`, `>=`, `<=`))
+
+    ml.list <- ml.merged %>%
         dplyr::rename(Characteristic = Characteristic.x, Unit = Unit.x) %>%
         dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, ML) %>%
         dplyr::mutate(MLFlag = ifelse(LabValue <= ML, "Value is less than or equal to the minimum level of quantification (ML)", NA)) %>%
         dplyr::filter(!is.na(MLFlag)) %>%
         dplyr::arrange(SampleFrame, VisitDate, SiteCode)
 
-    return(ml.merged)
+    return(ml.list)
 
 }
