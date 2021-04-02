@@ -331,7 +331,7 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
 
   if (!missing(site) & nrow(filtered.data) > 0) {
     filtered.data %<>%
-      dplyr::filter(SiteCode == site)
+      dplyr::filter(SiteCode %in% site)
 
     if (nrow(filtered.data) == 0) {
       warning(paste0(data.name, ": Data are not available for the site specified"))
