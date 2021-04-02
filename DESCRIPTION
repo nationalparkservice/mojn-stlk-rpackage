@@ -22,7 +22,9 @@ Imports:
     plotly,
     pool,
     readr,
-    tibble
+    tibble,
+    tidyr,
+    tidyselect
 RoxygenNote: 7.1.1
 Suggests: 
     testthat
