@@ -12,9 +12,3 @@ A list of column specifications for each csv of Aquarius data.
 \description{
 Get column specifications for Aquarius data that have been written to csv.
 }
-\examples{
-col.spec.aq <- GetAquariusColSpec()
-
-# Get the names of all Aquarius data tables:
-data.names <- names(GetAquariusColSpec())
-}

@@ -9,8 +9,22 @@ Maintainer: The package maintainer <yourself@somewhere.net>
 Description: This R package is intended to provide automated QA/QC, visualization, and
     basic analysis and statistical summaries of data collected for the Streams and Lakes
     monitoring protocol.
+Roxygen: list(markdown = TRUE)
 License: CC0
 Encoding: UTF-8
 LazyData: true
-Imports: magrittr
+Imports: 
+    magrittr,
+    dbplyr,
+    dplyr,
+    ggplot2,
+    lubridate,
+    plotly,
+    pool,
+    readr,
+    tibble,
+    tidyr,
+    tidyselect
 RoxygenNote: 7.1.1
+Suggests: 
+    testthat
