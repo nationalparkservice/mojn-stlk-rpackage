@@ -1,11 +1,11 @@
 #' List all laboratory values that have an "Information," "Warning," or "Critical" flag.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType, DQF, DQFNote.
 #' @export
@@ -26,12 +26,12 @@ return(flags.list)
 
 #' Calculate the relative percent difference (RPD) for laboratory duplicates and triplicates, flag results that exceed the 30% MQO threshold, and list all RPD values and flags.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, Routine, LabDuplicate, LabTriplicate, RPD, RPD2, RPDFLag.
 #' @export
@@ -80,12 +80,12 @@ qcChemLabDupes <- function(conn, path.to.data, park, site, field.season, data.so
 
 #' Calculate the relative percent difference (RPD) for field duplicates, flag results that exceed the 30% MQO threshold, and list all RPD values and flags.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, Routine, FieldDuplicate, RPD, RPDFLag.
 #' @export
@@ -124,12 +124,12 @@ qcChemFieldDupes <- function(conn, path.to.data, park, site, field.season, data.
 
 #' Calculate the relative percent difference (RPD) for field blanks, flag results that exceed the 30% MQO threshold, and list all RPD values and flags.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, Routine, FieldBlank, RPD, RPDFLag.
 #' @export
@@ -166,15 +166,14 @@ qcChemFieldBlanks <- function(conn, path.to.data, park, site, field.season, data
 }
 
 
-#' List all routine samples where total dissolved nitrogen (TDN) values exceeded total nitrogen (UTN) values,
-#' and flag whether the discrepancy was within precision limits or outside of the expected error.
+#' List all routine samples where total dissolved nitrogen (TDN) values exceeded total nitrogen (UTN) values, and flag whether the discrepancy was within precision limits or outside of the expected error.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Unit, UTN, TDN, TDNvUTN, TDNFlag.
 #' @export
@@ -200,15 +199,14 @@ qcChemTDN <- function(conn, path.to.data, park, site, field.season, data.source 
 }
 
 
-#' List all routine samples where nitrate and nitrite (NO3NO2-N) values exceeded either total dissolved nitrogen (TDN) values or total nitrogen (UTN) values,
-#' and flag whether the discrepancy was within precision limits or outside of the expected error.
+#' List all routine samples where nitrate and nitrite (NO3NO2-N) values exceeded either total dissolved nitrogen (TDN) values or total nitrogen (UTN) values, and flag whether the discrepancy was within precision limits or outside of the expected error.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Unit, UTN, TDN, NO3NO2, NO3NO2vUTN, NO3NO2vTDN, NO3NO2Flag.
 #' @export
@@ -235,15 +233,14 @@ qcChemNO3NO2 <- function(conn, path.to.data, park, site, field.season, data.sour
 }
 
 
-#' List all routine samples where total dissolved phosphorous (TDP) values exceeded total phosphorus (UTP) values,
-#' and flag whether the discrepancy was within precision limits or outside of the expected error.
+#' List all routine samples where total dissolved phosphorous (TDP) values exceeded total phosphorus (UTP) values, and flag whether the discrepancy was within precision limits or outside of the expected error.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Unit, UTP, TDP, TDPvUTP, TDPFlag.
 #' @export
@@ -289,12 +286,12 @@ getMDLLookup <- function() {
 
 #' List all routine laboratory values that are less than or equal to the minimum detection level (MDL) for that characteristic.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, MDL, MDLFlag.
 #' @export
@@ -326,12 +323,12 @@ qcMDL <- function(conn, path.to.data, park, site, field.season, data.source = "d
 
 #' List all routine laboratory values that are less than or equal to the minimum level of quantification (ML) for that characteristic.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, ML, MLFlag.
 #' @export
