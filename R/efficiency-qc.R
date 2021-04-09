@@ -1,12 +1,3 @@
-
-# Read in water quality data from Aquarius.
-wt <- ReadAndFilterData(c, "TimeSeriesTemperature")
-ph <- ReadAndFilterData(c, "TimeseriespH")
-sc <- ReadAndFilterData(c, "TimeseriesSpCond")
-do.pct <- ReadAndFilterData(c, "TimeseriesDOSat")
-do.mgl <- ReadAndFilterData(c, "TimeseriesDO")
-
-
 # Calculate the mean (for water temperature, specific conductance, and dissolved oxygen)
 #     and median (for pH) values for each day based on hourly data.
 # Determine the most frequent data grade level for each day based on hourly data.
@@ -14,9 +5,13 @@ do.mgl <- ReadAndFilterData(c, "TimeseriesDO")
 
 DailyWQ <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
+wt <- ReadAndFilterData(conn, data.name = "TimeseriesTemperature")
+ph <- ReadAndFilterData(conn, data.name = "TimeseriespH")
+sc <- ReadAndFilterData(conn, data.name = "TimeseriesSpCond")
+do.pct <- ReadAndFilterData(conn, data.name = "TimeseriesDOSat")
+do.mgl <- ReadAndFilterData(conn, data.name = "TimeseriesDO")
 
-
-wt.daily <- wt %>%
+wt.daily.na <- wt %>%
             dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
             dplyr::group_by(Park,
                             SiteCode,
@@ -28,7 +23,9 @@ wt.daily <- wt %>%
                                                             TRUE ~ as.double(NA_integer_)),
                              Grade = case_when(!is.na(WaterTemperature_C) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
             unique() %>%
-            dplyr::arrange(Park, SiteCode, Date) %>%
+            dplyr::arrange(Park, SiteCode, Date)
+
+wt.daily <- wt.daily.na %>%
             dplyr::filter(!is.na(WaterTemperature_C))
 
 ph.daily <- ph %>%
@@ -83,6 +80,7 @@ do.mgl.daily <- do.mgl %>%
                                 SiteType,
                                 FieldSeason,
                                 Date) %>%
+                dplyr::rename(DissolvedOxygen_mgL = DissolvedOxygen_mg_per_L) %>%
                 dplyr::summarise(DissolvedOxygen_mgL = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(DissolvedOxygen_mgL)) > 77 ~ median(DissolvedOxygen_mgL, na.rm = TRUE),
                                                                  !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(DissolvedOxygen_mgL)) > 19 ~ median(DissolvedOxygen_mgL, na.rm = TRUE),
                                                                  TRUE ~ as.double(NA_integer_)),
@@ -97,6 +95,9 @@ do.mgl.daily <- do.mgl %>%
 #       between the index period of July 1 to September 15 (77 days).
 # Calculate the percentage of days with data for each parameter for each year
 #       between the index period of July 1 to September 15 (77 days).
+
+CompletenessWQ <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+
 wt.comp <- wt.daily %>%
            dplyr::group_by(Park,
                            SiteCode,
@@ -119,8 +120,12 @@ wt.comp.new <- wt.daily %>%
   dplyr::summarise(CompletedDays = sum(!is.na(WaterTemperature_C))) %>%
   dplyr::mutate(PercentCompleteness = CompletedDays/122*100)
 
+}
 
 # Calculate the percentage of data rated at each grade level for each year.
+
+GradesWQ <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+
 wt.grds <- wt.daily %>%
       dplyr::group_by(Park,
                       SiteCode,
@@ -166,15 +171,30 @@ wt.grds2 <- wt.daily %>%
   dplyr::mutate(TotalDays = sum(Days)) %>%
   dplyr::mutate(Percent = Days/TotalDays*100)
 
+}
+
 # TEST OF VARIOUS PLOTS
-ggplot(data = wt.comp.new, aes(x = FieldSeason, y = PercentCompleteness)) +
+GradesPlots <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+
+wt.comp.bar <- ggplot(data = wt.comp, aes(x = FieldSeason, y = PercentCompleteness)) +
       geom_bar(stat = "identity", position = position_dodge(), color = "black") +
       facet_grid(~SiteCode) +
       scale_x_discrete()
 
-ggplot(data = wt.grds2, aes(x = FieldSeason, y = Percent, fill = factor(Grade, levels = c("Excellent", "Est. Excellent", "Good", "Est. Good", "Fair", "Est. Fair", "Poor", "Est. Poor")))) +
+ggplot(data = wt.comp.new, aes(x = FieldSeason, y = PercentCompleteness)) +
+  geom_bar(stat = "identity", position = position_dodge(), color = "black") +
+  facet_grid(~SiteCode) +
+  scale_x_discrete()
+
+wt.grds.bar <- ggplot(data = wt.grds2, aes(x = FieldSeason, y = Percent, fill = factor(Grade, levels = c("Excellent", "Est. Excellent", "Good", "Est. Good", "Fair", "Est. Fair", "Poor", "Est. Poor")))) +
   geom_col() +
   facet_grid(~SiteCode) +
   labs(fill = "Grade") +
   scale_fill_manual(values = c("forestgreen", "gold", "khaki1", "darkorange", "Red")) +
   scale_x_discrete()
+
+wt.daily.plot <- ggplot(data = wt.daily.na, aes(x = Date, y = WaterTemperature_C, color = SiteCode)) +
+    geom_line() +
+    geom_point()
+
+}
