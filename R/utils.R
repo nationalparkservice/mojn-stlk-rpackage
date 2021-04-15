@@ -151,6 +151,25 @@ GetColSpec <- function() {
       SecchiDepth_m = readr::col_double(),
       .default = readr::col_character()
     ),
+    LakeLevelString = readr::cols(
+      VisitDate = readr::col_date(),
+      RM1_GivenElevation_m = readr::col_double(),
+      IsLakeDry = readr::col_logical(),
+      Height_ft = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    LakeLevelSurvey = readr::cols(
+      VisitDate = readr::col_date(),
+      CTE = readr::col_double(),
+      NumberOfInstrumentSetups = readr::col_integer(),
+      RodTemperatureSetup1 = readr::col_double(),
+      RodTemperatureSetup2 = readr::col_double(),
+      RodTemperatureSetup3 = readr::col_double(),
+      NumberOfBenchmarksUsed = readr::col_integer(),
+      RM1_GivenElevation_m = readr::col_double(),
+      Height_ft = readr::col_double(),
+      .default = readr::col_character()
+    ),
     WaterQualityDO = readr::cols(
       VisitDate = readr::col_date(),
       MeasurementNum = readr::col_integer(),
