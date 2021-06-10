@@ -17,12 +17,17 @@
 #' }
 SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     levels <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelSurvey")
+    StandardTemperature_F <- 68  # Standard temperature to be used for temperature corrections
 
     levels %<>%
       tidyr::separate(SurveyPointType, into = c("SurveyPoint", "ReadingType", "SetupNumber"), sep = "-", remove = TRUE) %>%
-      dplyr::mutate(SetupNumber = readr::parse_number(SetupNumber))
+      dplyr::mutate(SetupNumber = readr::parse_number(SetupNumber),
+                    RodTemperature_F = ifelse(SetupNumber == 1, RodTemperatureSetup1_F,
+                                              ifelse(SetupNumber == 2, RodTemperatureSetup2_F,
+                                                     ifelse(SetupNumber == 3, RodTemperatureSetup3_F, NA))),
+                    TemperatureCorrectedSight_ft = Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F)))
 
-    setups <- unique(levels$SetupNumber) %>% sort()  # I think this only works if all surveys have same number of levels
+    setups <- unique(levels$SetupNumber) %>% sort()
     final_lvls <- tibble()
 
     for (setup in setups) {
