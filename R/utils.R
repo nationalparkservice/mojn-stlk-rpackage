@@ -25,10 +25,16 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
   }
 
   #Connect to Aquarius
-  timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
+  tryCatch({timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
+    aq <<- timeseries},
+    error = function(e) {
+      aq <<- NA
+      warning(paste("Could not connect to Aquarius. Verify that you are on the NPS network and that Aquarius is not down.", "Error message:", e, sep = "\n"))
+    }
+  )
 
   conn <- list(db = my.pool,
-               aquarius = timeseries)
+               aquarius = aq)
 
   return(conn)
 }
@@ -47,7 +53,9 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
 #' }
 CloseDatabaseConnection <- function(conn) {
   pool::poolClose(conn$db)
-  conn$aquarius$disconnect()
+  if (!is.na(conn$aquarius)) {
+    conn$aquarius$disconnect()
+  }
 }
 
 #' Get column specifications
@@ -258,6 +266,9 @@ GetAquariusColSpec <- function() {
 #' @details \code{data.name} options are: TimeseriesDO, TimeseriesDOSat, TimeseriespH, TimeseriesSpCond, TimeseriesTemperature
 #'
 ReadAquarius <- function(conn, data.name) {
+  if (is.na(conn$aquarius)) {
+    stop("Aquarius connection does not exist.")
+  }
   timeseries <- conn$aquarius
   aq_data <- tibble::tibble()
   sites <- c("GRBA_S_BAKR1", "GRBA_S_LHMN1", "GRBA_S_SNKE1", "GRBA_S_SNKE3", "GRBA_S_STRW1")
@@ -417,12 +428,22 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
 
   # Write each Aquarius data table to csv
   for (aq.name in aq.data) {
-    df <- ReadAquarius(conn, aq.name)
-    # Include time zone in dates
-    if("DateTime" %in% names(df)) {
-      df$DateTime <- format(df$DateTime, "%y-%m-%d %H:%M:%S %z")
-    }
-    readr::write_csv(df, file.path(dest.folder, paste0(aq.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
+    tryCatch(
+      {
+        df <- ReadAquarius(conn, aq.name)
+        # Include time zone in dates
+        if("DateTime" %in% names(df)) {
+          df$DateTime <- format(df$DateTime, "%y-%m-%d %H:%M:%S %z")
+        }
+        readr::write_csv(df, file.path(dest.folder, paste0(aq.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
+      },
+      error = function(e) {
+        if (e$message == "Aquarius connection does not exist.") {
+          warning(paste0("Could not connect to Aquarius. Skipping", aq.name, ".csv"))
+        }
+        else {e}
+      }
+    )
   }
 }
 
@@ -446,7 +467,14 @@ GetRawData <- function(conn, path.to.data, park, site, field.season, data.source
   data.names <- c(db.names, aq.names)
 
   for (data.name in data.names) {
-    data.dump[[data.name]] <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name)
+    tryCatch(data.dump[[data.name]] <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name),
+             error = function(e) {
+               if (e$message == "Aquarius connection does not exist.") {
+                 warning(paste0("Cannot connect to Aquarius. ", data.name, " omitted from data."))
+               } else {e}
+             }
+    )
+    # try(data.dump[[data.name]] <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name))
   }
 
   return(data.dump)
