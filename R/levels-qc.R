@@ -25,7 +25,14 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
       dplyr::mutate(SetupNumber = readr::parse_number(SetupNumber),
                     RodTemperature_F = ifelse(SetupNumber == 1, RodTemperatureSetup1_F,
                                               ifelse(SetupNumber == 2, RodTemperatureSetup2_F,
-                                                     ifelse(SetupNumber == 3, RodTemperatureSetup3_F, NA))))
+                                                     ifelse(SetupNumber == 3, RodTemperatureSetup3_F, NA))),
+                    Benchmark = ifelse(SurveyPoint == "RM1", RM1,  # We may eventually want to create this Benchmark column in the SQL Server view instead of doing it here
+                                       ifelse(SurveyPoint == "RM2", RM2,
+                                              ifelse(SurveyPoint == "RM3", RM3,
+                                                     ifelse(SurveyPoint == "RM4", RM4,
+                                                            ifelse(SurveyPoint == "RM5", RM5,
+                                                                   ifelse(SurveyPoint == "RM6", RM6,
+                                                                          ifelse(SurveyPoint == "WS", "Water Surface", NA))))))))
 
     # Calculate L, the maximum elevation difference between the origin reference mark and any point in the level circuit
     l <- dplyr::arrange(levels, FieldSeason, SiteCode, VisitType, SetupNumber) %>%
@@ -37,14 +44,14 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
       dplyr::ungroup()
 
     # Correct for rod temperature (if needed)
-    levels %<>% dplyr::left_join(l) %>%
+    levels %<>% dplyr::left_join(l, by = c("SiteCode", "FieldSeason", "VisitType", "SetupNumber")) %>%
       dplyr::mutate(TemperatureCorrection = CTE * L * (RodTemperature_F - StandardTemperature_F),
                     TempCorrectedHeight_ft = ifelse(abs(TemperatureCorrection) > 0.003,
                                                     Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F)),
                                                     Height_ft))
 
     setups <- unique(levels$SetupNumber) %>% sort()
-    final_lvls <- tibble::tibble()
+    temp_corrected_lvls <- tibble::tibble()
 
     # Get known elevations and calculate instrument height. Does this need to be a loop? Probably not
     for (setup in setups) {
@@ -57,25 +64,47 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
         bs %<>% dplyr::mutate(InstrumentHeight_ft = TempCorrectedHeight_ft + measurements::conv_unit(RM1_GivenElevation_m, "m", "ft"))
       } else {
         # Get prev. setup elevations for whatever we're taking the backsight to
-        known_elev <- dplyr::filter(final_lvls, SetupNumber == setup - 1) %>%
-          dplyr::select(SiteCode, VisitDate, FieldSeason, VisitType, SurveyPoint, FinalElevation_ft)
+        known_elev <- dplyr::filter(temp_corrected_lvls, SetupNumber == setup - 1) %>%
+          dplyr::select(SiteCode, VisitDate, FieldSeason, VisitType, SurveyPoint, TempCorrectedElevation_ft)
         # Join prev. setup elevations to get known elevation, calc. instrument height
         bs %<>% dplyr::left_join(known_elev, by = c("SiteCode", "VisitDate", "FieldSeason", "VisitType", "SurveyPoint")) %>%
-          dplyr::mutate(InstrumentHeight_ft = TempCorrectedHeight_ft + FinalElevation_ft) %>%
-          dplyr::select(-FinalElevation_ft)
+          dplyr::mutate(InstrumentHeight_ft = TempCorrectedHeight_ft + TempCorrectedElevation_ft) %>%
+          dplyr::select(-TempCorrectedElevation_ft)
       }
 
       # Calc elevations for current setup
       bs %<>% dplyr::select(-RM1_GivenElevation_m, -TempCorrectedHeight_ft, -SurveyPoint)
       temp_lvls <- levels %>% dplyr::filter(SetupNumber == setup) %>%
         dplyr::left_join(bs, by = c("SiteCode", "VisitDate", "FieldSeason", "VisitType", "SetupNumber")) %>%
-        dplyr::mutate(FinalElevation_ft = InstrumentHeight_ft - TempCorrectedHeight_ft)
-      final_lvls <- rbind(final_lvls, temp_lvls)
+        dplyr::mutate(TempCorrectedElevation_ft = InstrumentHeight_ft - TempCorrectedHeight_ft)
+      temp_corrected_lvls <- rbind(temp_corrected_lvls, temp_lvls)
     }
 
+    # Get given origin elevation
+    given_origin_elev <- dplyr::filter(temp_corrected_lvls, SetupNumber == 1, ReadingType == "BS") %>%
+      dplyr::select(SiteCode, VisitDate, FieldSeason, VisitType, SurveyPoint, TempCorrectedElevation_ft) %>%
+      dplyr::rename(GivenOriginElevation_ft = TempCorrectedElevation_ft)
 
-    final_lvls <- dplyr::arrange(final_lvls, FieldSeason, SiteCode, VisitType, SetupNumber) %>%
-      dplyr::mutate(FinalElevation_m = measurements::conv_unit(FinalElevation_ft, "ft", "m"))
+    # Get final origin elevation
+    final_origin_elev <- dplyr::select(temp_corrected_lvls, SiteCode, VisitDate, FieldSeason, VisitType, SurveyPoint, SetupNumber, NumberOfInstrumentSetups, TempCorrectedElevation_ft) %>%
+      dplyr::filter(SetupNumber == NumberOfInstrumentSetups) %>%
+      dplyr::select(-SetupNumber, NumberOfInstrumentSetups) %>%
+      dplyr::rename(FinalOriginElevation_ft = TempCorrectedElevation_ft)
+
+    # Calculate closure error from given and final origin elevations
+    closure_error <- dplyr::left_join(given_origin_elev, final_origin_elev, by = c("SiteCode", "VisitDate", "FieldSeason", "VisitType", "SurveyPoint")) %>%
+      dplyr::mutate(ClosureError = GivenOriginElevation_ft - FinalOriginElevation_ft)
+
+    # Calculate final corrected elevation
+    final_lvls <- dplyr::arrange(temp_corrected_lvls, FieldSeason, SiteCode, VisitType, SetupNumber) %>%
+      dplyr::left_join(closure_error, by = c("SiteCode", "VisitDate", "FieldSeason", "VisitType", "NumberOfInstrumentSetups", "SurveyPoint")) %>%
+      tidyr::fill(ClosureError, .direction = "down") %>%
+      dplyr::mutate(FinalCorrectedElevation_ft = SetupNumber * (ClosureError / NumberOfInstrumentSetups) + TempCorrectedElevation_ft) %>%
+      dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SurveyPoint) %>%
+      dplyr::mutate(FinalCorrectedElevation_ft = mean(FinalCorrectedElevation_ft)) %>%
+      dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL, SurveyPoint, Benchmark, FinalCorrectedElevation_ft) %>%
+      unique() %>%
+      dplyr::filter(!grepl("TP", SurveyPoint))
 
     return(final_lvls)
 }
