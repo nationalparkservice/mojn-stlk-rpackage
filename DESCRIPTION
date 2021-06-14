@@ -24,7 +24,8 @@ Imports:
     readr,
     tibble,
     tidyr,
-    tidyselect
+    tidyselect,
+    odbc
 RoxygenNote: 7.1.1
 Suggests: 
     testthat,
