@@ -2,7 +2,7 @@
 #'
 #' @inheritParams ReadAndFilterData
 #'
-#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason,VisitType, DPL.
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason,VisitType, DPL, SurveyPoint, Benchmark, FinalCorrectedElevation_ft.
 #' @export
 #'
 #' @importFrom magrittr %>% %<>%
