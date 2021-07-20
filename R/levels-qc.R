@@ -93,16 +93,16 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
 
     # Calculate closure error from given and final origin elevations
     closure_error <- dplyr::left_join(given_origin_elev, final_origin_elev, by = c("SiteCode", "VisitDate", "FieldSeason", "VisitType", "SurveyPoint")) %>%
-      dplyr::mutate(ClosureError = GivenOriginElevation_ft - FinalOriginElevation_ft)
+      dplyr::mutate(ClosureError_ft = abs(GivenOriginElevation_ft - FinalOriginElevation_ft))
 
     # Calculate final corrected elevation
     final_lvls <- dplyr::arrange(temp_corrected_lvls, FieldSeason, SiteCode, VisitType, SetupNumber) %>%
       dplyr::left_join(closure_error, by = c("SiteCode", "VisitDate", "FieldSeason", "VisitType", "NumberOfInstrumentSetups", "SurveyPoint")) %>%
-      tidyr::fill(ClosureError, .direction = "down") %>%
-      dplyr::mutate(FinalCorrectedElevation_ft = SetupNumber * (ClosureError / NumberOfInstrumentSetups) + TempCorrectedElevation_ft) %>%
+      tidyr::fill(ClosureError_ft, .direction = "down") %>%
+      dplyr::mutate(FinalCorrectedElevation_ft = SetupNumber * (ClosureError_ft / NumberOfInstrumentSetups) + TempCorrectedElevation_ft) %>%
       dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SurveyPoint) %>%
       dplyr::mutate(FinalCorrectedElevation_ft = mean(FinalCorrectedElevation_ft)) %>%
-      dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL, SurveyPoint, Benchmark, FinalCorrectedElevation_ft) %>%
+      dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL, SurveyPoint, Benchmark, ClosureError_ft, FinalCorrectedElevation_ft) %>%
       unique() %>%
       dplyr::filter(!grepl("TP", SurveyPoint))
 
