@@ -104,7 +104,8 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
       dplyr::mutate(FinalCorrectedElevation_ft = mean(FinalCorrectedElevation_ft)) %>%
       dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL, SurveyPoint, Benchmark, ClosureError_ft, FinalCorrectedElevation_ft) %>%
       unique() %>%
-      dplyr::filter(!grepl("TP", SurveyPoint))
+      dplyr::filter(!grepl("TP", SurveyPoint)) %>%
+      dplyr::ungroup()
 
     return(final_lvls)
 }
