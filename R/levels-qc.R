@@ -113,6 +113,7 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
 #' Calculates mean and standard deviation of final corrected elevations for each benchmark across all field seasons
 #'
 #' @inheritParams ReadAndFilterData
+#' @param sd_cutoff Optional. If specified, only return benchmarks where standard deviation of final corrected elevations is greater than or equal to `sd_cutoff`.
 #'
 #' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, Benchmark, AverageElevation_ft, StDevElevation_ft.
 #' @export
@@ -138,9 +139,46 @@ QCBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, d
                   StDevElevation_ft = sd(FinalCorrectedElevation_ft)) %>%
     dplyr::ungroup()
 
+  if (!is.na(sd_cutoff)) {
+    lvls %<>% dplyr::filter(StDevElevation_ft >= sd_cutoff)
+  }
+
   return(lvls)
 }
 
-PlotBenchmarkElevation <- function() {
 
+#' Plot benchmark elevations over time
+#'
+#' @inheritParams WqPlotDepthProfile
+#'
+#' @return A ggplot or plotly object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' PlotBenchmarkElevation(conn)
+#' PlotBenchmarkElevation(conn, site = "GRBA_L_DEAD0", plotly = TRUE)
+#' CloseDatabaseConnection(conn)
+#' }
+#'
+PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", include.title = TRUE, plotly = FALSE) {
+  lvls <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source) %>%
+    tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left")
+
+  plt <- FormatPlot(lvls,
+                    FieldSeason,
+                    FinalCorrectedElevation_ft,
+                    SiteName,
+                    plot.title = ifelse(include.title, "Benchmark elevation over time", ""),
+                    x.lab = "Field Season",
+                    y.lab = "Elevation (ft)") +
+    ggplot2::geom_point(ggplot2::aes(color = Benchmark, group = Benchmark)) +
+    ggplot2::geom_line(ggplot2::aes(color = Benchmark, group = Benchmark))
+
+  if (plotly) {
+    plt <- plotly::ggplotly(plt)
+  }
+
+  return(plt)
 }
