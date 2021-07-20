@@ -109,3 +109,38 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
 
     return(final_lvls)
 }
+
+#' Calculates mean and standard deviation of final corrected elevations for each benchmark across all field seasons
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, Benchmark, AverageElevation_ft, StDevElevation_ft.
+#' @export
+#'
+#' @importFrom magrittr %>% %<>%
+#'
+#' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     QCBenchmarkElevation(conn)
+#'     QCBenchmarkElevation(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
+#'     QCBenchmarkElevation(path.to.data = "path/to/data", data.source = "local")
+#'     CloseDatabaseConnection(conn)
+#' }
+QCBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
+  lvls <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source)
+
+  lvls %<>%
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, Benchmark, FinalCorrectedElevation_ft) %>%
+    dplyr::filter(Benchmark != "Water Surface") %>%
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, Benchmark) %>%
+    dplyr::summarize(AverageElevation_ft = mean(FinalCorrectedElevation_ft),
+                  StDevElevation_ft = sd(FinalCorrectedElevation_ft)) %>%
+    dplyr::ungroup()
+
+  return(lvls)
+}
+
+PlotBenchmarkElevation <- function() {
+
+}
