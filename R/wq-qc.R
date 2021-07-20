@@ -348,14 +348,7 @@ WqPlotSpCondDepthProfile <- function(conn, path.to.data, park, site, field.seaso
 
 #' Generate lake temperature depth profile plots.
 #'
-#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
-#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
-#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
-#' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param include.title Include plot title? Defaults to true.
-#' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
-#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @inheritParams WqPlotDepthProfile
 #'
 #' @return Depth profile plot for lake water quality.
 #' @export
@@ -369,16 +362,11 @@ WqPlotTemperatureDepthProfile <- function(conn, path.to.data, park, site, field.
 
 #' Generate lake depth profile plots.
 #'
-#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
-#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
-#' @param param The water quality parameter to plot. One of "pH", "DO", "SpCond", or "Temperature".
-#' @param units Units of dissolved oxygen. Either "mg/L" or "%". Ignored if `param != "DO"`.
-#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
-#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
-#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @inheritParams ReadAndFilterData
 #' @param include.title Include plot title? Defaults to true.
 #' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
-#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#' @param param The water quality parameter to plot. One of "pH", "DO", "SpCond", or "Temperature".
+#' @param units Units of dissolved oxygen. Either "mg/L" or "%". Ignored if `param != "DO"`.
 #'
 #' @return Depth profile plot for lake water quality.
 #'
