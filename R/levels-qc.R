@@ -167,12 +167,12 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
 #' @examples
 #' \dontrun{
 #'     conn <- OpenDatabaseConnection()
-#'     QCBenchmarkElevation(conn)
-#'     QCBenchmarkElevation(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
-#'     QCBenchmarkElevation(path.to.data = "path/to/data", data.source = "local")
+#'     QcBenchmarkElevation(conn)
+#'     QcBenchmarkElevation(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
+#'     QcBenchmarkElevation(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-QCBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
+QcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
   lvls <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source)
 
   lvls %<>%
@@ -189,6 +189,7 @@ QCBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, d
 
   return(lvls)
 }
+
 
 #' Plot benchmark elevations over time
 #'
