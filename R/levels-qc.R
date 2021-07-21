@@ -190,7 +190,6 @@ QCBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, d
   return(lvls)
 }
 
-
 #' Plot benchmark elevations over time
 #'
 #' @inheritParams WqPlotDepthProfile
@@ -222,6 +221,41 @@ PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season,
 
   if (plotly) {
     plt <- plotly::ggplotly(plt)
+  }
+
+  return(plt)
+}
+
+#' Plot lake surface elevations over time
+#'
+#' @inheritParams WqPlotDepthProfile
+#'
+#' @return A ggplot or plotly object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' PlotLakeSurfaceElevation(conn)
+#' PlotLakeSurfaceElevation(conn, site = "GRBA_L_DEAD0", plotly = TRUE)
+#' CloseDatabaseConnection(conn)
+#' }
+#'
+PlotLakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", include.title = TRUE, plotly = FALSE) {
+  elev <- LakeSurfaceElevation(conn, path.to.data, park, site, field.season, data.source)
+
+  plt <- FormatPlot(data = elev,
+                    x.col = FieldSeason,
+                    y.col = FinalElevation_ft,
+                    plot.title = ifelse(include.title, "Lake surface elevation over time", ""),
+                    x.lab = "Field Season",
+                    y.lab = "Elevation (ft)") +
+    ggplot2::geom_point(ggplot2::aes(color = SiteName, group = SiteName, shape = SurveyType)) +
+    ggplot2::geom_line(ggplot2::aes(color = SiteName, group = SiteName)) +
+    ggplot2::scale_shape_discrete()
+
+  if (plotly) {
+    plt <- plotly::ggplotly(plt, tooltip = c("SurveyType", "FinalElevation_ft"))
   }
 
   return(plt)
