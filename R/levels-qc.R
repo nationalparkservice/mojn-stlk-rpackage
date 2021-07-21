@@ -191,6 +191,73 @@ QcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, d
 }
 
 
+#' Calculates mean and standard deviation of string survey heights for each benchmark
+#'
+#' @inheritParams QcBenchmarkElevation
+#'
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, MeanHeight_ft, StDevHeight_ft
+#' @export
+#'
+#' @importFrom magrittr %>% %<>%
+#'
+#' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     QcStringSurveyHeights(conn)
+#'     QcStringSurveyHeights(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017"))
+#'     QcStringSurveyHeights(path.to.data = "path/to/data", data.source = "local")
+#'     CloseDatabaseConnection(conn)
+#' }
+QcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
+  str_survey <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString") %>%
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, Benchmark) %>%
+    dplyr::summarise(MeanHeight_ft = mean(Height_ft),
+                     StDevHeight_ft = sd(Height_ft))
+
+  if (!is.na(sd_cutoff)) {
+    str_survey %<>%
+      dplyr::filter(StDevHeight_ft >= sd_cutoff)
+  }
+
+  return(str_survey)
+}
+
+
+#' Calculates mean and standard deviation of string survey elevations for each year
+#'
+#' @inheritParams QcBenchmarkElevation
+#'
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, MeanFinalElevation_ft, StDevFinalElevation_ft
+#' @export
+#'
+#' @importFrom magrittr %>% %<>%
+#'
+#' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     QcStringSurveyElevations(conn)
+#'     QcStringSurveyElevations(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017"))
+#'     QcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
+#'     CloseDatabaseConnection(conn)
+#' }
+QcStringSurveyElevations <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
+  str_survey <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString") %>%
+    dplyr::mutate(BenchmarkElevation_ft = measurements::conv_unit(RM1_GivenElevation_m, "m", "ft")) %>%
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, Benchmark) %>%
+    dplyr::summarise(FinalElevation_ft = mean(BenchmarkElevation_ft - Height_ft)) %>%
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType) %>%
+    dplyr::summarise(MeanFinalElevation_ft = mean(FinalElevation_ft),
+                     StDevFinalElevation_ft = sd(FinalElevation_ft)) %>%
+    dplyr::ungroup()
+
+  if (!is.na(sd_cutoff)) {
+    str_survey %<>%
+      dplyr::filter(StDevFinalElevation_ft >= sd_cutoff)
+  }
+
+  return(str_survey)
+}
+
 #' Plot benchmark elevations over time
 #'
 #' @inheritParams WqPlotDepthProfile
