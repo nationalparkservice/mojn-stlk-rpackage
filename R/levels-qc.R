@@ -110,6 +110,50 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
     return(final_lvls)
 }
 
+#' Calculates lake level elevations
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason,VisitType, DPL, SurveyType, BenchmarkUsed, ClosureError_ft, FinalElevation_ft.
+#' @export
+#'
+#' @importFrom magrittr %>% %<>%
+#'
+#' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     LakeSurfaceElevation(conn)
+#'     LakeSurfaceElevation(conn, site = "GRBA_L_BAKR0", field.season = "2019")
+#'     LakeSurfaceElevation(path.to.data = "path/to/data", data.source = "local")
+#'     CloseDatabaseConnection(conn)
+#' }
+LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  string <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString")
+  survey <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source) %>%
+    dplyr::filter(Benchmark == "Water Surface") %>%
+    dplyr::mutate(SurveyType = "Theodolite", BenchmarkUsed = NA) %>%
+    dplyr::rename(FinalElevation_ft = FinalCorrectedElevation_ft) %>%
+    dplyr::select(-SurveyPoint, -Benchmark)
+
+  string %<>%
+    dplyr::mutate(BenchmarkNumber = substring(Benchmark, nchar(Benchmark))) %>%
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType) %>%
+    dplyr::mutate(MinBenchmark = min(BenchmarkNumber),
+                  BenchmarkElevation_ft = measurements::conv_unit(RM1_GivenElevation_m, "m", "ft")) %>%
+    dplyr::filter(BenchmarkNumber == MinBenchmark) %>%
+    dplyr::mutate(FinalElevation_ft = mean(BenchmarkElevation_ft - Height_ft)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(BenchmarkUsed = Benchmark,
+                  ClosureError_ft = NA,
+                  SurveyType = "String") %>%
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL, SurveyType, BenchmarkUsed, ClosureError_ft, FinalElevation_ft) %>%
+    unique()
+
+  lake_elevation <- rbind(string, survey)
+
+  return(lake_elevation)
+}
+
 #' Calculates mean and standard deviation of final corrected elevations for each benchmark across all field seasons
 #'
 #' @inheritParams ReadAndFilterData
