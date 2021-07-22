@@ -77,3 +77,82 @@ QcBMIDiscrepancies <- function(conn, path.to.data, park, site, field.season, dat
 
   return(bmi_issues)
 }
+
+
+#' Filter channel characteristic data by visit type
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A tibble
+#' @export
+#'
+#' @examples
+ChannelCharacteristics <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  data <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Channel") %>%
+    dplyr::select(-DPL)
+
+  visit <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
+
+  channel <- dplyr::left_join(data, visit[, c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate", "VisitType")], by = c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate")) %>%
+    dplyr::filter(VisitType == "Primary") %>%
+    dplyr::select(-c(DPL, VisitType)) %>%
+    dplyr::arrange(SiteCode, VisitDate, Transect)
+
+  return(channel_characteristics)
+}
+
+#' Rank channel flow by frequency for each BMI sample
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A tibble
+#' @export
+#'
+#' @examples
+ChannelFLow <-  function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  channel_flow <- ChannelCharacteristics(conn, path.to.data, park, site, field.season, data.source) %>%
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, ChannelType) %>%
+    dplyr::summarize(Count = n()) %>%
+    dplyr::mutate(Rank = min_rank(desc(Count))) %>%
+    dplyr::relocate(Count, .after = Rank) %>%
+    dplyr::rename(ChannelFLow = ChannelType) %>%
+    dplyr::arrange(SiteCode, VisitDate, Rank) %>%
+    dplyr::ungroup()
+
+  return(channel_flow)
+}
+
+#' Rank channel substrate by frequency for each BMI sample
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A tibble
+#' @export
+#'
+#' @examples
+ChannelSubstrate <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  channel_subtrate <- ChannelCharacteristics(conn, path.to.data, park, site, field.season, data.source) %>%
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, Substrate) %>%
+    dplyr::summarize(Count = n()) %>%
+    dplyr::mutate(Rank = min_rank(desc(Count))) %>%
+    dplyr::relocate(Count, .after = Rank) %>%
+    dplyr::arrange(SiteCode, VisitDate, Rank) %>%
+    dplyr::ungroup()
+
+  return(channel_substrate)
+}
