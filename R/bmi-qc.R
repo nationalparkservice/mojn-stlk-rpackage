@@ -106,7 +106,7 @@ ChannelCharacteristics <- function(conn, path.to.data, park, site, field.season,
   return(channel_characteristics)
 }
 
-#' Rank channel flow type by frequency for each BMI sample
+#' Rank channel flow type by count for each BMI sample
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
@@ -132,7 +132,7 @@ ChannelFLow <-  function(conn, path.to.data, park, site, field.season, data.sour
   return(channel_flow)
 }
 
-#' Rank channel substrate type by frequency for each BMI sample
+#' Rank channel substrate type by count for each BMI sample
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
