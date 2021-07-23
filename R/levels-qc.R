@@ -223,7 +223,7 @@ QcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, 
 }
 
 
-#' Calculates mean and standard deviation of string survey elevations for each year
+#' Calculates mean and standard deviation of string survey lake level elevations for each year
 #'
 #' @inheritParams QcBenchmarkElevation
 #'
