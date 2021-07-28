@@ -33,8 +33,10 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
                                                             ifelse(SurveyPoint == "RM5", RM5,
                                                                    ifelse(SurveyPoint == "RM6", RM6,
                                                                           ifelse(SurveyPoint == "WS", "Water Surface", NA))))))))
+    # Add this code to above levels tibble -- USE IF IGNORING L
+    # dplyr::mutate(TempCorrectedHeight_ft = Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F)))
 
-    # Calculate L, the maximum elevation difference between the origin reference mark and any point in the level circuit
+    # Calculate L, the maximum elevation difference between the origin reference mark and any point in the level circuit -- DELETE IF IGNORING L
     l <- dplyr::arrange(levels, FieldSeason, SiteCode, VisitType, SetupNumber) %>%
       dplyr::mutate(Backsight_ft = ifelse(ReadingType == "BS", Height_ft, NA)) %>%
       tidyr::fill(Backsight_ft, .direction = "down") %>%
@@ -43,7 +45,7 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
       dplyr::summarize(L = max(L)) %>%
       dplyr::ungroup()
 
-    # Correct for rod temperature (if needed)
+    # Correct for rod temperature (if needed) -- DELETE IF IGNORING L
     levels %<>% dplyr::left_join(l, by = c("SiteCode", "FieldSeason", "VisitType", "SetupNumber")) %>%
       dplyr::mutate(TemperatureCorrection = CTE * L * (RodTemperature_F - StandardTemperature_F),
                     TempCorrectedHeight_ft = ifelse(abs(TemperatureCorrection) > 0.003,
