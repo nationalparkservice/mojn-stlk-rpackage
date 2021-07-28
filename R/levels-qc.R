@@ -32,25 +32,24 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
                                                      ifelse(SurveyPoint == "RM4", RM4,
                                                             ifelse(SurveyPoint == "RM5", RM5,
                                                                    ifelse(SurveyPoint == "RM6", RM6,
-                                                                          ifelse(SurveyPoint == "WS", "Water Surface", NA))))))))
-    # Add this code to above levels tibble -- USE IF IGNORING L
-    # dplyr::mutate(TempCorrectedHeight_ft = Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F)))
+                                                                          ifelse(SurveyPoint == "WS", "Water Surface", NA)))))))) %>%
+      dplyr::mutate(TempCorrectedHeight_ft = Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F))) # Remove if calculating L
 
     # Calculate L, the maximum elevation difference between the origin reference mark and any point in the level circuit -- DELETE IF IGNORING L
-    l <- dplyr::arrange(levels, FieldSeason, SiteCode, VisitType, SetupNumber) %>%
-      dplyr::mutate(Backsight_ft = ifelse(ReadingType == "BS", Height_ft, NA)) %>%
-      tidyr::fill(Backsight_ft, .direction = "down") %>%
-      dplyr::mutate(L = abs(Backsight_ft - Height_ft)) %>%
-      dplyr::group_by(FieldSeason, SiteCode, VisitType, SetupNumber) %>%
-      dplyr::summarize(L = max(L)) %>%
-      dplyr::ungroup()
+    # l <- dplyr::arrange(levels, FieldSeason, SiteCode, VisitType, SetupNumber) %>%
+      # dplyr::mutate(Backsight_ft = ifelse(ReadingType == "BS", Height_ft, NA)) %>%
+      # tidyr::fill(Backsight_ft, .direction = "down") %>%
+      # dplyr::mutate(L = abs(Backsight_ft - Height_ft)) %>%
+      # dplyr::group_by(FieldSeason, SiteCode, VisitType, SetupNumber) %>%
+      # dplyr::summarize(L = max(L)) %>%
+      # dplyr::ungroup()
 
     # Correct for rod temperature (if needed) -- DELETE IF IGNORING L
-    levels %<>% dplyr::left_join(l, by = c("SiteCode", "FieldSeason", "VisitType", "SetupNumber")) %>%
-      dplyr::mutate(TemperatureCorrection = CTE * L * (RodTemperature_F - StandardTemperature_F),
-                    TempCorrectedHeight_ft = ifelse(abs(TemperatureCorrection) > 0.003,
-                                                    Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F)),
-                                                    Height_ft))
+    # levels %<>% dplyr::left_join(l, by = c("SiteCode", "FieldSeason", "VisitType", "SetupNumber")) %>%
+      # dplyr::mutate(TemperatureCorrection = CTE * L * (RodTemperature_F - StandardTemperature_F),
+                    # TempCorrectedHeight_ft = ifelse(abs(TemperatureCorrection) > 0.003,
+                                                    # Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F)),
+                                                    # Height_ft))
 
     setups <- unique(levels$SetupNumber) %>% sort()
     temp_corrected_lvls <- tibble::tibble()
@@ -95,13 +94,16 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
 
     # Calculate closure error from given and final origin elevations
     closure_error <- dplyr::left_join(given_origin_elev, final_origin_elev, by = c("SiteCode", "VisitDate", "FieldSeason", "VisitType", "SurveyPoint")) %>%
-      dplyr::mutate(ClosureError_ft = abs(GivenOriginElevation_ft - FinalOriginElevation_ft))
+      dplyr::mutate(ClosureError_ft = GivenOriginElevation_ft - FinalOriginElevation_ft) # Removed absolute value, since it will affect direction of corrections
 
     # Calculate final corrected elevation
     final_lvls <- dplyr::arrange(temp_corrected_lvls, FieldSeason, SiteCode, VisitType, SetupNumber) %>%
       dplyr::left_join(closure_error, by = c("SiteCode", "VisitDate", "FieldSeason", "VisitType", "NumberOfInstrumentSetups", "SurveyPoint")) %>%
       tidyr::fill(ClosureError_ft, .direction = "down") %>%
-      dplyr::mutate(FinalCorrectedElevation_ft = SetupNumber * (ClosureError_ft / NumberOfInstrumentSetups) + TempCorrectedElevation_ft) %>%
+      dplyr::mutate(FinalCorrectedElevation_ft = ifelse(SetupNumber == 1 & ReadingType == "BS", # Added if-else statement, since closure error correction should not be applied to the backsight toward RM-1 during the first instrument setup, since this is the given origin elevation and is fixed.
+                                                        TempCorrectedElevation_ft,
+                                                        SetupNumber * (ClosureError_ft / NumberOfInstrumentSetups) + TempCorrectedElevation_ft)) %>%
+      dplyr::mutate(ClosureError_ft = abs(ClosureError_ft)) %>% # Re-added the absolute value calculation applied to closure error. Keep or remove?
       dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SurveyPoint) %>%
       dplyr::mutate(FinalCorrectedElevation_ft = mean(FinalCorrectedElevation_ft)) %>%
       dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL, SurveyPoint, Benchmark, ClosureError_ft, FinalCorrectedElevation_ft) %>%
