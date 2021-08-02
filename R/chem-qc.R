@@ -297,7 +297,7 @@ getMDLLookup <- function() {
 #' @export
 #'
 #' @examples
-qcMDL <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcChemMDL <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     mdl <- chem %>%
@@ -334,7 +334,7 @@ qcMDL <- function(conn, path.to.data, park, site, field.season, data.source = "d
 #' @export
 #'
 #' @examples
-qcML <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcChemML <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     ml <- chem %>%
