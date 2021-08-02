@@ -33,23 +33,7 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
                                                             ifelse(SurveyPoint == "RM5", RM5,
                                                                    ifelse(SurveyPoint == "RM6", RM6,
                                                                           ifelse(SurveyPoint == "WS", "Water Surface", NA)))))))) %>%
-      dplyr::mutate(TempCorrectedHeight_ft = Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F))) # Remove if calculating L
-
-    # Calculate L, the maximum elevation difference between the origin reference mark and any point in the level circuit -- DELETE IF IGNORING L
-    # l <- dplyr::arrange(levels, FieldSeason, SiteCode, VisitType, SetupNumber) %>%
-      # dplyr::mutate(Backsight_ft = ifelse(ReadingType == "BS", Height_ft, NA)) %>%
-      # tidyr::fill(Backsight_ft, .direction = "down") %>%
-      # dplyr::mutate(L = abs(Backsight_ft - Height_ft)) %>%
-      # dplyr::group_by(FieldSeason, SiteCode, VisitType, SetupNumber) %>%
-      # dplyr::summarize(L = max(L)) %>%
-      # dplyr::ungroup()
-
-    # Correct for rod temperature (if needed) -- DELETE IF IGNORING L
-    # levels %<>% dplyr::left_join(l, by = c("SiteCode", "FieldSeason", "VisitType", "SetupNumber")) %>%
-      # dplyr::mutate(TemperatureCorrection = CTE * L * (RodTemperature_F - StandardTemperature_F),
-                    # TempCorrectedHeight_ft = ifelse(abs(TemperatureCorrection) > 0.003,
-                                                    # Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F)),
-                                                    # Height_ft))
+      dplyr::mutate(TempCorrectedHeight_ft = Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F)))
 
     setups <- unique(levels$SetupNumber) %>% sort()
     temp_corrected_lvls <- tibble::tibble()
