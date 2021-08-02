@@ -3,7 +3,7 @@
 # Determine the most frequent data grade level for each day based on hourly data.
 # Include only those dates with greater than 80% completeness (greater than 19 hourly values).
 
-DailyWQ <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+WqDailyMean <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wt <- ReadAndFilterData(conn, data.name = "TimeseriesTemperature")
 ph <- ReadAndFilterData(conn, data.name = "TimeseriespH")
@@ -96,7 +96,7 @@ do.mgl.daily <- do.mgl %>%
 # Calculate the percentage of days with data for each parameter for each year
 #       between the index period of July 1 to September 15 (77 days).
 
-CompletenessWQ <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+QcWqCompleteness <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wt.comp <- wt.daily %>%
            dplyr::group_by(Park,
@@ -124,7 +124,7 @@ wt.comp.new <- wt.daily %>%
 
 # Calculate the percentage of data rated at each grade level for each year.
 
-GradesWQ <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+QcWqGrades <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wt.grds <- wt.daily %>%
       dplyr::group_by(Park,
