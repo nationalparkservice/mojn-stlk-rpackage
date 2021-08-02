@@ -70,7 +70,7 @@ BMILong <- function(conn, path.to.data, park, site, field.season, data.source = 
 #' bmi_issues_bakr_2015 <- QcBMIDiscrepancies(c, site = c("GRBA_S_BAKR2", "GRBA_S_BAKR3"), field.season = "2015")  # Look at issues for Baker Creek sites in 2015
 #' CloseDatabaseConnection(c)
 #' }
-QcBMIDiscrepancies <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcBMIDiscrepancies <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   bmi_issues <- BMILong(conn, path.to.data, park, site, field.season, data.source) %>%
     select(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, VisitType, SampleType, SampleCollectionMethod, BMIMethod, LabSampleNumber, TaxaGroup, TaxaGroupCount, TaxaGroupAbundance, LabNotes) %>%
     filter((TaxaGroupCount == 0 & TaxaGroupAbundance > 0) | (TaxaGroupAbundance == 0 & TaxaGroupCount > 0))
