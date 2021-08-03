@@ -284,7 +284,7 @@ getMDLLookup <- function() {
 }
 
 
-#' List all routine laboratory values that are less than or equal to the minimum detection level (MDL) for that characteristic.
+#' List all routine laboratory values that are less than or equal to the minimum detection level (MDL) for that analyte.
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
@@ -321,7 +321,7 @@ qcChemMDL <- function(conn, path.to.data, park, site, field.season, data.source 
 }
 
 
-#' List all routine laboratory values that are less than or equal to the minimum level of quantification (ML) for that characteristic.
+#' List all routine laboratory values that are less than or equal to the minimum level of quantitation (ML) for that analyte.
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
