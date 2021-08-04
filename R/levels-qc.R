@@ -33,23 +33,7 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
                                                             ifelse(SurveyPoint == "RM5", RM5,
                                                                    ifelse(SurveyPoint == "RM6", RM6,
                                                                           ifelse(SurveyPoint == "WS", "Water Surface", NA)))))))) %>%
-      dplyr::mutate(TempCorrectedHeight_ft = Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F))) # Remove if calculating L
-
-    # Calculate L, the maximum elevation difference between the origin reference mark and any point in the level circuit -- DELETE IF IGNORING L
-    # l <- dplyr::arrange(levels, FieldSeason, SiteCode, VisitType, SetupNumber) %>%
-      # dplyr::mutate(Backsight_ft = ifelse(ReadingType == "BS", Height_ft, NA)) %>%
-      # tidyr::fill(Backsight_ft, .direction = "down") %>%
-      # dplyr::mutate(L = abs(Backsight_ft - Height_ft)) %>%
-      # dplyr::group_by(FieldSeason, SiteCode, VisitType, SetupNumber) %>%
-      # dplyr::summarize(L = max(L)) %>%
-      # dplyr::ungroup()
-
-    # Correct for rod temperature (if needed) -- DELETE IF IGNORING L
-    # levels %<>% dplyr::left_join(l, by = c("SiteCode", "FieldSeason", "VisitType", "SetupNumber")) %>%
-      # dplyr::mutate(TemperatureCorrection = CTE * L * (RodTemperature_F - StandardTemperature_F),
-                    # TempCorrectedHeight_ft = ifelse(abs(TemperatureCorrection) > 0.003,
-                                                    # Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F)),
-                                                    # Height_ft))
+      dplyr::mutate(TempCorrectedHeight_ft = Height_ft + (CTE * Height_ft * (RodTemperature_F - StandardTemperature_F)))
 
     setups <- unique(levels$SetupNumber) %>% sort()
     temp_corrected_lvls <- tibble::tibble()
@@ -176,7 +160,7 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
 #'     QcBenchmarkElevation(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-QcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
+qcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
   lvls <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source)
 
   lvls %<>%
@@ -212,7 +196,7 @@ QcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, d
 #'     QcStringSurveyHeights(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-QcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
+qcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
   str_survey <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString") %>%
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, Benchmark) %>%
     dplyr::summarise(MeanHeight_ft = mean(Height_ft),
@@ -244,7 +228,7 @@ QcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, 
 #'     QcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-QcStringSurveyElevations <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
+qcStringSurveyElevations <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
   str_survey <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString") %>%
     dplyr::mutate(BenchmarkElevation_ft = measurements::conv_unit(RM1_GivenElevation_m, "m", "ft")) %>%
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, Benchmark) %>%
@@ -279,7 +263,9 @@ QcStringSurveyElevations <- function(conn, path.to.data, park, site, field.seaso
 #'
 PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", include.title = TRUE, plotly = FALSE) {
   lvls <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source) %>%
+    dplyr::filter(Benchmark != "Water Surface") %>%
     tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left")
+
 
   plt <- FormatPlot(lvls,
                     FieldSeason,
