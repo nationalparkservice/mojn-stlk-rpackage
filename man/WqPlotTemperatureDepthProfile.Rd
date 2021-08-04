@@ -30,7 +30,7 @@ WqPlotTemperatureDepthProfile(
 
 \item{plotly}{Return an interactive plotly object instead of a ggplot object? Defaults to false.}
 
-\item{data.source}{Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.}
+\item{data.source}{Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.}
 }
 \value{
 Depth profile plot for lake water quality.

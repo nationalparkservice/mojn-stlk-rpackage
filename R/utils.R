@@ -25,10 +25,16 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
   }
 
   #Connect to Aquarius
-  timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
+  tryCatch({timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
+    aq <<- timeseries},
+    error = function(e) {
+      aq <<- NA
+      warning(paste("Could not connect to Aquarius. Verify that you are on the NPS network and that Aquarius is not down.", "Error message:", e, sep = "\n"))
+    }
+  )
 
   conn <- list(db = my.pool,
-               aquarius = timeseries)
+               aquarius = aq)
 
   return(conn)
 }
@@ -47,7 +53,9 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
 #' }
 CloseDatabaseConnection <- function(conn) {
   pool::poolClose(conn$db)
-  conn$aquarius$disconnect()
+  if (!is.na(conn$aquarius)) {
+    conn$aquarius$disconnect()
+  }
 }
 
 #' Get column specifications
@@ -151,6 +159,25 @@ GetColSpec <- function() {
       SecchiDepth_m = readr::col_double(),
       .default = readr::col_character()
     ),
+    LakeLevelString = readr::cols(
+      VisitDate = readr::col_date(),
+      RM1_GivenElevation_m = readr::col_double(),
+      IsLakeDry = readr::col_logical(),
+      Height_ft = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    LakeLevelSurvey = readr::cols(
+      VisitDate = readr::col_date(),
+      CTE = readr::col_double(),
+      NumberOfInstrumentSetups = readr::col_integer(),
+      RodTemperatureSetup1_F = readr::col_double(),
+      RodTemperatureSetup2_F = readr::col_double(),
+      RodTemperatureSetup3_F = readr::col_double(),
+      NumberOfBenchmarksUsed = readr::col_integer(),
+      RM1_GivenElevation_m = readr::col_double(),
+      Height_ft = readr::col_double(),
+      .default = readr::col_character()
+    ),
     WaterQualityDO = readr::cols(
       VisitDate = readr::col_date(),
       MeasurementNum = readr::col_integer(),
@@ -239,6 +266,9 @@ GetAquariusColSpec <- function() {
 #' @details \code{data.name} options are: TimeseriesDO, TimeseriesDOSat, TimeseriespH, TimeseriesSpCond, TimeseriesTemperature
 #'
 ReadAquarius <- function(conn, data.name) {
+  if (is.na(conn$aquarius)) {
+    stop("Aquarius connection does not exist.")
+  }
   timeseries <- conn$aquarius
   aq_data <- tibble::tibble()
   sites <- c("GRBA_S_BAKR1", "GRBA_S_LHMN1", "GRBA_S_SNKE1", "GRBA_S_SNKE3", "GRBA_S_STRW1")
@@ -398,12 +428,22 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
 
   # Write each Aquarius data table to csv
   for (aq.name in aq.data) {
-    df <- ReadAquarius(conn, aq.name)
-    # Include time zone in dates
-    if("DateTime" %in% names(df)) {
-      df$DateTime <- format(df$DateTime, "%y-%m-%d %H:%M:%S %z")
-    }
-    readr::write_csv(df, file.path(dest.folder, paste0(aq.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
+    tryCatch(
+      {
+        df <- ReadAquarius(conn, aq.name)
+        # Include time zone in dates
+        if("DateTime" %in% names(df)) {
+          df$DateTime <- format(df$DateTime, "%y-%m-%d %H:%M:%S %z")
+        }
+        readr::write_csv(df, file.path(dest.folder, paste0(aq.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
+      },
+      error = function(e) {
+        if (e$message == "Aquarius connection does not exist.") {
+          warning(paste0("Could not connect to Aquarius. Skipping", aq.name, ".csv"))
+        }
+        else {e}
+      }
+    )
   }
 }
 
@@ -427,7 +467,14 @@ GetRawData <- function(conn, path.to.data, park, site, field.season, data.source
   data.names <- c(db.names, aq.names)
 
   for (data.name in data.names) {
-    data.dump[[data.name]] <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name)
+    tryCatch(data.dump[[data.name]] <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name),
+             error = function(e) {
+               if (e$message == "Aquarius connection does not exist.") {
+                 warning(paste0("Cannot connect to Aquarius. ", data.name, " omitted from data."))
+               } else {e}
+             }
+    )
+    # try(data.dump[[data.name]] <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name))
   }
 
   return(data.dump)
@@ -480,39 +527,40 @@ GetSiteName <- function(conn, path.to.data, site.code, data.source = "database")
 #'
 FormatPlot <- function(data, x.col, y.col, facet.col, n.col.facet = 2, sample.size.col, sample.size.loc, plot.title = '', sub.title = '', facet.as.subtitle = TRUE, x.lab = '', y.lab = '', rotate.x.labs = FALSE, ymax, ymin, xmax, xmin, transform.x, transform.y) {
 
-  x.col <- dplyr::enquo(x.col)
-  facet.col <- dplyr::enquo(facet.col)
-  sample.size.col <- dplyr::enquo(sample.size.col)
-
-  # Add sample size information to either x axis labels or facet/subtitle
-  if (!missing(sample.size.col) & !missing(sample.size.loc)) {
-    if (sample.size.loc == 'xaxis') {
-      data %<>% dplyr::mutate(!!x.col := paste0(!!x.col, '\n', !!sample.size.col))
-    } else if (sample.size.loc == 'plot' & !missing(facet.col)) {
-      data %<>% dplyr::mutate(!!facet.col := paste0(!!facet.col, ' (', !!sample.size.col, ')'))
-    } else {
-      facet.col <- sample.size.col
-    }
-  }
-
   # Allow for 1 or 2 variables
   if (!missing(y.col) & !missing(x.col)) {
     y.col <- dplyr::enquo(y.col)
+    x.col <- dplyr::enquo(x.col)
     p <- ggplot2::ggplot(data, ggplot2::aes(x = !!x.col, y = !!y.col))
   } else if (!missing(x.col)) {
+    x.col <- dplyr::enquo(x.col)
     p <- ggplot2::ggplot(data, ggplot2::aes(!!x.col))
   } else if (!missing(y.col)) {
+    y.col <- dplyr::enquo(y.col)
     p <- ggplot2::ggplot(data, ggplot2::aes(!!y.col))
   }
 
 
   # Create facets if >1 event group, otherwise create subtitle
   if (!missing(facet.col)) {
+    facet.col <- dplyr::enquo(facet.col)
     facets <- unique(dplyr::select(data, !!facet.col))
     if (nrow(facets) > 1) {
       p <- p + ggplot2::facet_wrap(ggplot2::vars(!!facet.col), ncol = n.col.facet, scales = 'free')
     } else if (sub.title == '' & facet.as.subtitle) {
       sub.title <- facets
+    }
+  }
+
+  # Add sample size information to either x axis labels or facet/subtitle
+  if (!missing(sample.size.col) & !missing(sample.size.loc)) {
+    sample.size.col <- dplyr::enquo(sample.size.col)
+    if (sample.size.loc == 'xaxis') {
+      data %<>% dplyr::mutate(!!x.col := paste0(!!x.col, '\n', !!sample.size.col))
+    } else if (sample.size.loc == 'plot' & !missing(facet.col)) {
+      data %<>% dplyr::mutate(!!facet.col := paste0(!!facet.col, ' (', !!sample.size.col, ')'))
+    } else {
+      facet.col <- sample.size.col
     }
   }
 
