@@ -2,7 +2,7 @@
 % Please edit documentation in R/levels-qc.R
 \name{QcStringSurveyElevations}
 \alias{QcStringSurveyElevations}
-\title{Calculates mean and standard deviation of string survey elevations for each year}
+\title{Calculates mean and standard deviation of string survey lake level elevations for each year}
 \usage{
 QcStringSurveyElevations(
   conn,
@@ -33,7 +33,7 @@ QcStringSurveyElevations(
 A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, MeanFinalElevation_ft, StDevFinalElevation_ft
 }
 \description{
-Calculates mean and standard deviation of string survey elevations for each year
+Calculates mean and standard deviation of string survey lake level elevations for each year
 }
 \examples{
 \dontrun{
