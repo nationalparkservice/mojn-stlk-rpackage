@@ -25,7 +25,10 @@ Imports:
     tibble,
     tidyr,
     tidyselect,
-    odbc
+    odbc,
+    fuzzyjoin,
+    measurements,
+    statip
 RoxygenNote: 7.1.1
 Suggests: 
     testthat,

@@ -181,7 +181,7 @@ qcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, d
 
 #' Calculates mean and standard deviation of string survey heights for each benchmark
 #'
-#' @inheritParams QcBenchmarkElevation
+#' @inheritParams qcBenchmarkElevation
 #'
 #' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, MeanHeight_ft, StDevHeight_ft
 #' @export
@@ -213,7 +213,7 @@ qcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, 
 
 #' Calculates mean and standard deviation of string survey lake level elevations for each year
 #'
-#' @inheritParams QcBenchmarkElevation
+#' @inheritParams qcBenchmarkElevation
 #'
 #' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, MeanFinalElevation_ft, StDevFinalElevation_ft
 #' @export
