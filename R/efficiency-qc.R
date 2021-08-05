@@ -1,3 +1,35 @@
+#' Return list of streams and lakes that were not visited for annual monitoring during a field season
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, SiteType, FieldSeason, VisitDate
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     qcNoAnnualVisit(conn)
+#'     qcNoAnnualVisit(conn, site = "GRBA_L_DEAD0", field.season = c("2012", "2013, "2014", "2015"))
+#'     CloseDatabaseConnection(conn)
+#' }
+qCNoAnnualVisit <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+
+visit.data <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
+visit <- visit.data %>%
+  select(Park, Subunit, SiteShort, SiteCode, SiteName, SiteType, VisitDate, FieldSeason, VisitType, MonitoringStatus) %>%
+  filter(VisitType == "Primary", SiteCode != "GRBA_S_BAKR2") %>%
+  pivot_wider(id_cols = c(Park, Subunit, SiteShort, SiteCode, SiteName, SiteType),
+              names_from = FieldSeason,
+              values_from = VisitDate) %>%
+  pivot_longer(!c(Park, Subunit, SiteShort, SiteCode, SiteName, SiteType), names_to = "FieldSeason", values_to = "VisitDate") %>%
+  filter(is.na(VisitDate)) %>%
+  select(Park, SiteShort, SiteCode, SiteName, SiteType, FieldSeason, VisitDate)
+
+return(visit)
+
+}
+
+
 # Calculate the mean (for water temperature, specific conductance, and dissolved oxygen)
 #     and median (for pH) values for each day based on hourly data.
 # Determine the most frequent data grade level for each day based on hourly data.
