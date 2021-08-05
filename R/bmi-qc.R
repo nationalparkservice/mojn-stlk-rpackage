@@ -59,15 +59,15 @@ BMILong <- function(conn, path.to.data, park, site, field.season, data.source = 
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
-#' @return A tibble
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, VisitType, SampleType, SampleCollectionMethod, BMIMethod, LabSampleNumber, TaxaGroup, TaxaGroupCount, TaxaGroupAbundance, LabNotes.
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' c <- OpenDatabaseConnection
-#' bmi_issues <- QcBMIDiscrepancies(c)  # Get all instances of discrepancy between taxa count and abundance
-#' bmi_issues_mill <- QcBMIDiscrepancies(c, site = "GRBA_S_MILL1")  # Look at issues for Mill Creek only
-#' bmi_issues_bakr_2015 <- QcBMIDiscrepancies(c, site = c("GRBA_S_BAKR2", "GRBA_S_BAKR3"), field.season = "2015")  # Look at issues for Baker Creek sites in 2015
+#' bmi_issues <- qcBMIDiscrepancies(c)  # Get all instances of discrepancy between taxa count and abundance
+#' bmi_issues_mill <- qcBMIDiscrepancies(c, site = "GRBA_S_MILL1")  # Look at issues for Mill Creek only
+#' bmi_issues_bakr_2015 <- qcBMIDiscrepancies(c, site = c("GRBA_S_BAKR2", "GRBA_S_BAKR3"), field.season = "2015")  # Look at issues for Baker Creek sites in 2015
 #' CloseDatabaseConnection(c)
 #' }
 qcBMIDiscrepancies <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
@@ -79,7 +79,7 @@ qcBMIDiscrepancies <- function(conn, path.to.data, park, site, field.season, dat
 }
 
 
-#' Filter channel characteristic data by visit type
+#' Filter channel characteristic data by primary visit type
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
@@ -88,17 +88,21 @@ qcBMIDiscrepancies <- function(conn, path.to.data, park, site, field.season, dat
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
-#' @return A tibble
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, Transect, TransectSide, ChannelType, Substrate, Notes
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection
+#' channel <- ChannelCharacteristics(conn)
+#' channel_STRW2_2016 <- ChannelCharacteristics(conn, site = "GRBA_S_STRW2", field.season = "2016")
+#' CloseDatabaseConnection(conn)
+#' }
 ChannelCharacteristics <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  data <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Channel") %>%
-    dplyr::select(-DPL)
-
+  data <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Channel")
   visit <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
 
-  channel <- dplyr::left_join(data, visit[, c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate", "VisitType")], by = c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate")) %>%
+  channel_characteristics <- dplyr::left_join(data, visit[, c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate", "VisitType")], by = c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate")) %>%
     dplyr::filter(VisitType == "Primary") %>%
     dplyr::select(-c(DPL, VisitType)) %>%
     dplyr::arrange(SiteCode, VisitDate, Transect)
@@ -115,10 +119,15 @@ ChannelCharacteristics <- function(conn, path.to.data, park, site, field.season,
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
-#' @return A tibble
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, ChannelFlow, Rank, Count
 #' @export
 #'
-#' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection
+#' channel_flow <- ChannelFlow(conn)
+#' channel_flow_STRW2_2016 <- ChannelFlow(conn, site = "GRBA_S_STRW2", field.season = "2016")
+#' CloseDatabaseConnection(conn)
+#' }
 ChannelFLow <-  function(conn, path.to.data, park, site, field.season, data.source = "database") {
   channel_flow <- ChannelCharacteristics(conn, path.to.data, park, site, field.season, data.source) %>%
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, ChannelType) %>%
@@ -141,12 +150,17 @@ ChannelFLow <-  function(conn, path.to.data, park, site, field.season, data.sour
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
-#' @return A tibble
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, ChannelFlow, Rank, Count
 #' @export
 #'
 #' @examples
+#' conn <- OpenDatabaseConnection
+#' channel_substrate <- ChannelSubstrate(conn)
+#' channel_substrate_STRW2_2016 <- ChannelSubstrate(conn, site = "GRBA_S_STRW2", field.season = "2016")
+#' CloseDatabaseConnection(conn)
+#' }
 ChannelSubstrate <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  channel_subtrate <- ChannelCharacteristics(conn, path.to.data, park, site, field.season, data.source) %>%
+  channel_substrate <- ChannelCharacteristics(conn, path.to.data, park, site, field.season, data.source) %>%
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, Substrate) %>%
     dplyr::summarize(Count = n()) %>%
     dplyr::mutate(Rank = min_rank(desc(Count))) %>%
