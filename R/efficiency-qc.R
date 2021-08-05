@@ -12,7 +12,7 @@
 #'     qcNoAnnualVisit(conn, site = "GRBA_L_DEAD0", field.season = c("2012", "2013, "2014", "2015"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qCNoAnnualVisit <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+qcNoAnnualVisit <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 visit.data <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
 visit <- visit.data %>%
