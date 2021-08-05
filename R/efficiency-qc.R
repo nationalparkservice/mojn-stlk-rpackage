@@ -128,7 +128,7 @@ do.mgl.daily <- do.mgl %>%
 # Calculate the percentage of days with data for each parameter for each year
 #       between the index period of July 1 to September 15 (77 days).
 
-QcWqCompleteness <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+qcWqCompleteness <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wt.comp <- wt.daily %>%
            dplyr::group_by(Park,
@@ -156,7 +156,7 @@ wt.comp.new <- wt.daily %>%
 
 # Calculate the percentage of data rated at each grade level for each year.
 
-QcWqGrades <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+qcWqGrades <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wt.grds <- wt.daily %>%
       dplyr::group_by(Park,
