@@ -230,8 +230,8 @@ test_that("Stream wq median filters by site", {
 
 
 test_that("Passing sanity checks return empty data frames", {
-  lake_result <- LakeQcWqSanity(path.to.data = dir, data.source = "local")
-  stream_result <- StreamQcWqSanity(path.to.data = dir, data.source = "local")
+  lake_result <- qcLakeWqSanity(path.to.data = dir, data.source = "local")
+  stream_result <- qcStreamWqSanity(path.to.data = dir, data.source = "local")
 
   expect_equal(nrow(lake_result), 0)
   expect_equal(names(lake_result), c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "Parameter", "Units", "Median", "Flag", "FlagNote", "MeasurementDepth_m"))
@@ -243,8 +243,8 @@ test_that("Passing sanity checks return empty data frames", {
 })
 
 test_that("Passing flag checks return empty data frames", {
-  lake_result <- LakeQcWqFlags(path.to.data = dir, data.source = "local")
-  stream_result <- StreamQcWqFlags(path.to.data = dir, data.source = "local")
+  lake_result <- qcLakeWqFlags(path.to.data = dir, data.source = "local")
+  stream_result <- qcStreamWqFlags(path.to.data = dir, data.source = "local")
 
   expect_equal(nrow(lake_result), 0)
   expect_equal(names(lake_result), c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "Parameter", "Units", "Median", "Flag", "FlagNote", "MeasurementDepth_m"))
@@ -290,8 +290,8 @@ readr::write_csv(dummy_spcond_bad, file.path(dir, "WaterQualitySpCond.csv"), na 
 readr::write_csv(dummy_temp_bad, file.path(dir, "WaterQualityTemperature.csv"), na = "")
 readr::write_csv(dummy_streamwq_bad, file.path(dir, "WQStreamXSection.csv"), na = "")
 
-lake_result <- LakeQcWqSanity(path.to.data = dir, data.source = "local")
-stream_result <- StreamQcWqSanity(path.to.data = dir, data.source = "local")
+lake_result <- qcLakeWqSanity(path.to.data = dir, data.source = "local")
+stream_result <- qcStreamWqSanity(path.to.data = dir, data.source = "local")
 
 test_that("DO sanity check works", {
   expect_equal(lake_result[lake_result$Parameter == "DO", ]$Median, c(120.0, 12.1))
@@ -314,8 +314,8 @@ test_that("Temperature sanity check works", {
 })
 
 
-lake_result <- LakeQcWqFlags(path.to.data = dir, data.source = "local")
-stream_result <- StreamQcWqFlags(path.to.data = dir, data.source = "local")
+lake_result <- qcLakeWqFlags(path.to.data = dir, data.source = "local")
+stream_result <- qcStreamWqFlags(path.to.data = dir, data.source = "local")
 
 test_that("DO flag check works", {
   expect_equal(lake_result[lake_result$Parameter == "DO", ]$Flag, c("I", "I"))
