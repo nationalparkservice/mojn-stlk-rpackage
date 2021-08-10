@@ -122,7 +122,7 @@ qcChemFieldDupes <- function(conn, path.to.data, park, site, field.season, data.
 }
 
 
-#' Calculate the relative percent difference (RPD) for field blanks, flag results that exceed the 30% MQO threshold, and list all RPD values and flags.
+#' List all laboratory values from field blanks that exceed the minimum detection level (MDL) for that analyte.
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
 #' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
@@ -137,29 +137,23 @@ qcChemFieldDupes <- function(conn, path.to.data, park, site, field.season, data.
 #' @examples
 qcChemFieldBlanks <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+    lookup <- getMDLLookup()
 
     field.blanks <- chem %>%
         dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType) %>%
-        dplyr::filter(SiteCode != "GRBA_L_STLL0s", SampleType %in% c("Routine", "Field Blank"))
+        dplyr::filter(SiteCode != "GRBA_L_STLL0s", SampleType %in% c("Field Blank")) %>%
+        dplyr::mutate(FieldSeason = as.double(FieldSeason))
 
-    field.blanks.wide <- tidyr::pivot_wider(data = field.blanks, names_from = SampleType, values_from = LabValue)
+    field.blanks.merged <- fuzzyjoin::fuzzy_inner_join(x = field.blanks,
+                                                       y = lookup,
+                                                       by = c("Characteristic" = "Characteristic", "Unit" = "Unit", "FieldSeason" = "StartYear", "FieldSeason" = "EndYear"),
+                                                       match_fun = list(`==`, `==`, `>=`, `<=`))
 
-
-    field.blanks.wide <- if ("Field Blank" %in% names(field.blanks.wide)) {
-
-        dplyr::rename(field.blanks.wide, FieldBlank = `Field Blank`)
-
-    } else {
-
-        dplyr::mutate(field.blanks.wide, FieldBlank = NA)
-
-    }
-
-    field.blanks.list <- field.blanks.wide %>%
-        dplyr::filter(!is.na(FieldBlank)) %>%
-        dplyr::mutate(RPD = round(((pmax(Routine, FieldBlank) - pmin(Routine, FieldBlank))/((pmax(Routine, FieldBlank) + pmin(Routine, FieldBlank))/2))*100, 2)) %>%
-        dplyr::mutate(RPDFlag = ifelse(RPD > 30, "RPD above laboratory precision MQO of 30%", NA)) %>%
-        dplyr::arrange(desc(RPD))
+    field.blanks.list <- field.blanks.merged %>%
+        dplyr::rename(Characteristic = Characteristic.x, Unit = Unit.x) %>%
+        dplyr::mutate(FieldSeason = as.character(FieldSeason)) %>%
+        dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, MDL) %>%
+        dplyr::filter(LabValue > MDL)
 
     return(field.blanks.list)
 
@@ -265,19 +259,19 @@ qcChemTDP <- function(conn, path.to.data, park, site, field.season, data.source 
 }
 
 
-#' Create data frame with MDL and ML values for each characteristic.
+#' Create tibble with MDL and ML values for each characteristic.
 #'
-#' @return A data frame with columns Characteristic, Unit, StartYear, EndYear, MDL, ML.
+#' @return A tibble with columns Characteristic, Unit, StartYear, EndYear, MDL, ML.
 #' @export
 #'
 #' @examples
 getMDLLookup <- function() {
-    lookup <- data.frame(Characteristic = c("ALK2", "Ca", "DOC", "Cl", "Mg", "NO3NO2-N", "UTN", "UTP", "K", "Na", "SO4-S"),
-                         Unit = c("mg CaCO3/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L"),
-                         StartYear = c(2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009),
-                         EndYear = c(2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021),
-                         MDL = c(0.2, 0.06, 0.05, 0.01, 0.02, 0.001, 0.01, 0.002, 0.03, 0.01, 0.01),
-                         ML = c(0.6, 0.19, 0.16, 0.03, 0.06, 0.003, 0.03, 0.006, 0.10, 0.03, 0.03))
+    lookup <- tibble::tibble(Characteristic = c("ALK2", "Ca", "DOC", "Cl", "Mg", "NO3NO2-N", "UTN", "UTP", "K", "Na", "SO4-S"),
+                             Unit = c("mg CaCO3/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L"),
+                             StartYear = c(2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009),
+                             EndYear = c(2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021),
+                             MDL = c(0.2, 0.06, 0.05, 0.01, 0.02, 0.001, 0.01, 0.002, 0.03, 0.01, 0.01),
+                             ML = c(0.6, 0.19, 0.16, 0.03, 0.06, 0.003, 0.03, 0.006, 0.10, 0.03, 0.03))
 
     return(lookup)
 
@@ -299,6 +293,7 @@ getMDLLookup <- function() {
 #' @examples
 qcChemMDL <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+    lookup <- getMDLLookup()
 
     mdl <- chem %>%
         dplyr::filter(VisitType == "Primary", SampleType == "Routine") %>%
