@@ -200,7 +200,8 @@ qcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, 
   str_survey <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString") %>%
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, Benchmark) %>%
     dplyr::summarise(MeanHeight_ft = mean(Height_ft),
-                     StDevHeight_ft = sd(Height_ft))
+                     StDevHeight_ft = sd(Height_ft)) %>%
+    dplyr::ungroup()
 
   if (!is.na(sd_cutoff)) {
     str_survey %<>%
