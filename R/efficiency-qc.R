@@ -2,7 +2,7 @@
 #'
 #' @inheritParams ReadAndFilterData
 #'
-#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, SiteType, FieldSeason, VisitDate
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, SampleFrame, FieldSeason, VisitDate
 #' @export
 #'
 #' @examples
@@ -16,22 +16,115 @@ qcNoAnnualVisit <- function(conn, path.to.data, park, site, field.season, parame
 
 visit.data <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
 visit <- visit.data %>%
-  select(Park, Subunit, SiteShort, SiteCode, SiteName, SiteType, VisitDate, FieldSeason, VisitType, MonitoringStatus) %>%
+  select(Park, Subunit, SiteShort, SiteCode, SiteName, SampleFrame, VisitDate, FieldSeason, VisitType, MonitoringStatus) %>%
   filter(VisitType == "Primary", SiteCode != "GRBA_S_BAKR2") %>%
-  pivot_wider(id_cols = c(Park, Subunit, SiteShort, SiteCode, SiteName, SiteType),
+  pivot_wider(id_cols = c(Park, Subunit, SiteShort, SiteCode, SiteName, SampleFrame),
               names_from = FieldSeason,
               values_from = VisitDate) %>%
-  pivot_longer(!c(Park, Subunit, SiteShort, SiteCode, SiteName, SiteType), names_to = "FieldSeason", values_to = "VisitDate") %>%
+  pivot_longer(!c(Park, Subunit, SiteShort, SiteCode, SiteName, SampleFrame), names_to = "FieldSeason", values_to = "VisitDate") %>%
   filter(is.na(VisitDate)) %>%
-  select(Park, SiteShort, SiteCode, SiteName, SiteType, FieldSeason, VisitDate)
+  select(Park, SiteShort, SiteCode, SiteName, SampleFrame, FieldSeason, VisitDate)
 
 return(visit)
 
 }
 
+#' Return list of streams and lakes that have any data categorized as "Raw" or "Provisional"
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A tibble with columns SiteCode, SiteName, VisitDate, FieldSeason, SampleFrame, VisitType, Visit.DPL, Chem.DPL, BMI.DPL, Channel.DPL, Clarity.DPL, LakeSurvey.DPL, LakeString.DPL, Xsection.DPL, TempC.DPL, pH.DPL, SpCond.DPL, DO.DPL
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     qcDPLCheck(conn)
+#'     qcDPLCheck(conn, site = "GRBA_L_JHNS0", field.season = c("2018", "2019, "2020"))
+#'     CloseDatabaseConnection(conn)
+#' }
 qcDPLCheck <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
+  visit <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
+  chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+  bmi <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "BMI")
+  channel <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Channel")
+  clarity <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Clarity")
+  lakesurvey <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "LakeLevelSurvey")
+  lakestring <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "LakeLevelString")
+  xsection <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WQStreamXSection")
+  temp <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WaterQualityTemperature")
+  ph <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WaterQualitypH")
+  spcond <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WaterQualitySpCond")
+  do <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WaterQualityDO")
 
+  visit.DPL <- visit %>%
+    rename(Visit.DPL = DataProcessingLevel) %>%
+    rename(SampleFrame = SiteType) %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, SampleFrame, VisitType, Visit.DPL)
+  chem.DPL <- chem %>%
+    filter(SampleType == "Routine") %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SampleFrame, DPL) %>%
+    rename(Chem.DPL = DPL) %>%
+    distinct()
+  bmi.DPL <- bmi %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    rename(BMI.DPL = DPL) %>%
+    distinct()
+  channel.DPL <- channel %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, DPL) %>%
+    rename(Channel.DPL = DPL) %>%
+    distinct()
+  clarity.DPL <- clarity %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    rename(Clarity.DPL = DPL) %>%
+    distinct()
+  lakesurvey.DPL <- lakesurvey %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    rename(LakeSurvey.DPL = DPL) %>%
+    distinct()
+  lakestring.DPL <- lakestring %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    rename(LakeString.DPL = DPL) %>%
+    distinct()
+  xsection.DPL <- xsection %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    rename(Xsection.DPL = DPL) %>%
+    distinct()
+  temp.DPL <- temp %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    rename(TempC.DPL = DPL) %>%
+    distinct()
+  ph.DPL <- ph %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    rename(pH.DPL = DPL) %>%
+    distinct()
+  spcond.DPL <- spcond %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    rename(SpCond.DPL = DPL) %>%
+    distinct()
+  do.DPL <- do %>%
+    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    rename(DO.DPL = DPL) %>%
+    distinct()
+
+  dpl <- visit.DPL %>%
+    left_join(chem.DPL) %>%
+    left_join(bmi.DPL) %>%
+    left_join(channel.DPL) %>%
+    left_join(clarity.DPL) %>%
+    left_join(lakesurvey.DPL) %>%
+    left_join(lakestring.DPL) %>%
+    left_join(xsection.DPL) %>%
+    left_join(temp.DPL) %>%
+    left_join(ph.DPL) %>%
+    left_join(spcond.DPL) %>%
+    left_join(do.DPL) %>%
+    unique() %>%
+    filter_all(any_vars(. %in% c("Raw", "Provisional"))) %>%
+    arrange(SampleFrame, FieldSeason, SiteCode)
+
+return(dpl)
 
 }
 
@@ -40,7 +133,7 @@ qcDPLCheck <- function(conn, path.to.data, park, site, field.season, parameter, 
 #'
 #' @inheritParams ReadAndFilterData
 #'
-#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, SiteType, FieldSeason, Date, Parameter, Units, Value, Grade.
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, SampleFrame, FieldSeason, Date, Parameter, Units, Value, Grade.
 #' @export
 #'
 #' @examples
@@ -64,7 +157,7 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, parame
     dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
     dplyr::group_by(Park,
                     SiteCode,
-                    SiteType,
+                    SampleFrame,
                     FieldSeason,
                     Date) %>%
     dplyr::summarise(Value = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(WaterTemperature_C)) > 77 ~ mean(WaterTemperature_C, na.rm = TRUE),
@@ -85,7 +178,7 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, parame
     dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
     dplyr::group_by(Park,
                     SiteCode,
-                    SiteType,
+                    SampleFrame,
                     FieldSeason,
                     Date) %>%
     dplyr::summarise(Value = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(pH)) > 77 ~ median(pH, na.rm = TRUE),
@@ -106,7 +199,7 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, parame
     dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
     dplyr::group_by(Park,
                     SiteCode,
-                    SiteType,
+                    SampleFrame,
                     FieldSeason,
                     Date) %>%
     dplyr::summarise(Value = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(SpecificConductance_microS_per_cm)) > 77 ~ mean(SpecificConductance_microS_per_cm, na.rm = TRUE),
@@ -127,7 +220,7 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, parame
     dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
     dplyr::group_by(Park,
                     SiteCode,
-                    SiteType,
+                    SampleFrame,
                     FieldSeason,
                     Date) %>%
     dplyr::summarise(Value = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(DissolvedOxygen_percent)) > 77 ~ mean(DissolvedOxygen_percent, na.rm = TRUE),
@@ -148,7 +241,7 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, parame
     dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
     dplyr::group_by(Park,
                     SiteCode,
-                    SiteType,
+                    SampleFrame,
                     FieldSeason,
                     Date) %>%
     dplyr::rename(DissolvedOxygen_mgL = DissolvedOxygen_mg_per_L) %>%
@@ -219,14 +312,14 @@ wq.daily <- wq.long %>%
                            `Grade_DO_%` = "DO_pct_Grade",
                            `Grade_DO_mg/L` = "DO_mgL_Grade"),
                 warn_missing = FALSE) %>%
-  dplyr::select(Park, SiteShort, SiteCode, SiteName, SiteType, Date, FieldSeason, Temp_C, Temp_C_Grade, pH, pH_Grade, SpCond_uScm, SpCond_uScm_Grade, DO_pct, DO_pct_Grade, everything())
+  dplyr::select(Park, SiteShort, SiteCode, SiteName, SampleFrame, Date, FieldSeason, Temp_C, Temp_C_Grade, pH, pH_Grade, SpCond_uScm, SpCond_uScm_Grade, DO_pct, DO_pct_Grade, everything())
 
 return(wq.daily)
 
 }
 
 
-#' Calculate the number and percentage of days of data for each water quality parameter for each year between the index period of July 1 to September 15 (77 days).
+#' Calculate the number and percentage of days of data for each water quality parameter for each field season between the index period of July 1 to September 15 (77 days).
 #'
 #' @param conn
 #' @param path.to.data
@@ -252,15 +345,15 @@ wq.comp <- wq.long %>%
                   SiteShort,
                   SiteCode,
                   SiteName,
-                  SiteType,
+                  SampleFrame,
                   FieldSeason,
                   Parameter,
                   Units) %>%
   dplyr::summarise(CompletedDays = sum(!is.na(Value))) %>%
   dplyr::mutate(PercentCompleteness = CompletedDays/77*100) %>%
   dplyr::ungroup() %>%
-  tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SiteType, Parameter, Units), fill = list(CompletedDays = 0, PercentCompleteness = 0)) %>%
-  dplyr::relocate(FieldSeason, .after = SiteType) %>%
+  tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Parameter, Units), fill = list(CompletedDays = 0, PercentCompleteness = 0)) %>%
+  dplyr::relocate(FieldSeason, .after = SampleFrame) %>%
   dplyr::arrange(SiteCode, FieldSeason, Parameter)
 
 wq.comp$PercentCompleteness <- round(wq.comp$PercentCompleteness, 2)
@@ -270,7 +363,7 @@ return(wq.comp)
 }
 
 
-#' Calculate percentage of data rated at each grade level for each water quality parameter for each year between the index period of July 1 to September 15 (77 days). Long format for plotting.
+#' Calculate percentage of data rated at each grade level for each water quality parameter for each field season between the index period of July 1 to September 15 (77 days). Long format for plotting.
 #'
 #' @param conn
 #' @param path.to.data
@@ -293,12 +386,13 @@ wq.grds.long <- wq.long %>%
                 Day = lubridate::day(Date)) %>%
   dplyr::filter(Month == 7 | Month == 8 | (Month == 9 & Day <= 15)) %>%
   dplyr::select(-c(Month, Day)) %>%
-  dplyr::group_by(Park, SiteShort, SiteCode, SiteName, SiteType, FieldSeason, Parameter, Units, Grade) %>%
+  dplyr::group_by(Park, SiteShort, SiteCode, SiteName, SampleFrame, FieldSeason, Parameter, Units, Grade) %>%
   dplyr::summarise(Days = n()) %>%
   dplyr::mutate(Percent = Days/sum(Days)*100) %>%
   dplyr::ungroup() %>%
-  tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SiteType, Parameter, Units, Grade), fill = list(Days = 0, Percent = 0)) %>%
-  dplyr::relocate(FieldSeason, .after = SiteType)
+  tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Parameter, Units), fill = list(Days = 0, Percent = 0)) %>%
+  dplyr::relocate(FieldSeason, .after = SampleFrame) %>%
+  dplyr::arrange(SiteCode, FieldSeason, Parameter, Grade)
 
 
 return(wq.grds.long)
@@ -306,7 +400,7 @@ return(wq.grds.long)
 }
 
 
-#' Calculate the percentage of data rated at each grade level for each water quality parameter for each year between the index period of July 1 to September 15 (77 days).
+#' Calculate the percentage of data rated at each grade level for each water quality parameter for each field season between the index period of July 1 to September 15 (77 days).
 #'
 #' @param conn
 #' @param path.to.data
@@ -329,7 +423,7 @@ wt.grds <- wq.daily %>%
                   SiteShort,
                   SiteCode,
                   SiteName,
-                  SiteType,
+                  SampleFrame,
                   FieldSeason) %>%
   dplyr::mutate(Month = lubridate::month(Date),
                     Day = lubridate::day(Date)) %>%
@@ -353,7 +447,7 @@ ph.grds <- wq.daily %>%
                   SiteShort,
                   SiteCode,
                   SiteName,
-                  SiteType,
+                  SampleFrame,
                   FieldSeason) %>%
   dplyr::mutate(Month = lubridate::month(Date),
                 Day = lubridate::day(Date)) %>%
@@ -377,7 +471,7 @@ sc.grds <- wq.daily %>%
                   SiteShort,
                   SiteCode,
                   SiteName,
-                  SiteType,
+                  SampleFrame,
                   FieldSeason) %>%
   dplyr::mutate(Month = lubridate::month(Date),
                 Day = lubridate::day(Date)) %>%
@@ -401,7 +495,7 @@ do.pct.grds <- wq.daily %>%
                   SiteShort,
                   SiteCode,
                   SiteName,
-                  SiteType,
+                  SampleFrame,
                   FieldSeason) %>%
   dplyr::mutate(Month = lubridate::month(Date),
                 Day = lubridate::day(Date)) %>%
@@ -427,7 +521,7 @@ do.mgl.grds <- wq.daily %>%
                   SiteShort,
                   SiteCode,
                   SiteName,
-                  SiteType,
+                  SampleFrame,
                   FieldSeason) %>%
   dplyr::mutate(Month = lubridate::month(Date),
                 Day = lubridate::day(Date)) %>%
@@ -452,7 +546,7 @@ do.mgl.grds <- tibble::tibble(Park = character(),
                               SiteShort = character(),
                               SiteCode = character(),
                               SiteName = character(),
-                              SiteType = character(),
+                              SampleFrame = character(),
                               FieldSeason = character(),
                               Parameter = character(),
                               Units = character(),
@@ -472,7 +566,7 @@ wq.grds <- dplyr::bind_rows(wt.grds, ph.grds, sc.grds, do.pct.grds, do.mgl.grds)
                     SiteShort,
                     SiteCode,
                     SiteName,
-                    SiteType,
+                    SampleFrame,
                     FieldSeason,
                     Parameter,
                     Units,
@@ -484,15 +578,15 @@ wq.grds <- dplyr::bind_rows(wt.grds, ph.grds, sc.grds, do.pct.grds, do.mgl.grds)
                     PercentFair,
                     DaysPoor,
                     PercentPoor) %>%
-    tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SiteType, Parameter, Units), fill = list(DaysExcellent = 0,
-                                                                                                                       PercentExcellent = 0,
-                                                                                                                       DaysGood = 0,
-                                                                                                                       PercentGood = 0,
-                                                                                                                       DaysFair = 0,
-                                                                                                                       PercentFair = 0,
-                                                                                                                       DaysPoor = 0,
-                                                                                                                       PercentPoor = 0)) %>%
-    dplyr::relocate(FieldSeason, .after = SiteType) %>%
+    tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Parameter, Units), fill = list(DaysExcellent = 0,
+                                                                                                                          PercentExcellent = 0,
+                                                                                                                          DaysGood = 0,
+                                                                                                                          PercentGood = 0,
+                                                                                                                          DaysFair = 0,
+                                                                                                                          PercentFair = 0,
+                                                                                                                          DaysPoor = 0,
+                                                                                                                          PercentPoor = 0)) %>%
+    dplyr::relocate(FieldSeason, .after = SampleFrame) %>%
     dplyr::arrange(SiteCode, FieldSeason, Parameter)
 
 wq.grds$PercentExcellent <- round(wq.grds$PercentExcellent, 2)
@@ -535,7 +629,21 @@ return(wq.comp.plot)
 
 }
 
-# Plot percent grades
+
+#' Plot the percentage of data rated at each grade level for each water quality parameter for each field season.
+#'
+#' @param conn
+#' @param path.to.data
+#' @param park
+#' @param site
+#' @param field.season
+#' @param parameter
+#' @param data.source
+#'
+#' @return A ggplot object
+#' @export
+#'
+#' @examples
 qcWqGradesPlot <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wq.grds.long <- qcWqGradesLong(conn, path.to.data, park, site, field.season, data.source)
