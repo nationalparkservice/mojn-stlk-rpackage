@@ -29,6 +29,7 @@ return(visit)
 
 }
 
+
 #' Return list of streams and lakes that have any data categorized as "Raw" or "Provisional"
 #'
 #' @inheritParams ReadAndFilterData
@@ -60,7 +61,6 @@ qcDPLCheck <- function(conn, path.to.data, park, site, field.season, parameter, 
 
   visit.DPL <- visit %>%
     rename(Visit.DPL = DataProcessingLevel) %>%
-    rename(SampleFrame = SiteType) %>%
     select(SiteCode, SiteName, VisitDate, FieldSeason, SampleFrame, VisitType, Visit.DPL)
   chem.DPL <- chem %>%
     filter(SampleType == "Routine") %>%
