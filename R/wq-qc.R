@@ -59,32 +59,32 @@ qcWqSanity <- function(conn, path.to.data, park, site, field.season, data.source
 
   temp.sanity <- wq.sanity.predata %>%
     dplyr::filter(TemperatureMedian_C > 20) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "TemperatureMedian_C", "TemperatureFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "TemperatureMedian_C", "TemperatureFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "Temperature", Units = "C", .after = "VisitType") %>%
     dplyr::rename(Median = TemperatureMedian_C, Flag = TemperatureFlag)
 
   spcond.sanity <- wq.sanity.predata %>%
     dplyr::filter(SpCondMedian_microS_per_cm > 1000) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "SpCondMedian_microS_per_cm", "SpCondFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "SpCondMedian_microS_per_cm", "SpCondFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "SpCond", Units = "uS/cm", .after = "VisitType") %>%
     dplyr::rename(Median = SpCondMedian_microS_per_cm, Flag = SpCondFlag)
 
   ph.sanity <- wq.sanity.predata %>%
     dplyr::filter(pHMedian > 10 | pHMedian < 6) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "pHMedian", "pHFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "pHMedian", "pHFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "pH", Units = "units", .after = "VisitType") %>%
     dplyr::rename(Median = pHMedian, Flag = pHFlag)
 
   do.mgl.sanity <- wq.sanity.predata %>%
     dplyr::filter(DOMedian_mg_per_L > 12) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "DOMedian_mg_per_L", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "DOMedian_mg_per_L", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "DO", Units = "mg/L", .after = "VisitType") %>%
     dplyr::rename(Median = DOMedian_mg_per_L, Flag = DOFlag)
 
   if (wq.type == "lake") {
     do.percent.sanity <- wq.sanity.predata %>%
       dplyr::filter(DOMedian_percent > 110 | DOMedian_percent < 2) %>%
-      dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "DOMedian_percent", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+      dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "DOMedian_percent", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
       tibble::add_column(Parameter = "DO", Units = "%", .after = "VisitType") %>%
       dplyr::rename(Median = DOMedian_percent, Flag = DOFlag)
     wq.sanity <- rbind(temp.sanity, spcond.sanity, ph.sanity, do.percent.sanity, do.mgl.sanity)
@@ -152,32 +152,32 @@ qcWqFlags <- function(conn, path.to.data, park, site, field.season, data.source 
 
   temp.flags <- wq.flags.predata %>%
     dplyr::filter(TemperatureFlag %in% c("I", "W", "C")) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "TemperatureMedian_C", "TemperatureFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "TemperatureMedian_C", "TemperatureFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "Temperature", Units = "C", .after = "VisitType") %>%
     dplyr::rename(Median = TemperatureMedian_C, Flag = TemperatureFlag)
 
   spcond.flags <- wq.flags.predata %>%
     dplyr::filter(SpCondFlag %in% c("I", "W", "C")) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "SpCondMedian_microS_per_cm", "SpCondFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "SpCondMedian_microS_per_cm", "SpCondFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "SpCond", Units = "uS/cm", .after = "VisitType") %>%
     dplyr::rename(Median = SpCondMedian_microS_per_cm, Flag = SpCondFlag)
 
   ph.flags <- wq.flags.predata %>%
     dplyr::filter(pHFlag %in% c("I", "W", "C")) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "pHMedian", "pHFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "pHMedian", "pHFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "pH", Units = "units", .after = "VisitType") %>%
     dplyr::rename(Median = pHMedian, Flag = pHFlag)
 
   do.mgl.flags <- wq.flags.predata %>%
     dplyr::filter(DOFlag %in% c("I", "W", "C")) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "DOMedian_mg_per_L", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "DOMedian_mg_per_L", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "DO", Units = "mg/L", .after = "VisitType") %>%
     dplyr::rename(Median = DOMedian_mg_per_L, Flag = DOFlag)
 
   if (wq.type == "lake") {
     do.percent.flags <- wq.flags.predata %>%
       dplyr::filter(DOFlag %in% c("I", "W", "C")) %>%
-      dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "DOMedian_percent", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+      dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "DOMedian_percent", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
       tibble::add_column(Parameter = "DO", Units = "%", .after = "VisitType") %>%
       dplyr::rename(Median = DOMedian_percent, Flag = DOFlag)
     wq.flags <- rbind(temp.flags, spcond.flags, ph.flags, do.percent.flags, do.mgl.flags)
@@ -248,32 +248,32 @@ qcWqCleaned <- function(conn, path.to.data, park, site, field.season, data.sourc
 
   temp.sanity <- wq.sanity.predata %>%
     dplyr::filter(VisitType == "Primary", !(TemperatureFlag %in% c("W", "C"))) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "TemperatureMedian_C", "TemperatureFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "TemperatureMedian_C", "TemperatureFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "Temperature", Units = "C", .after = "VisitType") %>%
     dplyr::rename(Median = TemperatureMedian_C, Flag = TemperatureFlag)
 
   spcond.sanity <- wq.sanity.predata %>%
     dplyr::filter(VisitType == "Primary", !(SpCondFlag %in% c("W", "C"))) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "SpCondMedian_microS_per_cm", "SpCondFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "SpCondMedian_microS_per_cm", "SpCondFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "SpCond", Units = "uS/cm", .after = "VisitType") %>%
     dplyr::rename(Median = SpCondMedian_microS_per_cm, Flag = SpCondFlag)
 
   ph.sanity <- wq.sanity.predata %>%
     dplyr::filter(VisitType == "Primary", !(pHFlag %in% c("W", "C"))) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "pHMedian", "pHFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "pHMedian", "pHFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "pH", Units = "units", .after = "VisitType") %>%
     dplyr::rename(Median = pHMedian, Flag = pHFlag)
 
   do.mgl.sanity <- wq.sanity.predata %>%
     dplyr::filter(VisitType == "Primary", !(DOFlag %in% c("W", "C")), DOMedian_mg_per_L < 12 | is.na(DOMedian_mg_per_L)) %>%
-    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "DOMedian_mg_per_L", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+    dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "DOMedian_mg_per_L", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
     tibble::add_column(Parameter = "DO", Units = "mg/L", .after = "VisitType") %>%
     dplyr::rename(Median = DOMedian_mg_per_L, Flag = DOFlag)
 
   if (wq.type == "lake") {
     do.percent.sanity <- wq.sanity.predata %>%
       dplyr::filter(VisitType == "Primary", !(DOFlag %in% c("W", "C")), DOMedian_percent < 110 | is.na(DOMedian_percent)) %>%
-      dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "DOMedian_percent", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
+      dplyr::select(all_of(c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "DOMedian_percent", "DOFlag", "FlagNote")), any_of("MeasurementDepth_m")) %>%
       tibble::add_column(Parameter = "DO", Units = "%", .after = "VisitType") %>%
       dplyr::rename(Median = DOMedian_percent, Flag = DOFlag)
     wq.sanity <- rbind(temp.sanity, spcond.sanity, ph.sanity, do.percent.sanity, do.mgl.sanity)
