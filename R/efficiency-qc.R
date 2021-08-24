@@ -30,7 +30,7 @@ return(visit)
 }
 
 
-#' Return list of streams and lakes that have any data categorized as "Raw" or "Provisional"
+#' Return list of site visits that have any data categorized as "Raw" or "Provisional"
 #'
 #' @inheritParams ReadAndFilterData
 #'
