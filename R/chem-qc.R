@@ -351,3 +351,119 @@ qcChemML <- function(conn, path.to.data, park, site, field.season, data.source =
     return(ml.list)
 
 }
+
+
+#' Plot lake nutrient (UTN, TDN, NO2No3-N, UTP, TDP, DOC) concentration data for all parks and field seasons.
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A ggplot object
+#' @export
+#'
+ChemLakeNutrientPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+
+    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+
+    lake.nut <- chem %>%
+        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Nutrient") %>%
+        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
+
+    lake.nut$Characteristic_f = factor(lake.nut$Characteristic, levels = c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"))
+
+    lake.nut.plot <- ggplot2::ggplot(lake.nut, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+        geom_point() +
+        geom_line() +
+        facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
+        ylab(label = "Concentration (mg/L)") +
+        theme(axis.text.x = element_text(angle = 90))
+
+    return(lake.nut.plot)
+
+}
+
+
+#' Plot lake ion (ANC2, Na, Mg, K, Ca, SO4-S, Cl) concentration data for all parks and field seasons.
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A ggplot object
+#' @export
+#'
+ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+
+    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+
+    lake.ion <- chem %>%
+        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Ion") %>%
+        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
+
+    lake.ion$Characteristic_f = factor(lake.ion$Characteristic, levels = c("ALK2", "Na", "Mg", "K", "Ca", "SO4-S", "Cl"))
+
+    lake.ion.plot <- ggplot2::ggplot(lake.ion, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+        geom_point() +
+        geom_line() +
+        facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
+        ylab(label = "Concentration (mg/L)") +
+        theme(axis.text.x = element_text(angle = 90))
+
+    return(lake.ion.plot)
+
+}
+
+
+#' Plot stream nutrient (UTN, TDN, NO2No3-N, UTP, TDP, DOC) concentration data for all parks and field seasons.
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A ggplot object
+#' @export
+#'
+ChemStreamNutrientPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+
+    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+
+    stream.nut <- chem %>%
+        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Nutrient", SiteShort != "BAKR2") %>%
+        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
+
+    stream.nut$Characteristic_f = factor(stream.nut$Characteristic, levels = c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"))
+
+    stream.nut.plot <- ggplot2::ggplot(stream.nut, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+        geom_point() +
+        geom_line() +
+        facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
+        ylab(label = "Concentration (mg/L)") +
+        theme(axis.text.x = element_text(angle = 90))
+
+    return(stream.nut.plot)
+
+}
+
+
+#' Plot stream ion (ANC2, Na, Mg, K, Ca, SO4-S, Cl) concentration data for all parks and field seasons.
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A ggplot object
+#' @export
+#'
+ChemStreamIonPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+
+    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+
+    stream.ion <- chem %>%
+        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Ion", SiteShort != "BAKR2") %>%
+        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
+
+    stream.ion$Characteristic_f = factor(stream.ion$Characteristic, levels = c("ALK2", "Na", "Mg", "K", "Ca", "SO4-S", "Cl"))
+
+    stream.ion.plot <- ggplot2::ggplot(stream.ion, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+        geom_point() +
+        geom_line() +
+        facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
+        ylab(label = "Concentration (mg/L)") +
+        theme(axis.text.x = element_text(angle = 90))
+
+    return(stream.ion.plot)
+
+}
