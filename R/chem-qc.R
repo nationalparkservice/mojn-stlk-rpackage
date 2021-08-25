@@ -375,7 +375,8 @@ ChemLakeNutrientPlot <- function(conn, path.to.data, park, site, field.season, d
         geom_line() +
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
         ylab(label = "Concentration (mg/L)") +
-        theme(axis.text.x = element_text(angle = 90))
+        theme(axis.text.x = element_text(angle = 90)) +
+        labs(title = "Lake nutrient concentrations")
 
     return(lake.nut.plot)
 
@@ -404,7 +405,8 @@ ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.s
         geom_line() +
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
         ylab(label = "Concentration (mg/L)") +
-        theme(axis.text.x = element_text(angle = 90))
+        theme(axis.text.x = element_text(angle = 90)) +
+        labs(title = "Lake ion concentrations")
 
     return(lake.ion.plot)
 
@@ -433,7 +435,8 @@ ChemStreamNutrientPlot <- function(conn, path.to.data, park, site, field.season,
         geom_line() +
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
         ylab(label = "Concentration (mg/L)") +
-        theme(axis.text.x = element_text(angle = 90))
+        theme(axis.text.x = element_text(angle = 90)) +
+        labs(title = "Stream nutrient concentrations")
 
     return(stream.nut.plot)
 
@@ -462,7 +465,8 @@ ChemStreamIonPlot <- function(conn, path.to.data, park, site, field.season, data
         geom_line() +
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
         ylab(label = "Concentration (mg/L)") +
-        theme(axis.text.x = element_text(angle = 90))
+        theme(axis.text.x = element_text(angle = 90)) +
+        labs(title = "Stream ion concentrations")
 
     return(stream.ion.plot)
 
