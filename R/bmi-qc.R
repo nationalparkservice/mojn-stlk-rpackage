@@ -218,7 +218,7 @@ ChannelSubstrate <- function(conn, path.to.data, park, site, field.season, data.
 #' @return A tibble
 #' @export
 #'
-qcBMIFormatted <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+BMIFormatted <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   bmi_long <- BMILong(conn, path.to.data, park, site, field.season, data.source)
 
   bmi_formatted <- bmi_long %>%
@@ -249,7 +249,7 @@ qcBMIFormatted <- function(conn, path.to.data, park, site, field.season, data.so
 #' @export
 #'
 BMIGeneralMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi.formatted <- qcBMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
 
   bmi.gen <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
@@ -286,7 +286,7 @@ BMIGeneralMetricsPlot <- function(conn, path.to.data, park, site, field.season, 
 #' @export
 #'
 BMIDiversityMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi.formatted <- qcBMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
 
   bmi.div <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2") %>%
