@@ -20,12 +20,28 @@
 #' }
 BMILong <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   bmi <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "BMI")
+  bmi <- ReadAndFilterData(conn, data.source = "database", data.name = "BMI")
   # Fix column names (will eventually be fixed in db and we can get rid of this code)
   if ("PlecopteraTaxa" %in% names(bmi)) {
     bmi %<>% dplyr::rename(PlecopteraTaxaCount = PlecopteraTaxa)
   }
   if ("LongLivedTaxa" %in% names(bmi)) {
     bmi %<>% dplyr::rename(LongLivedTaxaCount = LongLivedTaxa)
+  }
+  if ("Richness" %in% names(bmi)) {
+    bmi %<>% dplyr::rename(TotalCount = Richness)
+  }
+  if ("Abundance" %in% names(bmi)) {
+    bmi %<>% dplyr::rename(TotalAbundance = Abundance)
+  }
+  if ("DominantTaxa" %in% names(bmi)) {
+    bmi %<>% dplyr::rename(DominantTaxon = DominantTaxa)
+  }
+  if ("DominantTaxaAbundance" %in% names(bmi)) {
+    bmi %<>% dplyr::rename(DominantTaxonAbundance = DominantTaxaAbundance)
+  }
+  if ("DominantTaxaPercent" %in% names(bmi)) {
+    bmi %<>% dplyr::rename(DominantTaxonPercent = DominantTaxaPercent)
   }
   if (!("ClingerAbundance" %in% names (bmi))) {
     bmi %<>% dplyr::mutate(ClingerAbundance = NA) %>%
@@ -35,11 +51,17 @@ BMILong <- function(conn, path.to.data, park, site, field.season, data.source = 
     bmi %<>% dplyr::mutate(LongLivedAbundance = NA) %>%
       dplyr::relocate(LongLivedAbundance, .after = LongLivedTaxaCount)
   }
+  if (!("DominantTaxonCount" %in% names (bmi))) {
+    bmi %<>% dplyr::mutate(DominantTaxonCount = NA)
+  }
+  if (!("DominantFamilyCount" %in% names (bmi))) {
+    bmi %<>% dplyr::mutate(DominantFamilyCount = NA)
+  }
 
-  bmi %<>% dplyr::mutate(DominantFamilyPercent = DominantFamilyAbundance/Abundance*100)
+  bmi %<>% dplyr::mutate(DominantFamilyPercent = DominantFamilyAbundance/TotalAbundance*100)
 
   count_cols <- "^(?!(Split|Fixed|BigRare)).+Count$"  # Regex for selecting count columns
-  abundance_cols <- "^(?!(DominantFamily|DominantTaxa)).+Abundance$"  # Regex for selecting abundance columns
+  abundance_cols <- "^.+Abundance$"  # Regex for selecting abundance columns
 
   count_pivot <- bmi %>%
     dplyr::select(!tidyselect::matches(abundance_cols, perl = TRUE)) %>%
@@ -53,7 +75,7 @@ BMILong <- function(conn, path.to.data, park, site, field.season, data.source = 
     dplyr::mutate(TaxaGroup = gsub("Abundance", "", TaxaGroup),
                   TaxaGroup = gsub("Taxa", "", TaxaGroup))
 
-  bmi_long <- dplyr::inner_join(count_pivot, abundance_pivot, by = c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate", "VisitType", "SampleType", "SampleCollectionMethod", "DPL", "BMIMethod", "LabSampleNumber", "DateCollected", "LabNotes", "FieldNotes", "SampleArea_m2", "FieldSplit", "LabSplit", "SplitCount", "FixedCount", "BigRareCount", "Abundance", "Richness", "ShannonsDiversity", "SimpsonsDiversity", "Hilsenhoff", "Evenness", "DominantFamily", "DominantFamilyAbundance", "DominantFamilyPercent", "DominantTaxa", "DominantTaxaAbundance", "DominantTaxaPercent", "USFSCommunityToleranceQuo", "LabName", "ID", "TaxaGroup"))
+  bmi_long <- dplyr::inner_join(count_pivot, abundance_pivot, by = c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate", "VisitType", "SampleType", "SampleCollectionMethod", "DPL", "BMIMethod", "LabSampleNumber", "DateCollected", "LabNotes", "FieldNotes", "SampleArea_m2", "FieldSplit", "LabSplit", "SplitCount", "FixedCount", "BigRareCount", "ShannonsDiversity", "SimpsonsDiversity", "Hilsenhoff", "Evenness", "USFSCommunityToleranceQuo", "DominantFamily", "DominantFamilyPercent", "DominantTaxon", "DominantTaxonPercent", "LabName", "ID", "TaxaGroup"))
 
   # Throw error if join gets messed up somehow
   if ((nrow(bmi_long) != nrow(count_pivot)) | (nrow(bmi_long) != nrow(abundance_pivot))) {
@@ -184,62 +206,91 @@ ChannelSubstrate <- function(conn, path.to.data, park, site, field.season, data.
   return(channel_substrate)
 }
 
-BMIFormatted <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmilong <- BMILong(conn, path.to.data, park, site, field.season, data.source)
+#' Intermediate step used to pivot BMI data to an even longer format for ease of plotting
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A tibble
+#' @export
+#'
+qcBMIFormatted <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  bmi_long <- BMILong(conn, path.to.data, park, site, field.season, data.source)
 
-  bmi_formatted <- bmilong %>%
-    tidyr::pivot_longer(cols = c("TaxaGroupCount", "TaxaGroupAbundance"), names_to = "Metric", values_to = "Amount")
+  bmi_formatted <- bmi_long %>%
+    tidyr::pivot_longer(cols = c("TaxaGroupCount", "TaxaGroupAbundance"), names_to = "Metric", values_to = "Count")
 
   bmi_formatted$Metric[bmi_formatted$Metric == "TaxaGroupCount"] <- "Richness"
   bmi_formatted$Metric[bmi_formatted$Metric == "TaxaGroupAbundance"] <- "Abundance"
 
   bmi_formatted$TaxaGroupMetric <- paste(bmi_formatted$TaxaGroup, bmi_formatted$Metric, sep = " ")
 
-  bmi_formatted %<>% dplyr::relocate(TaxaGroupMetric, .before = Amount)
+  bmi_formatted %<>% dplyr::relocate(TaxaGroupMetric, .before = Count)
 
   return(bmi_formatted)
+
 }
 
 
+#' Plot overall richness and abundance metrics for each BMI sample.
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A ggplot object
+#' @export
+#'
 BMIGeneralMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi.long <- BMILong(conn, path.to.data, park, site, field.season, data.source)
+  bmi.formatted <- qcBMIFormatted(conn, path.to.data, park, site, field.season, data.source)
 
-  bmi.gen <- bmi.long %>%
-    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2") %>%
-    dplyr::select(-c("TaxaGroup", "TaxaGroupCount", "TaxaGroupAbundance")) %>%
-    dplyr::distinct() %>%
-    tidyr::pivot_longer(cols = c("Richness", "Abundance", "DominantFamilyAbundance"), names_to = "GeneralMetric", values_to = "Value")
-
-  bmi.gen$GeneralMetric[bmi.gen$GeneralMetric == "Abundance"] <- "TotalAbundance"
-
-  bmi.gen %<>% dplyr::mutate(Metric = ifelse(GeneralMetric %in% c("TotalAbundance", "DominantFamilyAbundance"), "Abundance",
-                                      ifelse(GeneralMetric %in% c("Richness"), "Richness", NA))) %>%
-    dplyr::mutate(General = ifelse(GeneralMetric %in% c("TotalAbundance", "Richness"), "Total",
-                                  ifelse(GeneralMetric == "DominantFamilyAbundance", "DominantFamily", NA)))
+  bmi.gen <- bmi.formatted %>%
+    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
+                  TaxaGroup %in% c("Total", "DominantFamily"))
 
   bmi.gen$Metric_f = factor(bmi.gen$Metric, levels = c("Richness", "Abundance"))
-  bmi.gen$General_f = factor(bmi.gen$General, levels = c("Richness", "Total", "DominantFamily"))
+  bmi.gen$TaxaGroup_f = factor(bmi.gen$TaxaGroup, levels = c("Total", "DominantFamily"))
 
-  bmi.gen.plot <- ggplot2::ggplot(bmi.gen, aes(x = FieldSeason, y = Value, group = GeneralMetric, color = General_f)) +
+  bmi.gen.plot <- ggplot2::ggplot(bmi.gen, aes(x = FieldSeason, y = Count, group = TaxaGroup, color = TaxaGroup_f)) +
     geom_point() +
     geom_line() +
     facet_grid(Metric_f~SiteShort, scales = "free_y") +
-    ylab(label = "Value") +
-    theme(axis.text.x = element_text(angle = 90)) +
+    ylab(label = "Count") +
+    theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
     labs(title = "BMI general metrics", color = "Group") +
-    theme(legend.position = "bottom")
+    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
+
 
   return(bmi.gen.plot)
 
 }
 
 
+#' Plot diversity-related metrics and indices for each BMI sample.
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A ggplot object
+#' @export
+#'
 BMIDiversityMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi.long <- BMILong(conn, path.to.data, park, site, field.season, data.source)
+  bmi.formatted <- qcBMIFormatted(conn, path.to.data, park, site, field.season, data.source)
 
-  bmi.div <- bmi.long %>%
+  bmi.div <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2") %>%
-    dplyr::select(-c("TaxaGroup", "TaxaGroupCount", "TaxaGroupAbundance")) %>%
+    dplyr::select(-c("TaxaGroup", "Metric", "TaxaGroupMetric", "Count")) %>%
     dplyr::distinct() %>%
     tidyr::pivot_longer(cols = c("ShannonsDiversity", "SimpsonsDiversity", "Evenness", "Hilsenhoff"), names_to = "Metric", values_to = "Value")
 
@@ -253,23 +304,26 @@ BMIDiversityMetricsPlot <- function(conn, path.to.data, park, site, field.season
     facet_grid(Metric_f~SiteShort, scales = "free_y") +
     ylab(label = "Value") +
     theme(axis.text.x = element_text(angle = 90)) +
-    labs(title = "BMI diversity metrics")
+    labs(title = "BMI diversity metrics") +
+    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
 
   return(bmi.div.plot)
-
-#################################
-
-  bmi.div.plot <- ggplot2::ggplot(bmi.div, aes(x = FieldSeason, y = Value, group = Metric, color = Metric)) +
-    geom_point() +
-    geom_line() +
-    facet_grid(~SiteShort, scales = "free_y") +
-    ylab(label = "Value") +
-    theme(axis.text.x = element_text(angle = 90)) +
-    labs(title = "BMI diversity metrics")
 
 }
 
 
+#' Plot tolerance-related richness and abundance metrics for each BMI sample.
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A ggplot object
+#' @export
+#'
 BMIToleranceMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
 
@@ -280,42 +334,32 @@ BMIToleranceMetricsPlot <- function(conn, path.to.data, park, site, field.season
   bmi.tol$Metric_f = factor(bmi.tol$Metric, levels = c("Richness", "Abundance"))
   bmi.tol$TaxaGroup_f = factor(bmi.tol$TaxaGroup, levels = c("EPT", "Tolerant", "Intolerant", "LongLived"))
 
-  bmi.tol.plot <- ggplot2::ggplot(bmi.tol, aes(x = FieldSeason, y = Amount, color = TaxaGroup_f)) +
+  bmi.tol.plot <- ggplot2::ggplot(bmi.tol, aes(x = FieldSeason, y = Count, color = TaxaGroup_f)) +
     geom_point() +
     geom_line(aes(group = TaxaGroup)) +
     facet_grid(Metric_f~SiteShort, scales = "free_y") +
     ylab(label = "Count") +
-    theme(axis.text.x = element_text(angle = 90)) +
+    theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
     labs(title = "BMI tolerance metrics", color = "Tolerance Group") +
-    theme(legend.position = "bottom")
-
-############################################
-
-  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
-
-  bmi.tol <- bmi.formatted %>%
-    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
-                  TaxaGroup %in% c("EPT", "Tolerant", "Intolerant", "LongLived"),
-                  TaxaGroupMetric != "LongLived Abundance")
-
-  bmi.tol$Metric_f = factor(bmi.tol$Metric, levels = c("Richness", "Abundance"))
-  bmi.tol$TaxaGroup_f = factor(bmi.tol$TaxaGroup, levels = c("EPT", "Tolerant", "Intolerant", "LongLived"))
-  bmi.tol$TaxaGroupMetric_f = factor(bmi.tol$TaxaGroupMetric, levels = c("EPT Richness", "Tolerant Richness", "Intolerant Richness", "LongLived Richness", "EPT Abundance", "Tolerant Abundance", "Intolerant Abundance"))
-
-  bmi.tol.plot <- ggplot2::ggplot(bmi.tol, aes(x = FieldSeason, y = Amount, color = Metric)) +
-    geom_point() +
-    geom_line(aes(group = TaxaGroup)) +
-    facet_grid(Metric_f+TaxaGroup_f~SiteShort, scales = "free_y") +
-    ylab(label = "Count") +
-    theme(axis.text.x = element_text(angle = 90)) +
-    labs(title = "BMI tolerance metrics") +
-    theme(legend.position = "none")
+    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
 
   return(bmi.tol.plot)
 
 }
 
 
+#' Plot functional feeding group-related richness and abundance metrics for each BMI sample.
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A ggplot object
+#' @export
+#'
 BMIFunctionalMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
 
@@ -326,20 +370,32 @@ BMIFunctionalMetricsPlot <- function(conn, path.to.data, park, site, field.seaso
   bmi.fun$Metric_f = factor(bmi.fun$Metric, levels = c("Richness", "Abundance"))
   bmi.fun$TaxaGroup_f = factor(bmi.fun$TaxaGroup, levels = c("Shredder", "Scraper", "CollectorFilterer", "CollectorGatherer", "Clinger", "Predator"))
 
-  bmi.fun.plot <- ggplot2::ggplot(bmi.fun, aes(x = FieldSeason, y = Amount, color = TaxaGroup_f)) +
+  bmi.fun.plot <- ggplot2::ggplot(bmi.fun, aes(x = FieldSeason, y = Count, color = TaxaGroup_f)) +
     geom_point() +
     geom_line(aes(group = TaxaGroup)) +
     facet_grid(Metric_f~SiteShort, scales = "free_y") +
     ylab(label = "Count") +
-    theme(axis.text.x = element_text(angle = 90)) +
+    theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
     labs(title = "BMI functional feeding group metrics", color = "Functional Feeding Group") +
-    theme(legend.position = "bottom")
+    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
 
   return(bmi.fun.plot)
 
 }
 
 
+#' Plot taxonomic-related richness and abundance metrics for each BMI sample.
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A ggplot object
+#' @export
+#'
 BMITaxonomicMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
 
@@ -350,36 +406,69 @@ BMITaxonomicMetricsPlot <- function(conn, path.to.data, park, site, field.season
   bmi.tax$Metric_f = factor(bmi.tax$Metric, levels = c("Richness", "Abundance"))
   bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera", "Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
 
-  bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason, y = Amount, color = TaxaGroup_f)) +
+  bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason, y = Count, color = TaxaGroup_f)) +
     geom_point() +
     geom_line(aes(group = TaxaGroup)) +
     facet_grid(Metric_f~SiteShort, scales = "free_y") +
     ylab(label = "Count") +
-    theme(axis.text.x = element_text(angle = 90)) +
+    theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
     labs(title = "BMI taxonomic group metrics", color = "Taxonomic Group") +
-    theme(legend.position = "bottom")
-
-###########################################
-
-  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
-
-  bmi.tax <- bmi.formatted %>%
-    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
-                  TaxaGroup %in% c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
-
-  bmi.tax$Metric_f = factor(bmi.tax$Metric, levels = c("Richness", "Abundance"))
-  bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
-  bmi.tax$TaxaGroupMetric_f = factor(bmi.tax$TaxaGroupMetric, levels = c("Insect Richness", "Insect Abundance", "Coleoptera Richness", "Coleoptera Abundance", "Diptera Richness", "Diptera Abundance", "Ephemoeroptera Richness", "Ephemoeroptera Abundance", "Plecoptera Richness", "Plecoptera Abundance", "Megaloptera Richness", "Megaloptera Abundance", "Tricoptera Richness", "Tricoptera Abundance", "Chironomidae Richness", "Chironomidae Abundance", "Elmidae Richness", "Elmidae Abundance", "NonInsect Richness", "NonInsect Abundance", "Mollusca Richness", "Mollusca Abundance", "Crustacea Richness", "Crustacea Abundance", "Oligochaete Richness", "Oligochaete Abundance"))
-
-  bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason, y = Amount, color = Metric)) +
-    geom_point() +
-    geom_line(aes(group = TaxaGroup)) +
-    facet_grid(Metric_f+TaxaGroup_f~SiteShort, scales = "free_y") +
-    ylab(label = "Count") +
-    theme(axis.text.x = element_text(angle = 90)) +
-    labs(title = "BMI taxonomic group metrics") +
-    theme(legend.position = "none")
+    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
 
   return(bmi.tax.plot)
 
 }
+
+
+#################################
+
+bmi.div.plot <- ggplot2::ggplot(bmi.div, aes(x = FieldSeason, y = Value, group = Metric, color = Metric)) +
+  geom_point() +
+  geom_line() +
+  facet_grid(~SiteShort, scales = "free_y") +
+  ylab(label = "Value") +
+  theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
+  labs(title = "BMI diversity metrics")
+
+############################################
+
+bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+
+bmi.tol <- bmi.formatted %>%
+  dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
+                TaxaGroup %in% c("EPT", "Tolerant", "Intolerant", "LongLived"),
+                TaxaGroupMetric != "LongLived Abundance")
+
+bmi.tol$Metric_f = factor(bmi.tol$Metric, levels = c("Richness", "Abundance"))
+bmi.tol$TaxaGroup_f = factor(bmi.tol$TaxaGroup, levels = c("EPT", "Tolerant", "Intolerant", "LongLived"))
+bmi.tol$TaxaGroupMetric_f = factor(bmi.tol$TaxaGroupMetric, levels = c("EPT Richness", "Tolerant Richness", "Intolerant Richness", "LongLived Richness", "EPT Abundance", "Tolerant Abundance", "Intolerant Abundance"))
+
+bmi.tol.plot <- ggplot2::ggplot(bmi.tol, aes(x = FieldSeason, y = Amount, color = Metric)) +
+  geom_point() +
+  geom_line(aes(group = TaxaGroup)) +
+  facet_grid(Metric_f+TaxaGroup_f~SiteShort, scales = "free_y") +
+  ylab(label = "Count") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title = "BMI tolerance metrics") +
+  theme(legend.position = "none")
+
+###########################################
+
+bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+
+bmi.tax <- bmi.formatted %>%
+  dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
+                TaxaGroup %in% c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+
+bmi.tax$Metric_f = factor(bmi.tax$Metric, levels = c("Richness", "Abundance"))
+bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+bmi.tax$TaxaGroupMetric_f = factor(bmi.tax$TaxaGroupMetric, levels = c("Insect Richness", "Insect Abundance", "Coleoptera Richness", "Coleoptera Abundance", "Diptera Richness", "Diptera Abundance", "Ephemoeroptera Richness", "Ephemoeroptera Abundance", "Plecoptera Richness", "Plecoptera Abundance", "Megaloptera Richness", "Megaloptera Abundance", "Tricoptera Richness", "Tricoptera Abundance", "Chironomidae Richness", "Chironomidae Abundance", "Elmidae Richness", "Elmidae Abundance", "NonInsect Richness", "NonInsect Abundance", "Mollusca Richness", "Mollusca Abundance", "Crustacea Richness", "Crustacea Abundance", "Oligochaete Richness", "Oligochaete Abundance"))
+
+bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason, y = Amount, color = Metric)) +
+  geom_point() +
+  geom_line(aes(group = TaxaGroup)) +
+  facet_grid(Metric_f+TaxaGroup_f~SiteShort, scales = "free_y") +
+  ylab(label = "Count") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title = "BMI taxonomic group metrics") +
+  theme(legend.position = "none")
