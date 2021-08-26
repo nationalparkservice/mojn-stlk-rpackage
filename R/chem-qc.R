@@ -353,6 +353,33 @@ qcChemML <- function(conn, path.to.data, park, site, field.season, data.source =
 }
 
 
+#' Calculate acid neutralizing capacity (ANC) from alkalinity (ALK2)
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A tibble
+
+#' @export
+#'
+#' @examples
+ChemANC <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+
+    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+
+    chem.anc <- chem %>%
+
+
+
+    return(chem.anc)
+
+}
+
+
 #' Plot lake nutrient (UTN, TDN, NO2No3-N, UTP, TDP, DOC) concentration data for all parks and field seasons.
 #'
 #' @inheritParams ReadAndFilterData
@@ -376,7 +403,8 @@ ChemLakeNutrientPlot <- function(conn, path.to.data, park, site, field.season, d
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
         ylab(label = "Concentration (mg/L)") +
         theme(axis.text.x = element_text(angle = 90)) +
-        labs(title = "Lake nutrient concentrations")
+        labs(title = "Lake nutrient concentrations") +
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
 
     return(lake.nut.plot)
 
@@ -396,9 +424,9 @@ ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.s
 
     lake.ion <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Ion") %>%
-        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
+        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup)) %>%
 
-    lake.ion$Characteristic_f = factor(lake.ion$Characteristic, levels = c("ALK2", "Na", "Mg", "K", "Ca", "SO4-S", "Cl"))
+    lake.ion$Characteristic_f = factor(lake.ion$Characteristic, levels = c("Na", "Mg", "K", "Ca", "SO4-S", "Cl", "ALK2", "ANC"))
 
     lake.ion.plot <- ggplot2::ggplot(lake.ion, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
         geom_point() +
@@ -406,7 +434,8 @@ ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.s
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
         ylab(label = "Concentration (mg/L)") +
         theme(axis.text.x = element_text(angle = 90)) +
-        labs(title = "Lake ion concentrations")
+        labs(title = "Lake ion concentrations") +
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
 
     return(lake.ion.plot)
 
@@ -436,7 +465,8 @@ ChemStreamNutrientPlot <- function(conn, path.to.data, park, site, field.season,
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
         ylab(label = "Concentration (mg/L)") +
         theme(axis.text.x = element_text(angle = 90)) +
-        labs(title = "Stream nutrient concentrations")
+        labs(title = "Stream nutrient concentrations") +
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
 
     return(stream.nut.plot)
 
