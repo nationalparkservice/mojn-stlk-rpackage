@@ -24,8 +24,21 @@ BMILong <- function(conn, path.to.data, park, site, field.season, data.source = 
   if ("PlecopteraTaxa" %in% names(bmi)) {
     bmi %<>% dplyr::rename(PlecopteraTaxaCount = PlecopteraTaxa)
   }
+  if ("LongLivedTaxa" %in% names(bmi)) {
+    bmi %<>% dplyr::rename(LongLivedTaxaCount = LongLivedTaxa)
+  }
+  if (!("ClingerAbundance" %in% names (bmi))) {
+    bmi %<>% dplyr::mutate(ClingerAbundance = NA) %>%
+      dplyr::relocate(ClingerAbundance, .after = ClingerTaxaCount)
+  }
+  if (!("LongLivedAbundance" %in% names (bmi))) {
+    bmi %<>% dplyr::mutate(LongLivedAbundance = NA) %>%
+      dplyr::relocate(LongLivedAbundance, .after = LongLivedTaxaCount)
+  }
 
-  count_cols <- "^(?!(Split|Fixed|BigRare|Clinger)).+Count$"  # Regex for selecting count columns
+  bmi %<>% dplyr::mutate(DominantFamilyPercent = DominantFamilyAbundance/Abundance*100)
+
+  count_cols <- "^(?!(Split|Fixed|BigRare)).+Count$"  # Regex for selecting count columns
   abundance_cols <- "^(?!(DominantFamily|DominantTaxa)).+Abundance$"  # Regex for selecting abundance columns
 
   count_pivot <- bmi %>%
@@ -40,7 +53,7 @@ BMILong <- function(conn, path.to.data, park, site, field.season, data.source = 
     dplyr::mutate(TaxaGroup = gsub("Abundance", "", TaxaGroup),
                   TaxaGroup = gsub("Taxa", "", TaxaGroup))
 
-  bmi_long <- dplyr::inner_join(count_pivot, abundance_pivot, by = c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate", "VisitType", "SampleType", "SampleCollectionMethod", "DPL", "BMIMethod", "LabSampleNumber", "DateCollected", "FieldSplit", "LabSplit", "SampleArea_m2", "Abundance", "Richness", "DominantTaxaPercent", "LabNotes", "FieldNotes", "SplitCount", "FixedCount", "BigRareCount", "ShannonsDiversity", "SimpsonsDiversity", "Evenness", "DominantFamilyAbundance", "DominantFamily", "DominantTaxa", "DominantTaxaAbundance", "Hilsenhoff", "USFSCommunityToleranceQuo", "ClingerTaxaCount", "LongLivedTaxa", "LabName", "ID", "TaxaGroup"))
+  bmi_long <- dplyr::inner_join(count_pivot, abundance_pivot, by = c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate", "VisitType", "SampleType", "SampleCollectionMethod", "DPL", "BMIMethod", "LabSampleNumber", "DateCollected", "LabNotes", "FieldNotes", "SampleArea_m2", "FieldSplit", "LabSplit", "SplitCount", "FixedCount", "BigRareCount", "Abundance", "Richness", "ShannonsDiversity", "SimpsonsDiversity", "Hilsenhoff", "Evenness", "DominantFamily", "DominantFamilyAbundance", "DominantFamilyPercent", "DominantTaxa", "DominantTaxaAbundance", "DominantTaxaPercent", "USFSCommunityToleranceQuo", "LabName", "ID", "TaxaGroup"))
 
   # Throw error if join gets messed up somehow
   if ((nrow(bmi_long) != nrow(count_pivot)) | (nrow(bmi_long) != nrow(abundance_pivot))) {
@@ -169,4 +182,204 @@ ChannelSubstrate <- function(conn, path.to.data, park, site, field.season, data.
     dplyr::ungroup()
 
   return(channel_substrate)
+}
+
+BMIFormatted <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  bmilong <- BMILong(conn, path.to.data, park, site, field.season, data.source)
+
+  bmi_formatted <- bmilong %>%
+    tidyr::pivot_longer(cols = c("TaxaGroupCount", "TaxaGroupAbundance"), names_to = "Metric", values_to = "Amount")
+
+  bmi_formatted$Metric[bmi_formatted$Metric == "TaxaGroupCount"] <- "Richness"
+  bmi_formatted$Metric[bmi_formatted$Metric == "TaxaGroupAbundance"] <- "Abundance"
+
+  bmi_formatted$TaxaGroupMetric <- paste(bmi_formatted$TaxaGroup, bmi_formatted$Metric, sep = " ")
+
+  bmi_formatted %<>% dplyr::relocate(TaxaGroupMetric, .before = Amount)
+
+  return(bmi_formatted)
+}
+
+
+BMIGeneralMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  bmi.long <- BMILong(conn, path.to.data, park, site, field.season, data.source)
+
+  bmi.gen <- bmi.long %>%
+    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2") %>%
+    dplyr::select(-c("TaxaGroup", "TaxaGroupCount", "TaxaGroupAbundance")) %>%
+    dplyr::distinct() %>%
+    tidyr::pivot_longer(cols = c("Richness", "Abundance", "DominantFamilyAbundance"), names_to = "GeneralMetric", values_to = "Value")
+
+  bmi.gen$GeneralMetric[bmi.gen$GeneralMetric == "Abundance"] <- "TotalAbundance"
+
+  bmi.gen %<>% dplyr::mutate(Metric = ifelse(GeneralMetric %in% c("TotalAbundance", "DominantFamilyAbundance"), "Abundance",
+                                      ifelse(GeneralMetric %in% c("Richness"), "Richness", NA))) %>%
+    dplyr::mutate(General = ifelse(GeneralMetric %in% c("TotalAbundance", "Richness"), "Total",
+                                  ifelse(GeneralMetric == "DominantFamilyAbundance", "DominantFamily", NA)))
+
+  bmi.gen$Metric_f = factor(bmi.gen$Metric, levels = c("Richness", "Abundance"))
+  bmi.gen$General_f = factor(bmi.gen$General, levels = c("Richness", "Total", "DominantFamily"))
+
+  bmi.gen.plot <- ggplot2::ggplot(bmi.gen, aes(x = FieldSeason, y = Value, group = GeneralMetric, color = General_f)) +
+    geom_point() +
+    geom_line() +
+    facet_grid(Metric_f~SiteShort, scales = "free_y") +
+    ylab(label = "Value") +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title = "BMI general metrics", color = "Group") +
+    theme(legend.position = "bottom")
+
+  return(bmi.gen.plot)
+
+}
+
+
+BMIDiversityMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  bmi.long <- BMILong(conn, path.to.data, park, site, field.season, data.source)
+
+  bmi.div <- bmi.long %>%
+    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2") %>%
+    dplyr::select(-c("TaxaGroup", "TaxaGroupCount", "TaxaGroupAbundance")) %>%
+    dplyr::distinct() %>%
+    tidyr::pivot_longer(cols = c("ShannonsDiversity", "SimpsonsDiversity", "Evenness", "Hilsenhoff"), names_to = "Metric", values_to = "Value")
+
+  bmi.div$Metric[bmi.div$Metric == "Hilsenhoff"] <- "HilsenhoffIndex"
+
+  bmi.div$Metric_f = factor(bmi.div$Metric, levels = c("ShannonsDiversity", "SimpsonsDiversity", "Evenness", "HilsenhoffIndex"))
+
+  bmi.div.plot <- ggplot2::ggplot(bmi.div, aes(x = FieldSeason, y = Value, group = Metric)) +
+    geom_point() +
+    geom_line() +
+    facet_grid(Metric_f~SiteShort, scales = "free_y") +
+    ylab(label = "Value") +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title = "BMI diversity metrics")
+
+  return(bmi.div.plot)
+
+#################################
+
+  bmi.div.plot <- ggplot2::ggplot(bmi.div, aes(x = FieldSeason, y = Value, group = Metric, color = Metric)) +
+    geom_point() +
+    geom_line() +
+    facet_grid(~SiteShort, scales = "free_y") +
+    ylab(label = "Value") +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title = "BMI diversity metrics")
+
+}
+
+
+BMIToleranceMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+
+  bmi.tol <- bmi.formatted %>%
+    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
+                  TaxaGroup %in% c("EPT", "Tolerant", "Intolerant", "LongLived"))
+
+  bmi.tol$Metric_f = factor(bmi.tol$Metric, levels = c("Richness", "Abundance"))
+  bmi.tol$TaxaGroup_f = factor(bmi.tol$TaxaGroup, levels = c("EPT", "Tolerant", "Intolerant", "LongLived"))
+
+  bmi.tol.plot <- ggplot2::ggplot(bmi.tol, aes(x = FieldSeason, y = Amount, color = TaxaGroup_f)) +
+    geom_point() +
+    geom_line(aes(group = TaxaGroup)) +
+    facet_grid(Metric_f~SiteShort, scales = "free_y") +
+    ylab(label = "Count") +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title = "BMI tolerance metrics", color = "Tolerance Group") +
+    theme(legend.position = "bottom")
+
+############################################
+
+  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+
+  bmi.tol <- bmi.formatted %>%
+    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
+                  TaxaGroup %in% c("EPT", "Tolerant", "Intolerant", "LongLived"),
+                  TaxaGroupMetric != "LongLived Abundance")
+
+  bmi.tol$Metric_f = factor(bmi.tol$Metric, levels = c("Richness", "Abundance"))
+  bmi.tol$TaxaGroup_f = factor(bmi.tol$TaxaGroup, levels = c("EPT", "Tolerant", "Intolerant", "LongLived"))
+  bmi.tol$TaxaGroupMetric_f = factor(bmi.tol$TaxaGroupMetric, levels = c("EPT Richness", "Tolerant Richness", "Intolerant Richness", "LongLived Richness", "EPT Abundance", "Tolerant Abundance", "Intolerant Abundance"))
+
+  bmi.tol.plot <- ggplot2::ggplot(bmi.tol, aes(x = FieldSeason, y = Amount, color = Metric)) +
+    geom_point() +
+    geom_line(aes(group = TaxaGroup)) +
+    facet_grid(Metric_f+TaxaGroup_f~SiteShort, scales = "free_y") +
+    ylab(label = "Count") +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title = "BMI tolerance metrics") +
+    theme(legend.position = "none")
+
+  return(bmi.tol.plot)
+
+}
+
+
+BMIFunctionalMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+
+  bmi.fun <- bmi.formatted %>%
+    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
+                  TaxaGroup %in% c("Shredder", "Scraper", "CollectorFilterer", "CollectorGatherer", "Clinger", "Predator"))
+
+  bmi.fun$Metric_f = factor(bmi.fun$Metric, levels = c("Richness", "Abundance"))
+  bmi.fun$TaxaGroup_f = factor(bmi.fun$TaxaGroup, levels = c("Shredder", "Scraper", "CollectorFilterer", "CollectorGatherer", "Clinger", "Predator"))
+
+  bmi.fun.plot <- ggplot2::ggplot(bmi.fun, aes(x = FieldSeason, y = Amount, color = TaxaGroup_f)) +
+    geom_point() +
+    geom_line(aes(group = TaxaGroup)) +
+    facet_grid(Metric_f~SiteShort, scales = "free_y") +
+    ylab(label = "Count") +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title = "BMI functional feeding group metrics", color = "Functional Feeding Group") +
+    theme(legend.position = "bottom")
+
+  return(bmi.fun.plot)
+
+}
+
+
+BMITaxonomicMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+
+  bmi.tax <- bmi.formatted %>%
+    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
+                  TaxaGroup %in% c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+
+  bmi.tax$Metric_f = factor(bmi.tax$Metric, levels = c("Richness", "Abundance"))
+  bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera", "Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+
+  bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason, y = Amount, color = TaxaGroup_f)) +
+    geom_point() +
+    geom_line(aes(group = TaxaGroup)) +
+    facet_grid(Metric_f~SiteShort, scales = "free_y") +
+    ylab(label = "Count") +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title = "BMI taxonomic group metrics", color = "Taxonomic Group") +
+    theme(legend.position = "bottom")
+
+###########################################
+
+  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+
+  bmi.tax <- bmi.formatted %>%
+    dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
+                  TaxaGroup %in% c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+
+  bmi.tax$Metric_f = factor(bmi.tax$Metric, levels = c("Richness", "Abundance"))
+  bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+  bmi.tax$TaxaGroupMetric_f = factor(bmi.tax$TaxaGroupMetric, levels = c("Insect Richness", "Insect Abundance", "Coleoptera Richness", "Coleoptera Abundance", "Diptera Richness", "Diptera Abundance", "Ephemoeroptera Richness", "Ephemoeroptera Abundance", "Plecoptera Richness", "Plecoptera Abundance", "Megaloptera Richness", "Megaloptera Abundance", "Tricoptera Richness", "Tricoptera Abundance", "Chironomidae Richness", "Chironomidae Abundance", "Elmidae Richness", "Elmidae Abundance", "NonInsect Richness", "NonInsect Abundance", "Mollusca Richness", "Mollusca Abundance", "Crustacea Richness", "Crustacea Abundance", "Oligochaete Richness", "Oligochaete Abundance"))
+
+  bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason, y = Amount, color = Metric)) +
+    geom_point() +
+    geom_line(aes(group = TaxaGroup)) +
+    facet_grid(Metric_f+TaxaGroup_f~SiteShort, scales = "free_y") +
+    ylab(label = "Count") +
+    theme(axis.text.x = element_text(angle = 90)) +
+    labs(title = "BMI taxonomic group metrics") +
+    theme(legend.position = "none")
+
+  return(bmi.tax.plot)
+
 }
