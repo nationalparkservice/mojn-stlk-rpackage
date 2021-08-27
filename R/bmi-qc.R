@@ -265,7 +265,8 @@ BMIGeneralMetricsPlot <- function(conn, path.to.data, park, site, field.season, 
     ylab(label = "Count") +
     theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
     labs(title = "BMI general metrics", color = "Group") +
-    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
+    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+    scale_x_discrete(breaks = pretty_breaks())
 
 
   return(bmi.gen.plot)
@@ -305,7 +306,8 @@ BMIDiversityMetricsPlot <- function(conn, path.to.data, park, site, field.season
     ylab(label = "Value") +
     theme(axis.text.x = element_text(angle = 90)) +
     labs(title = "BMI diversity metrics") +
-    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
+    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+    scale_x_discrete(breaks = pretty_breaks())
 
   return(bmi.div.plot)
 
@@ -341,7 +343,8 @@ BMIToleranceMetricsPlot <- function(conn, path.to.data, park, site, field.season
     ylab(label = "Count") +
     theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
     labs(title = "BMI tolerance metrics", color = "Tolerance Group") +
-    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
+    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+    scale_x_discrete(breaks = pretty_breaks())
 
   return(bmi.tol.plot)
 
@@ -377,7 +380,8 @@ BMIFunctionalMetricsPlot <- function(conn, path.to.data, park, site, field.seaso
     ylab(label = "Count") +
     theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
     labs(title = "BMI functional feeding group metrics", color = "Functional Feeding Group") +
-    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
+    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+    scale_x_discrete(breaks = pretty_breaks())
 
   return(bmi.fun.plot)
 
@@ -413,7 +417,8 @@ BMITaxonomicMetricsPlot <- function(conn, path.to.data, park, site, field.season
     ylab(label = "Count") +
     theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
     labs(title = "BMI taxonomic group metrics", color = "Taxonomic Group") +
-    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
+    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+    scale_x_discrete(breaks = pretty_breaks())
 
   return(bmi.tax.plot)
 
