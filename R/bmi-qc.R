@@ -329,10 +329,10 @@ BMIToleranceMetricsPlot <- function(conn, path.to.data, park, site, field.season
 
   bmi.tol <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
-                  TaxaGroup %in% c("EPT", "Tolerant", "Intolerant", "LongLived"))
+                  TaxaGroup %in% c("EPT", "Tolerant", "Intolerant", "LongLived", "Clinger"))
 
   bmi.tol$Metric_f = factor(bmi.tol$Metric, levels = c("Richness", "Abundance"))
-  bmi.tol$TaxaGroup_f = factor(bmi.tol$TaxaGroup, levels = c("EPT", "Tolerant", "Intolerant", "LongLived"))
+  bmi.tol$TaxaGroup_f = factor(bmi.tol$TaxaGroup, levels = c("EPT", "Tolerant", "Intolerant", "LongLived", "Clinger"))
 
   bmi.tol.plot <- ggplot2::ggplot(bmi.tol, aes(x = FieldSeason, y = Count, color = TaxaGroup_f)) +
     geom_point() +
@@ -365,10 +365,10 @@ BMIFunctionalMetricsPlot <- function(conn, path.to.data, park, site, field.seaso
 
   bmi.fun <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
-                  TaxaGroup %in% c("Shredder", "Scraper", "CollectorFilterer", "CollectorGatherer", "Clinger", "Predator"))
+                  TaxaGroup %in% c("Shredder", "Scraper", "CollectorFilterer", "CollectorGatherer", "Predator"))
 
   bmi.fun$Metric_f = factor(bmi.fun$Metric, levels = c("Richness", "Abundance"))
-  bmi.fun$TaxaGroup_f = factor(bmi.fun$TaxaGroup, levels = c("Shredder", "Scraper", "CollectorFilterer", "CollectorGatherer", "Clinger", "Predator"))
+  bmi.fun$TaxaGroup_f = factor(bmi.fun$TaxaGroup, levels = c("Shredder", "Scraper", "CollectorFilterer", "CollectorGatherer", "Predator"))
 
   bmi.fun.plot <- ggplot2::ggplot(bmi.fun, aes(x = FieldSeason, y = Count, color = TaxaGroup_f)) +
     geom_point() +
