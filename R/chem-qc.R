@@ -371,9 +371,86 @@ ChemANC <- function(conn, path.to.data, park, site, field.season, data.source = 
 
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
-    chem.anc <- chem %>%
+    chem.anc.rows <- chem  %>%
+        dplyr::filter(Characteristic == "ALK2") %>%
+        mutate(Characteristic = "ANC",
+               CharacteristicLabel = "Acid neutralizing capacity",
+               Unit = "ueq/L",
+               DQF = "NF",
+               DQFNote = NA,
+               LabValue = LabValue*20)
+
+    chem.anc <- rbind(chem, chem.anc.rows)
+
+    chem.anc %<>% arrange(SiteCode, VisitDate, Characteristic)
+
+    return(chem.anc)
+
+}
+
+#' Plot acid neutralizing capacity (ANC) at lakes, and include EPA thresholds
+#'
+#' @param conn
+#' @param path.to.data
+#' @param park
+#' @param site
+#' @param field.season
+#' @param data.source
+#'
+#' @return
+#' @export
+#'
+#' @examples
+ChemLakeANCPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+
+    chem.anc <- ChemANC(conn, path.to.data, park, site, field.season, data.source)
+
+    chem.anc %<>% filter(VisitType == "Primary", SampleType == "Routine", SampleFrame == "Lake", Characteristic == "ANC")
+
+    thresholds <- data.frame(yintercept = c(20, 50, 100, 200), Lines = c("Acute", "Severe", "Elevated", "Moderately Acidic"))
+
+    chem.anc.plot <- ggplot2::ggplot(chem.anc, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+        geom_point() +
+        geom_line() +
+        facet_grid(~SiteShort, scales = "free_y") +
+        ylab(label = "Acid Neutralizing Capacity (ueq/L)") +
+        theme(axis.text.x = element_text(angle = 90)) +
+        labs(title = "Lake acid neutralizing capacity") +
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+        geom_hline(yintercept = c(20, 50, 100, 200), linetype = "dashed", color = "gray 20") +
+        annotate("text", x = "2009", y = 100, label = "Moderate", vjust = -0.5) +
+        annotate("text", x = "2009", y = 50, label = "Elevated", vjust = -0.5) +
+        annotate("text", x = "2009", y = 20, label = "Severe", vjust = -0.5) +
+        annotate("text", x = "2009", y = 0, label = "Acute", vjust = -0.5)
+
+    return(chem.anc)
+
+}
 
 
+
+ChemLakeANCPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+
+    chem.anc <- ChemANC(conn, path.to.data, park, site, field.season, data.source)
+
+    chem.anc %<>% filter(VisitType == "Primary", SampleType == "Routine", SampleFrame == "Lake", Characteristic == "ANC")
+
+    thresholds <- data.frame(yintercept = c(20, 50, 100, 200), Lines = c("Acute", "Severe", "Elevated", "Moderately Acidic"))
+
+    chem.anc.plot <- ggplot2::ggplot(chem.anc, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+        geom_point() +
+        geom_line() +
+        facet_grid(~SiteShort, scales = "free_y") +
+        ylab(label = "Acid Neutralizing Capacity (ueq/L)") +
+        theme(axis.text.x = element_text(angle = 90)) +
+        labs(title = "Lake acid neutralizing capacity") +
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+        geom_hline(yintercept = c(20, 50, 100, 200), linetype = "dashed", color = "gray 20") +
+        annotate("text", x = "2012", y = 200, label = "Moderate", vjust = 1) +
+        annotate("text", x = "2012", y = 100, label = "Elevated", vjust = 1) +
+        annotate("text", x = "2012", y = 50, label = "Severe", vjust = 1) +
+        annotate("text", x = "2012", y = 20, label = "Acute", vjust = 1) +
+        scale_x_discrete(breaks = pretty_breaks())
 
     return(chem.anc)
 
@@ -404,9 +481,49 @@ ChemLakeNutrientPlot <- function(conn, path.to.data, park, site, field.season, d
         ylab(label = "Concentration (mg/L)") +
         theme(axis.text.x = element_text(angle = 90)) +
         labs(title = "Lake nutrient concentrations") +
-        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+        scale_x_discrete(breaks = pretty_breaks())
 
     return(lake.nut.plot)
+
+}
+
+
+#' Plot lake nutrient (UTN, TDN, NO2No3-N, UTP, TDP) concentration data as overlapping bar plots for all parks and field seasons.
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A ggplot object
+#' @export
+#'
+ChemLakeNutrientBarPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+
+    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+
+    lake.nut.bar <- chem %>%
+        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Nutrient") %>%
+        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup)) %>%
+        dplyr::mutate(Nutrient = ifelse(Characteristic %in% c("UTN", "TDN", "NO3NO2-N"), "Nitrogen",
+                                        ifelse(Characteristic %in% c("UTP", "TDP"), "Phosphorus",
+                                               ifelse(Characteristic %in% c("DOC"), "Carbon", NA))))
+
+    lake.nut.bar$Nutrient_f = factor(lake.nut.bar$Nutrient, levels = c("Nitrogen", "Phosphorus", "Carbon"))
+    lake.nut.bar$Characteristic_f = factor(lake.nut.bar$Characteristic, levels = c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"))
+
+    lake.nut.bar %<>% dplyr::arrange(match(Characteristic_f, c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"), desc(Characteristic_f))) %>%
+        filter(Characteristic != "DOC")
+
+    lake.nut.bar.plot <- ggplot2::ggplot(lake.nut.bar, aes(x = FieldSeason, y = LabValue, fill = Characteristic_f)) +
+        geom_bar(stat = "identity", position = "identity", color = "white") +
+        facet_grid(Nutrient_f~SiteShort, scales = "free_y") +
+        ylab(label = "Concentration (mg/L)") +
+        theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
+        labs(title = "Lake nutrient concentrations", fill = "Nutrient") +
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+        scale_x_discrete(breaks = pretty_breaks()) +
+        scale_fill_manual(values = c("midnightblue", "royalblue1", "lightblue", "darkred", "pink"))
+
+    return(lake.nut.bar.plot)
 
 }
 
@@ -424,9 +541,9 @@ ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.s
 
     lake.ion <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Ion") %>%
-        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup)) %>%
+        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
 
-    lake.ion$Characteristic_f = factor(lake.ion$Characteristic, levels = c("Na", "Mg", "K", "Ca", "SO4-S", "Cl", "ALK2", "ANC"))
+    lake.ion$Characteristic_f = factor(lake.ion$Characteristic, levels = c("Na", "Mg", "K", "Ca", "SO4-S", "Cl", "ALK2"))
 
     lake.ion.plot <- ggplot2::ggplot(lake.ion, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
         geom_point() +
@@ -435,7 +552,8 @@ ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.s
         ylab(label = "Concentration (mg/L)") +
         theme(axis.text.x = element_text(angle = 90)) +
         labs(title = "Lake ion concentrations") +
-        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+        scale_x_discrete(breaks = pretty_breaks())
 
     return(lake.ion.plot)
 
@@ -466,12 +584,50 @@ ChemStreamNutrientPlot <- function(conn, path.to.data, park, site, field.season,
         ylab(label = "Concentration (mg/L)") +
         theme(axis.text.x = element_text(angle = 90)) +
         labs(title = "Stream nutrient concentrations") +
-        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA))
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+        scale_x_discrete(breaks = pretty_breaks())
 
     return(stream.nut.plot)
 
 }
 
+
+#' Plot stream nutrient (UTN, TDN, NO2No3-N, UTP, TDP) concentration data as overlapping bar plots for all parks and field seasons.
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A ggplot object
+#' @export
+#'
+ChemStreamNutrientBarPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+
+    stream.nut.bar <- chem %>%
+        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Nutrient") %>%
+        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup)) %>%
+        dplyr::mutate(Nutrient = ifelse(Characteristic %in% c("UTN", "TDN", "NO3NO2-N"), "Nitrogen",
+                                        ifelse(Characteristic %in% c("UTP", "TDP"), "Phosphorus",
+                                               ifelse(Characteristic %in% c("DOC"), "Carbon", NA))))
+
+    stream.nut.bar$Nutrient_f = factor(stream.nut.bar$Nutrient, levels = c("Nitrogen", "Phosphorus", "Carbon"))
+    stream.nut.bar$Characteristic_f = factor(stream.nut.bar$Characteristic, levels = c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"))
+
+    stream.nut.bar %<>% dplyr::arrange(match(Characteristic_f, c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"), desc(Characteristic_f))) %>%
+        filter(Characteristic != "DOC")
+
+    stream.nut.bar.plot <- ggplot2::ggplot(stream.nut.bar, aes(x = FieldSeason, y = LabValue, fill = Characteristic_f)) +
+        geom_bar(stat = "identity", position = "identity", color = "white") +
+        facet_grid(Nutrient_f~SiteShort, scales = "free_y") +
+        ylab(label = "Concentration (mg/L)") +
+        theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
+        labs(title = "Stream nutrient concentrations", fill = "Nutrient") +
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+        scale_x_discrete(breaks = pretty_breaks()) +
+        scale_fill_manual(values = c("midnightblue", "royalblue1", "lightblue", "darkred", "pink"))
+
+    return(stream.nut.bar.plot)
+
+}
 
 #' Plot stream ion (ANC2, Na, Mg, K, Ca, SO4-S, Cl) concentration data for all parks and field seasons.
 #'
@@ -488,7 +644,7 @@ ChemStreamIonPlot <- function(conn, path.to.data, park, site, field.season, data
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Ion", SiteShort != "BAKR2") %>%
         tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
 
-    stream.ion$Characteristic_f = factor(stream.ion$Characteristic, levels = c("ALK2", "Na", "Mg", "K", "Ca", "SO4-S", "Cl"))
+    stream.ion$Characteristic_f = factor(stream.ion$Characteristic, levels = c("Na", "Mg", "K", "Ca", "SO4-S", "Cl", "ALK2"))
 
     stream.ion.plot <- ggplot2::ggplot(stream.ion, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
         geom_point() +
@@ -496,7 +652,9 @@ ChemStreamIonPlot <- function(conn, path.to.data, park, site, field.season, data
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
         ylab(label = "Concentration (mg/L)") +
         theme(axis.text.x = element_text(angle = 90)) +
-        labs(title = "Stream ion concentrations")
+        labs(title = "Stream ion concentrations") +
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+        scale_x_discrete(breaks = pretty_breaks())
 
     return(stream.ion.plot)
 
