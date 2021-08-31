@@ -155,9 +155,9 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
 #' @examples
 #' \dontrun{
 #'     conn <- OpenDatabaseConnection()
-#'     QcBenchmarkElevation(conn)
-#'     QcBenchmarkElevation(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
-#'     QcBenchmarkElevation(path.to.data = "path/to/data", data.source = "local")
+#'     qcBenchmarkElevation(conn)
+#'     qcBenchmarkElevation(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
+#'     qcBenchmarkElevation(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
 qcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
@@ -191,9 +191,9 @@ qcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, d
 #' @examples
 #' \dontrun{
 #'     conn <- OpenDatabaseConnection()
-#'     QcStringSurveyHeights(conn)
-#'     QcStringSurveyHeights(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017"))
-#'     QcStringSurveyHeights(path.to.data = "path/to/data", data.source = "local")
+#'     qcStringSurveyHeights(conn)
+#'     qcStringSurveyHeights(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017"))
+#'     qcStringSurveyHeights(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
 qcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
@@ -224,9 +224,9 @@ qcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, 
 #' @examples
 #' \dontrun{
 #'     conn <- OpenDatabaseConnection()
-#'     QcStringSurveyElevations(conn)
-#'     QcStringSurveyElevations(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017"))
-#'     QcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
+#'     qcStringSurveyElevations(conn)
+#'     qQcStringSurveyElevations(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017"))
+#'     qcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
 qcStringSurveyElevations <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
@@ -302,7 +302,7 @@ PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season,
 #'
 PlotLakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", include.title = TRUE, plotly = FALSE) {
   elev <- LakeSurfaceElevation(conn, path.to.data, park, site, field.season, data.source)
-  
+
   elev %<>%
     tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName)) %>%
     dplyr::relocate(FieldSeason, .after = VisitDate)

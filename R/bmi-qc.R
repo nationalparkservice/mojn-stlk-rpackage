@@ -405,10 +405,10 @@ BMITaxonomicMetricsPlot <- function(conn, path.to.data, park, site, field.season
 
   bmi.tax <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
-                  TaxaGroup %in% c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+                  TaxaGroup %in% c("Insect", "Coleoptera", "Diptera", "Ephemeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
 
   bmi.tax$Metric_f = factor(bmi.tax$Metric, levels = c("Richness", "Abundance"))
-  bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera", "Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+  bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemeroptera", "Megaloptera", "Plecoptera", "Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
 
   bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason, y = Count, color = TaxaGroup_f)) +
     geom_point() +
@@ -463,11 +463,11 @@ BMITaxonomicMetricsPlot <- function(conn, path.to.data, park, site, field.season
 
 #bmi.tax <- bmi.formatted %>%
 #  dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
-#                TaxaGroup %in% c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+#                TaxaGroup %in% c("Insect", "Coleoptera", "Diptera", "Ephemeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
 
 #bmi.tax$Metric_f = factor(bmi.tax$Metric, levels = c("Richness", "Abundance"))
-#bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemoeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
-#bmi.tax$TaxaGroupMetric_f = factor(bmi.tax$TaxaGroupMetric, levels = c("Insect Richness", "Insect Abundance", "Coleoptera Richness", "Coleoptera Abundance", "Diptera Richness", "Diptera Abundance", "Ephemoeroptera Richness", "Ephemoeroptera Abundance", "Plecoptera Richness", "Plecoptera Abundance", "Megaloptera Richness", "Megaloptera Abundance", "Tricoptera Richness", "Tricoptera Abundance", "Chironomidae Richness", "Chironomidae Abundance", "Elmidae Richness", "Elmidae Abundance", "NonInsect Richness", "NonInsect Abundance", "Mollusca Richness", "Mollusca Abundance", "Crustacea Richness", "Crustacea Abundance", "Oligochaete Richness", "Oligochaete Abundance"))
+#bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+#bmi.tax$TaxaGroupMetric_f = factor(bmi.tax$TaxaGroupMetric, levels = c("Insect Richness", "Insect Abundance", "Coleoptera Richness", "Coleoptera Abundance", "Diptera Richness", "Diptera Abundance", "Ephemeroptera Richness", "Ephemeroptera Abundance", "Plecoptera Richness", "Plecoptera Abundance", "Megaloptera Richness", "Megaloptera Abundance", "Tricoptera Richness", "Tricoptera Abundance", "Chironomidae Richness", "Chironomidae Abundance", "Elmidae Richness", "Elmidae Abundance", "NonInsect Richness", "NonInsect Abundance", "Mollusca Richness", "Mollusca Abundance", "Crustacea Richness", "Crustacea Abundance", "Oligochaete Richness", "Oligochaete Abundance"))
 
 #bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason, y = Amount, color = Metric)) +
 #  geom_point() +

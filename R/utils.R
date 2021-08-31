@@ -114,8 +114,8 @@ GetColSpec <- function() {
       PredatorTaxaAbundance = readr::col_integer(),
       ClingerTaxaCount = readr::col_integer(),
       LongLivedTaxa = readr::col_integer(),
-      EphemoeropteraTaxaCount = readr::col_integer(),
-      EphemoeropteraTaxaAbundance = readr::col_integer(),
+      EphemeropteraTaxaCount = readr::col_integer(),
+      EphemeropteraTaxaAbundance = readr::col_integer(),
       PlecopteraTaxa = readr::col_integer(),
       PlecopteraTaxaAbundance = readr::col_integer(),
       TrichopteraTaxaCount = readr::col_integer(),
@@ -289,7 +289,7 @@ ReadAquarius <- function(conn, data.name) {
       dplyr::rename(!!aq_col_name := NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
       dplyr::filter(Approval == "Approved") %>%
       dplyr::mutate(SiteCode = location) %>%
-      dplyr::mutate(Park = "GRBA", SiteType = "Stream")
+      dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
 
     site.data$DateTime <- lubridate::ymd_hms(site.data$DateTime, tz = "America/Los_Angeles", quiet = TRUE)
 
@@ -298,7 +298,7 @@ ReadAquarius <- function(conn, data.name) {
                                          lubridate::year(DateTime),
                                          lubridate::year(DateTime) + 1)) %>%
       dplyr::select(Park,
-                    SiteType,
+                    SampleFrame,
                     SiteCode,
                     FieldSeason,
                     DateTime,
@@ -420,13 +420,26 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
   }
 
   # Write each analysis view in the database to csv
+
   for (view.name in analysis.views) {
     df <- dplyr::tbl(conn$db, dbplyr::in_schema("analysis", view.name)) %>%
       dplyr::collect()
     readr::write_csv(df, file.path(dest.folder, paste0(view.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
   }
 
+  #write calculated summary tables to csv
+
+  df <- StreamWqMedian(conn)
+  readr::write_csv(df, file.path(dest.folder, paste0("WQStreamXSection_CALCULATED", ".csv")), na = "", append = FALSE, col_names = TRUE)
+
+  df <- LakeWqMedian(conn)
+  readr::write_csv(df, file.path(dest.folder, paste0("WaterQuality_CALCULATED", ".csv")), na = "", append = FALSE, col_names = TRUE)
+
+  df <- LakeSurfaceElevation(conn)
+  readr::write_csv(df, file.path(dest.folder, paste0("LakeLevel_CALCULATED", ".csv")), na = "", append = FALSE, col_names = TRUE)
+
   # Write each Aquarius data table to csv
+
   for (aq.name in aq.data) {
     tryCatch(
       {
