@@ -546,7 +546,7 @@ FormatPlot <- function(data, x.col, y.col, facet.col, n.col.facet = 2, sample.si
     facet.col <- dplyr::enquo(facet.col)
     facets <- unique(dplyr::select(data, !!facet.col))
     if (nrow(facets) > 1) {
-      p <- p + ggplot2::facet_wrap(ggplot2::vars(!!facet.col), ncol = n.col.facet, scales = 'free')
+      p <- p + ggplot2::facet_wrap(ggplot2::vars(!!facet.col), ncol = n.col.facet, scales = 'free_y')
     } else if (sub.title == '' & facet.as.subtitle) {
       sub.title <- facets
     }
