@@ -372,7 +372,7 @@ WqPlotTemperatureDepthProfile <- function(conn, path.to.data, park, site, field.
 #'
 WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
 
-  wq <- LakeQcWqCleaned(conn, path.to.data, park, site, field.season, data.source) %>%
+  wq <- qcLakeWqCleaned(conn, path.to.data, park, site, field.season, data.source) %>%
     dplyr::filter(tolower(Parameter) == tolower(param), !is.na(Median))
 
   # Filter on unit if looking at DO. If not DO, set units
@@ -408,7 +408,7 @@ WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, fie
       ggplot2::scale_fill_gradient(low = "#59dae3", high = "#f28500")
   } else {
     plot_wq <- plot_wq +
-      ggplot2::scale_fill_gradient(low = "#003e42", high = "#edfeff")
+      ggplot2::scale_fill_gradient(low = "#edfeff", high = "#003e42")
   }
 
 
