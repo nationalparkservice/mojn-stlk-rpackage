@@ -32,3 +32,11 @@ A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, U
 \description{
 List all routine samples where total dissolved phosphorous (TDP) values exceeded total phosphorus (UTP) values, and flag whether the discrepancy was within precision limits or outside of the expected error.
 }
+\examples{
+\dontrun{
+conn <- OpenDatabaseConnection()
+qcChemTDP(conn)
+qcChemTDP(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+CloseDatabaseConnection(conn)
+}
+}

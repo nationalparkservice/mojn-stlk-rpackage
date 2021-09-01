@@ -32,3 +32,11 @@ A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, C
 \description{
 Calculate the relative percent difference (RPD) for laboratory duplicates and triplicates, flag results that exceed the 30\% MQO threshold, and list all RPD values and flags.
 }
+\examples{
+\dontrun{
+conn <- OpenDatabaseConnection()
+qcChemLabDupes(conn)
+qcChemLabDupes(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+CloseDatabaseConnection(conn)
+}
+}

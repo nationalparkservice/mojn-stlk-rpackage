@@ -2,13 +2,13 @@
 % Please edit documentation in R/chem-qc.R
 \name{getMDLLookup}
 \alias{getMDLLookup}
-\title{Create data frame with MDL and ML values for each characteristic.}
+\title{Create tibble with MDL and ML values for each characteristic.}
 \usage{
 getMDLLookup()
 }
 \value{
-A data frame with columns Characteristic, Unit, StartYear, EndYear, MDL, ML.
+A tibble with columns Characteristic, Unit, StartYear, EndYear, MDL, ML.
 }
 \description{
-Create data frame with MDL and ML values for each characteristic.
+Create tibble with MDL and ML values for each characteristic.
 }

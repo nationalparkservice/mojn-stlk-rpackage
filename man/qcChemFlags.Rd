@@ -32,3 +32,11 @@ A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, C
 \description{
 List all laboratory values that have an "Information," "Warning," or "Critical" flag.
 }
+\examples{
+\dontrun{
+conn <- OpenDatabaseConnection()
+qcChemFlags(conn)
+qcChemFlags(conn, site = c("GRBA_S_MILL1", "GRBA_S_PINE1", "GRBA_S_RDGE1"), field.season = c("2018", "2019", "2020"))
+CloseDatabaseConnection(conn)
+}
+}

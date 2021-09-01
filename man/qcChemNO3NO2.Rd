@@ -32,3 +32,11 @@ A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, U
 \description{
 List all routine samples where nitrate and nitrite (NO3NO2-N) values exceeded either total dissolved nitrogen (TDN) values or total nitrogen (UTN) values, and flag whether the discrepancy was within precision limits or outside of the expected error.
 }
+\examples{
+\dontrun{
+conn <- OpenDatabaseConnection()
+qcChemNO3NO2(conn)
+qcChemNO3NO2(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+CloseDatabaseConnection(conn)
+}
+}

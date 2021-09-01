@@ -2,7 +2,7 @@
 % Please edit documentation in R/chem-qc.R
 \name{qcChemFieldBlanks}
 \alias{qcChemFieldBlanks}
-\title{Calculate the relative percent difference (RPD) for field blanks, flag results that exceed the 30\% MQO threshold, and list all RPD values and flags.}
+\title{List all laboratory values from field blanks that exceed the minimum detection level (MDL) for that analyte.}
 \usage{
 qcChemFieldBlanks(
   conn,
@@ -30,5 +30,13 @@ qcChemFieldBlanks(
 A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, Routine, FieldBlank, RPD, RPDFLag.
 }
 \description{
-Calculate the relative percent difference (RPD) for field blanks, flag results that exceed the 30\% MQO threshold, and list all RPD values and flags.
+List all laboratory values from field blanks that exceed the minimum detection level (MDL) for that analyte.
+}
+\examples{
+\dontrun{
+conn <- OpenDatabaseConnection()
+qcChemFieldBlanks(conn)
+qcChemFieldBlanks(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+CloseDatabaseConnection(conn)
+}
 }
