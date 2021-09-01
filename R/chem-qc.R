@@ -11,6 +11,12 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' qcChemFlags(conn)
+#' qcChemFlags(conn, site = c("GRBA_S_MILL1", "GRBA_S_PINE1", "GRBA_S_RDGE1"), field.season = c("2018", "2019", "2020"))
+#' CloseDatabaseConnection(conn)
+#' }
 qcChemFlags <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
@@ -37,6 +43,12 @@ return(flags.list)
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' qcChemLabDupes(conn)
+#' qcChemLabDupes(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+#' CloseDatabaseConnection(conn)
+#' }
 qcChemLabDupes <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
@@ -91,6 +103,12 @@ qcChemLabDupes <- function(conn, path.to.data, park, site, field.season, data.so
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' qcChemFieldDupes(conn)
+#' qcChemFieldDupes(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+#' CloseDatabaseConnection(conn)
+#' }
 qcChemFieldDupes <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
@@ -135,6 +153,12 @@ qcChemFieldDupes <- function(conn, path.to.data, park, site, field.season, data.
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' qcChemFieldBlanks(conn)
+#' qcChemFieldBlanks(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+#' CloseDatabaseConnection(conn)
+#' }
 qcChemFieldBlanks <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
     lookup <- getMDLLookup()
@@ -173,6 +197,12 @@ qcChemFieldBlanks <- function(conn, path.to.data, park, site, field.season, data
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' qcChemTDN(conn)
+#' qcChemTDN(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+#' CloseDatabaseConnection(conn)
+#' }
 qcChemTDN <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
@@ -206,6 +236,12 @@ qcChemTDN <- function(conn, path.to.data, park, site, field.season, data.source 
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' qcChemNO3NO2(conn)
+#' qcChemNO3NO2(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+#' CloseDatabaseConnection(conn)
+#' }
 qcChemNO3NO2 <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
@@ -240,6 +276,12 @@ qcChemNO3NO2 <- function(conn, path.to.data, park, site, field.season, data.sour
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' qcChemTDP(conn)
+#' qcChemTDP(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+#' CloseDatabaseConnection(conn)
+#' }
 qcChemTDP <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
@@ -264,7 +306,6 @@ qcChemTDP <- function(conn, path.to.data, park, site, field.season, data.source 
 #' @return A tibble with columns Characteristic, Unit, StartYear, EndYear, MDL, ML.
 #' @export
 #'
-#' @examples
 getMDLLookup <- function() {
     lookup <- tibble::tibble(Characteristic = c("ALK2", "Ca", "DOC", "Cl", "Mg", "NO3NO2-N", "UTN", "UTP", "K", "Na", "SO4-S"),
                              Unit = c("mg CaCO3/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L"),
@@ -291,6 +332,12 @@ getMDLLookup <- function() {
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' qcChemMDL(conn)
+#' qcChemMDL(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+#' CloseDatabaseConnection(conn)
+#' }
 qcChemMDL <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
     lookup <- getMDLLookup()
@@ -329,6 +376,12 @@ qcChemMDL <- function(conn, path.to.data, park, site, field.season, data.source 
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' qcChemML(conn)
+#' qcChemML(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
+#' CloseDatabaseConnection(conn)
+#' }
 qcChemML <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
@@ -362,18 +415,23 @@ qcChemML <- function(conn, path.to.data, park, site, field.season, data.source =
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
-#' @return A tibble
-
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, SampleFrame, VisitDate, VisitType, SampleCollectionMethod, Characteristic, CharacteristicLabel, LabValue, ReportingGroup, SampleType, DQF, DQFNote, DPL, Unit
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' ChemANC(conn)
+#' ChemANC(conn, site = "GRBA_L_DEAD0", field.season = "2018")
+#' CloseDatabaseConnection(conn)
+#' }
 ChemANC <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     chem.anc.rows <- chem  %>%
         dplyr::filter(Characteristic == "ALK2") %>%
-        mutate(Characteristic = "ANC",
+        dplyr::mutate(Characteristic = "ANC",
                CharacteristicLabel = "Acid neutralizing capacity",
                Unit = "ueq/L",
                DQF = "NF",
@@ -382,7 +440,8 @@ ChemANC <- function(conn, path.to.data, park, site, field.season, data.source = 
 
     chem.anc <- rbind(chem, chem.anc.rows)
 
-    chem.anc %<>% arrange(SiteCode, VisitDate, Characteristic)
+    chem.anc %<>% arrange(SiteCode, VisitDate, Characteristic) %>%
+        dplyr::relocate(Unit, .before = "LabValue")
 
     return(chem.anc)
 
@@ -390,54 +449,34 @@ ChemANC <- function(conn, path.to.data, park, site, field.season, data.source = 
 
 #' Plot acid neutralizing capacity (ANC) at lakes, and include EPA thresholds
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
-#' @return
+#' @return A ggplot object
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' ChemLakeANCPlot(conn)
+#' ChemLakeANCPlot(conn, site = "GRBA_L_DEAD0")
+#' CloseDatabaseConnection(conn)
+#' }
+#'
 ChemLakeANCPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
     chem.anc <- ChemANC(conn, path.to.data, park, site, field.season, data.source)
 
-    chem.anc %<>% filter(VisitType == "Primary", SampleType == "Routine", SampleFrame == "Lake", Characteristic == "ANC")
+    chem.lake.anc <- chem.anc %>%
+        filter(VisitType == "Primary", SampleType == "Routine", SampleFrame == "Lake", Characteristic == "ANC")
 
     thresholds <- data.frame(yintercept = c(20, 50, 100, 200), Lines = c("Acute", "Severe", "Elevated", "Moderately Acidic"))
 
-    chem.anc.plot <- ggplot2::ggplot(chem.anc, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
-        geom_point() +
-        geom_line() +
-        facet_grid(~SiteShort, scales = "free_y") +
-        ylab(label = "Acid Neutralizing Capacity (ueq/L)") +
-        theme(axis.text.x = element_text(angle = 90)) +
-        labs(title = "Lake acid neutralizing capacity") +
-        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
-        geom_hline(yintercept = c(20, 50, 100, 200), linetype = "dashed", color = "gray 20") +
-        annotate("text", x = "2009", y = 100, label = "Moderate", vjust = -0.5) +
-        annotate("text", x = "2009", y = 50, label = "Elevated", vjust = -0.5) +
-        annotate("text", x = "2009", y = 20, label = "Severe", vjust = -0.5) +
-        annotate("text", x = "2009", y = 0, label = "Acute", vjust = -0.5)
-
-    return(chem.anc)
-
-}
-
-
-
-ChemLakeANCPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-
-    chem.anc <- ChemANC(conn, path.to.data, park, site, field.season, data.source)
-
-    chem.anc %<>% filter(VisitType == "Primary", SampleType == "Routine", SampleFrame == "Lake", Characteristic == "ANC")
-
-    thresholds <- data.frame(yintercept = c(20, 50, 100, 200), Lines = c("Acute", "Severe", "Elevated", "Moderately Acidic"))
-
-    chem.anc.plot <- ggplot2::ggplot(chem.anc, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+    chem.lake.anc.plot <- ggplot2::ggplot(chem.lake.anc, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
         geom_point() +
         geom_line() +
         facet_grid(~SiteShort, scales = "free_y") +
@@ -452,7 +491,54 @@ ChemLakeANCPlot <- function(conn, path.to.data, park, site, field.season, data.s
         annotate("text", x = "2012", y = 20, label = "Acute", vjust = 1) +
         scale_x_discrete(breaks = pretty_breaks())
 
-    return(chem.anc)
+    return(chem.lake.anc.plot)
+
+}
+
+#' Plot acid neutralizing capacity (ANC) at streams, and include EPA thresholds
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return A ggplot object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' conn <- OpenDatabaseConnection()
+#' ChemStreamANCPlot(conn)
+#' ChemStreamANCPlot(conn, site = "GRBA_S_PINE1")
+#' CloseDatabaseConnection(conn)
+#' }
+ChemStreamANCPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+
+    chem.anc <- ChemANC(conn, path.to.data, park, site, field.season, data.source)
+
+    chem.stream.anc <- chem.anc %>%
+        filter(VisitType == "Primary", SampleType == "Routine", SampleFrame == "Stream", Characteristic == "ANC")
+
+    thresholds <- data.frame(yintercept = c(20, 50, 100, 200), Lines = c("Acute", "Severe", "Elevated", "Moderately Acidic"))
+
+    chem.stream.anc.plot <- ggplot2::ggplot(chem.stream.anc, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+        geom_point() +
+        geom_line() +
+        facet_grid(~SiteShort, scales = "free_y") +
+        ylab(label = "Acid Neutralizing Capacity (ueq/L)") +
+        theme(axis.text.x = element_text(angle = 90)) +
+        labs(title = "Lake acid neutralizing capacity") +
+        scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
+        geom_hline(yintercept = c(20, 50, 100, 200), linetype = "dashed", color = "gray 20") +
+        annotate("text", x = "2012", y = 200, label = "Moderate", vjust = 1) +
+        annotate("text", x = "2012", y = 100, label = "Elevated", vjust = 1) +
+        annotate("text", x = "2012", y = 50, label = "Severe", vjust = 1) +
+        annotate("text", x = "2012", y = 20, label = "Acute", vjust = 1) +
+        scale_x_discrete(breaks = pretty_breaks())
+
+    return(chem.stream.anc.plot)
 
 }
 

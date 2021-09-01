@@ -157,6 +157,7 @@ ChannelCharacteristics <- function(conn, path.to.data, park, site, field.season,
 #' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, ChannelFlow, Rank, Count
 #' @export
 #'
+#' @examples
 #' \dontrun{
 #' conn <- OpenDatabaseConnection
 #' channel_flow <- ChannelFlow(conn)
@@ -189,6 +190,7 @@ ChannelFLow <-  function(conn, path.to.data, park, site, field.season, data.sour
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' conn <- OpenDatabaseConnection
 #' channel_substrate <- ChannelSubstrate(conn)
 #' channel_substrate_STRW2_2016 <- ChannelSubstrate(conn, site = "GRBA_S_STRW2", field.season = "2016")

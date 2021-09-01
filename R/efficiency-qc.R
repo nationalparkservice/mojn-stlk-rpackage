@@ -9,7 +9,7 @@
 #' \dontrun{
 #'     conn <- OpenDatabaseConnection()
 #'     qcNoAnnualVisit(conn)
-#'     qcNoAnnualVisit(conn, site = "GRBA_L_DEAD0", field.season = c("2012", "2013, "2014", "2015"))
+#'     qcNoAnnualVisit(conn, site = "GRBA_L_DEAD0", field.season = c("2012", "2013", "2014", "2015"))
 #'     CloseDatabaseConnection(conn)
 #' }
 qcNoAnnualVisit <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
@@ -41,7 +41,7 @@ return(visit)
 #' \dontrun{
 #'     conn <- OpenDatabaseConnection()
 #'     qcDPLCheck(conn)
-#'     qcDPLCheck(conn, site = "GRBA_L_JHNS0", field.season = c("2018", "2019, "2020"))
+#'     qcDPLCheck(conn, site = "GRBA_L_JHNS0", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
 qcDPLCheck <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
@@ -129,7 +129,7 @@ return(dpl)
 }
 
 
-#' Calculate daily mean values (daily median values for pH) for water quality parameters at streams based on hourly data. Determine the most frequent data grade level for each day based on hourly data. Include only those dates with greater than 80% completeness (greater than 19 hourly values).
+#' Calculate daily mean values (daily median values for pH) for water quality parameters at streams based on hourly data. Determine the most frequent data grade level for each day based on hourly data. Include only those dates with greater than 80% completeness (greater than 19 hourly values). Long format for ease of plotting.
 #'
 #' @inheritParams ReadAndFilterData
 #'
@@ -140,7 +140,7 @@ return(dpl)
 #' \dontrun{
 #'     conn <- OpenDatabaseConnection()
 #'     WqDailyMeanLong(conn)
-#'     WqDailyMeanLong(conn, site = "GRBA_S_LHMN1", field.season = c("2012", "2013, "2014", "2015"))
+#'     WqDailyMeanLong(conn, site = "GRBA_S_LHMN1", field.season = c("2012", "2013", "2014", "2015"))
 #'     CloseDatabaseConnection(conn)
 #' }
 WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
@@ -281,18 +281,24 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, parame
 
 #' Return summary of daily mean values (daily median values for pH) and grades for water quality parameters at streams.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param parameter
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param parameter Optional. Water quality parameter to filter on.
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
-#' @return
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, SiteType, Date, FieldSeason, Temp_C, Temp_C_Grade, pH, pH_Grade, SpCond_uScm, SpCond_uScm_Grade, DO_pct, DO_pct_Grade, DO_mgL, DO_mgL_Grade
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     WqDailyMean(conn)
+#'     WqDailyMean(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
+#'     CloseDatabaseConnection(conn)
+#' }
 WqDailyMean <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wq.long <- WqDailyMeanLong(conn, path.to.data, park, site, field.season, data.source)
@@ -321,18 +327,24 @@ return(wq.daily)
 
 #' Calculate the number and percentage of days of data for each water quality parameter for each field season between the index period of July 1 to September 15 (77 days).
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param parameter
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param parameter Optional. Water quality parameter to filter on.
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     qcWqCompleteness(conn)
+#'     qcWqCompleteness(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
+#'     CloseDatabaseConnection(conn)
+#' }
 qcWqCompleteness <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wq.long <- WqDailyMeanLong(conn, path.to.data, park, site, field.season, data.source)
@@ -363,20 +375,26 @@ return(wq.comp)
 }
 
 
-#' Calculate percentage of data rated at each grade level for each water quality parameter for each field season between the index period of July 1 to September 15 (77 days). Long format for plotting.
+#' Calculate percentage of data rated at each grade level for each water quality parameter for each field season between the index period of July 1 to September 15 (77 days). Long format for ease of plotting.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param parameter
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param parameter Optional. Water quality parameter to filter on.
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     qcWqGradesLong(conn)
+#'     qcWqGradesLong(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
+#'     CloseDatabaseConnection(conn)
+#' }
 qcWqGradesLong <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wq.long <- WqDailyMeanLong(conn, path.to.data, park, site, field.season, data.source)
@@ -402,18 +420,24 @@ return(wq.grds.long)
 
 #' Calculate the percentage of data rated at each grade level for each water quality parameter for each field season between the index period of July 1 to September 15 (77 days).
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param parameter
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param parameter Optional. Water quality parameter to filter on.
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     qcWqGrades(conn)
+#'     qcWqGrades(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
+#'     CloseDatabaseConnection(conn)
+#' }
 qcWqGrades <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wq.daily <- WqDailyMean(conn, path.to.data, park, site, field.season, data.source)
@@ -601,18 +625,24 @@ return(wq.grds)
 
 #' Plot percent completeness for each water quality parameter for each stream for each field season.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param parameter
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param parameter Optional. Water quality parameter to filter on.
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A ggplot object
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     qcWqCompletenessPlot(conn)
+#'     qcWqCompletenessPlot(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
+#'     CloseDatabaseConnection(conn)
+#' }
 qcWqCompletenessPlot <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wq.comp <- qcWqCompleteness(conn, path.to.data, park, site, field.season, data.source)
@@ -632,18 +662,24 @@ return(wq.comp.plot)
 
 #' Plot the percentage of data rated at each grade level for each water quality parameter for each field season.
 #'
-#' @param conn
-#' @param path.to.data
-#' @param park
-#' @param site
-#' @param field.season
-#' @param parameter
-#' @param data.source
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param parameter Optional. Water quality parameter to filter on.
+#' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A ggplot object
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     qcWqGradesPlot(conn)
+#'     qcWqGradesPlot(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
+#'     CloseDatabaseConnection(conn)
+#' }
 qcWqGradesPlot <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
 
 wq.grds.long <- qcWqGradesLong(conn, path.to.data, park, site, field.season, data.source)
@@ -663,14 +699,4 @@ return(wq.grds.plot)
 }
 
 
-# Plot daily mean values for each water quality parameter for each stream for each year.
-WqDailyMeanPlot <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
-
-wq.daily <- WqDailyMean(conn, path.to.data, park, site, field.season, data.source)
-
-# Need to add NAs to get rid of lines connecting gaps between deployments
-wt.daily.plot <- ggplot(data = wq.daily, aes(x = Date, y = Temp_C, color = SiteCode)) +
-  geom_line() +
-  geom_point()
-
-}
+# NYI: Plot daily mean values for each water quality parameter for each stream for each year.

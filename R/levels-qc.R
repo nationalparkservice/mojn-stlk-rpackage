@@ -261,7 +261,6 @@ qcStringSurveyElevations <- function(conn, path.to.data, park, site, field.seaso
 #' PlotBenchmarkElevation(conn, site = "GRBA_L_DEAD0", plotly = TRUE)
 #' CloseDatabaseConnection(conn)
 #' }
-#'
 PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", include.title = TRUE, plotly = FALSE) {
   lvls <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source) %>%
     dplyr::filter(Benchmark != "Water Surface") %>%
@@ -299,7 +298,6 @@ PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season,
 #' PlotLakeSurfaceElevation(conn, site = "GRBA_L_DEAD0", plotly = TRUE)
 #' CloseDatabaseConnection(conn)
 #' }
-#'
 PlotLakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", include.title = TRUE, plotly = FALSE) {
   elev <- LakeSurfaceElevation(conn, path.to.data, park, site, field.season, data.source)
 
