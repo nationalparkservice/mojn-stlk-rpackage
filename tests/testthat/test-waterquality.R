@@ -102,7 +102,7 @@ dummy_visit <- tibble::tibble(Park = "GRBA",
                               FieldSeason = c("2021", "2020", "2021", "2020"),
                               VisitType = "Primary",
                               MonitoringStatus = "Sampled",
-                              SiteType = c("Lake", "Lake", "Stream", "Stream"),
+                              SampleFrame = c("Lake", "Lake", "Stream", "Stream"),
                               IsLakeDry = 0,
                               SiteProtectedStatus = "Not Protected",
                               CloudCover = "No Data",
@@ -131,7 +131,7 @@ test_that("Lake wq median output as expected", {
                              SiteCode = c("GRBA_L_S0001", "GRBA_L_S0001", "GRBA_L_S0002", "GRBA_L_S0002"),
                              VisitDate = as.Date(c("2020-11-01", "2020-11-01", "2019-11-01", "2019-11-01")),
                              VisitType = "Primary",
-                             SiteType = "Lake",
+                             SampleFrame = "Lake",
                              MeasurementDepth_m = c(0, 1, 2, 1),
                              DOMedian_mg_per_L = c(9, 9, 8.5, 8),
                              DOmgLCount = as.integer(c(3, 3, 2, 1)),
@@ -161,7 +161,7 @@ test_that("Stream wq median output as expected", {
                              SiteCode = c("GRBA_S_S0003", "GRBA_S_S0004"),
                              VisitDate = as.Date(c("2020-11-03", "2019-11-04")),
                              VisitType = "Primary",
-                             SiteType = "Stream",
+                             SampleFrame = "Stream",
                              DOMedian_mg_per_L = c(9, 8),
                              DOmgLCount = as.integer(c(3, 1)),
                              DOFlag = "NF",
@@ -234,11 +234,11 @@ test_that("Passing sanity checks return empty data frames", {
   stream_result <- qcStreamWqSanity(path.to.data = dir, data.source = "local")
 
   expect_equal(nrow(lake_result), 0)
-  expect_equal(names(lake_result), c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "Parameter", "Units", "Median", "Flag", "FlagNote", "MeasurementDepth_m"))
+  expect_equal(names(lake_result), c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "Parameter", "Units", "Median", "Flag", "FlagNote", "MeasurementDepth_m"))
   expect_true(tibble::is_tibble(lake_result))
 
   expect_equal(nrow(stream_result), 0)
-  expect_equal(names(stream_result), c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "Parameter", "Units", "Median", "Flag", "FlagNote"))
+  expect_equal(names(stream_result), c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "Parameter", "Units", "Median", "Flag", "FlagNote"))
   expect_true(tibble::is_tibble(stream_result))
 })
 
@@ -247,11 +247,11 @@ test_that("Passing flag checks return empty data frames", {
   stream_result <- qcStreamWqFlags(path.to.data = dir, data.source = "local")
 
   expect_equal(nrow(lake_result), 0)
-  expect_equal(names(lake_result), c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "Parameter", "Units", "Median", "Flag", "FlagNote", "MeasurementDepth_m"))
+  expect_equal(names(lake_result), c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "Parameter", "Units", "Median", "Flag", "FlagNote", "MeasurementDepth_m"))
   expect_true(tibble::is_tibble(lake_result))
 
   expect_equal(nrow(stream_result), 0)
-  expect_equal(names(stream_result), c("Park", "FieldSeason", "SiteCode", "SiteType", "VisitDate", "VisitType", "Parameter", "Units", "Median", "Flag", "FlagNote"))
+  expect_equal(names(stream_result), c("Park", "FieldSeason", "SiteCode", "SampleFrame", "VisitDate", "VisitType", "Parameter", "Units", "Median", "Flag", "FlagNote"))
   expect_true(tibble::is_tibble(stream_result))
 })
 
