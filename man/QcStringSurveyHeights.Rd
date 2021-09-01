@@ -38,9 +38,9 @@ Calculates mean and standard deviation of string survey heights for each benchma
 \examples{
 \dontrun{
     conn <- OpenDatabaseConnection()
-    QcStringSurveyHeights(conn)
-    QcStringSurveyHeights(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017"))
-    QcStringSurveyHeights(path.to.data = "path/to/data", data.source = "local")
+    qcStringSurveyHeights(conn)
+    qcStringSurveyHeights(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017"))
+    qcStringSurveyHeights(path.to.data = "path/to/data", data.source = "local")
     CloseDatabaseConnection(conn)
 }
 }

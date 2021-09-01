@@ -45,5 +45,4 @@ PlotLakeSurfaceElevation(conn)
 PlotLakeSurfaceElevation(conn, site = "GRBA_L_DEAD0", plotly = TRUE)
 CloseDatabaseConnection(conn)
 }
-
 }

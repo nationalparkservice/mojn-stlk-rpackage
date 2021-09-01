@@ -38,9 +38,9 @@ Calculates mean and standard deviation of string survey lake level elevations fo
 \examples{
 \dontrun{
     conn <- OpenDatabaseConnection()
-    QcStringSurveyElevations(conn)
-    QcStringSurveyElevations(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017"))
-    QcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
+    qcStringSurveyElevations(conn)
+    qQcStringSurveyElevations(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017"))
+    qcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
     CloseDatabaseConnection(conn)
 }
 }

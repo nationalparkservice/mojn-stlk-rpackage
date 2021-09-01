@@ -38,9 +38,9 @@ Calculates mean and standard deviation of final corrected elevations for each be
 \examples{
 \dontrun{
     conn <- OpenDatabaseConnection()
-    QcBenchmarkElevation(conn)
-    QcBenchmarkElevation(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
-    QcBenchmarkElevation(path.to.data = "path/to/data", data.source = "local")
+    qcBenchmarkElevation(conn)
+    qcBenchmarkElevation(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
+    qcBenchmarkElevation(path.to.data = "path/to/data", data.source = "local")
     CloseDatabaseConnection(conn)
 }
 }

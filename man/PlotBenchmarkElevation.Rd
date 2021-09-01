@@ -45,5 +45,4 @@ PlotBenchmarkElevation(conn)
 PlotBenchmarkElevation(conn, site = "GRBA_L_DEAD0", plotly = TRUE)
 CloseDatabaseConnection(conn)
 }
-
 }
