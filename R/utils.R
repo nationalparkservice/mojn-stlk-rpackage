@@ -53,7 +53,7 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
 #' }
 CloseDatabaseConnection <- function(conn) {
   pool::poolClose(conn$db)
-  if (!is.na(conn$aquarius)) {
+  if (isS4(conn$aquarius)) {
     conn$aquarius$disconnect()
   }
 }
@@ -266,7 +266,7 @@ GetAquariusColSpec <- function() {
 #' @details \code{data.name} options are: TimeseriesDO, TimeseriesDOSat, TimeseriespH, TimeseriesSpCond, TimeseriesTemperature
 #'
 ReadAquarius <- function(conn, data.name) {
-  if (is.na(conn$aquarius)) {
+  if (!isS4(conn$aquarius)) {
     stop("Aquarius connection does not exist.")
   }
   timeseries <- conn$aquarius
