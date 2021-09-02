@@ -17,6 +17,9 @@ dummy.channelcharacteristic <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRB
 
 
 dir <- "temp-test-csv"
+if (dir.exists(dir)) {
+  unlink(dir, recursive = TRUE)
+}
 dir.create(dir)
 readr::write_csv(dummy.channelcharacteristic, file.path(dir, "Channel.csv"))
 

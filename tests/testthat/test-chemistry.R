@@ -22,6 +22,9 @@ dummy.chemistry <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","G
 
 
 dir <- "temp-test-csv"
+if (dir.exists(dir)) {
+  unlink(dir, recursive = TRUE)
+}
 dir.create(dir)
 readr::write_csv(dummy.chemistry, file.path(dir, "Chemistry.csv"))
 

@@ -83,6 +83,9 @@ dummy.bmi <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","
 
 
 dir <- "temp-test-csv"
+if (dir.exists(dir)) {
+  unlink(dir, recursive = TRUE)
+}
 dir.create(dir)
 readr::write_csv(dummy.bmi, file.path(dir, "BMI.csv"))
 

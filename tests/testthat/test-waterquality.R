@@ -114,7 +114,10 @@ dummy_visit <- tibble::tibble(Park = "GRBA",
                               Notes = "These are some notes",
                               DataProcessingLevel = c("Accepted", "Accepted", "Raw", "Raw"))
 
-dir <- "temp-test-csv"
+dir <- "temp-test-csv/wq"
+if (dir.exists(dir)) {
+  unlink(dir, recursive = TRUE)
+}
 dir.create(dir)
 readr::write_csv(dummy_do, file.path(dir, "WaterQualityDO.csv"), na = "")
 readr::write_csv(dummy_ph, file.path(dir, "WaterQualitypH.csv"), na = "")
@@ -284,11 +287,11 @@ dummy_streamwq_bad$DOFlag[1:3] <- "C"
 dummy_streamwq_bad$SpCondFlag[1:3] <- "W"
 dummy_streamwq_bad$TemperatureFlag[1:3] <- "I"
 
-readr::write_csv(dummy_do_bad, file.path(dir, "WaterQualityDO.csv"), na = "")
-readr::write_csv(dummy_ph_bad, file.path(dir, "WaterQualitypH.csv"), na = "")
-readr::write_csv(dummy_spcond_bad, file.path(dir, "WaterQualitySpCond.csv"), na = "")
-readr::write_csv(dummy_temp_bad, file.path(dir, "WaterQualityTemperature.csv"), na = "")
-readr::write_csv(dummy_streamwq_bad, file.path(dir, "WQStreamXSection.csv"), na = "")
+readr::write_csv(dummy_do_bad, file.path(dir, "WaterQualityDO.csv"), na = "", append = FALSE)
+readr::write_csv(dummy_ph_bad, file.path(dir, "WaterQualitypH.csv"), na = "", append = FALSE)
+readr::write_csv(dummy_spcond_bad, file.path(dir, "WaterQualitySpCond.csv"), na = "", append = FALSE)
+readr::write_csv(dummy_temp_bad, file.path(dir, "WaterQualityTemperature.csv"), na = "", append = FALSE)
+readr::write_csv(dummy_streamwq_bad, file.path(dir, "WQStreamXSection.csv"), na = "", append = FALSE)
 
 lake_result <- qcLakeWqSanity(path.to.data = dir, data.source = "local")
 stream_result <- qcStreamWqSanity(path.to.data = dir, data.source = "local")

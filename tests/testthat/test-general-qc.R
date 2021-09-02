@@ -13,6 +13,9 @@ dummy.completeness <- tibble::tibble(Park = c("GRBA", "GRBA", "GRBA", "GRBA", "G
                                      )
 
 dir <- "temp-test-csv"
+if (dir.exists(dir)) {
+  unlink(dir, recursive = TRUE)
+}
 dir.create(dir)
 readr::write_csv(dummy.completeness, file.path(dir, "Visit.csv"))
 

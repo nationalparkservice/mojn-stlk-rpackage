@@ -3,23 +3,24 @@ skip_if_not(file.exists('M:/MONITORING/StreamsLakes/Data/Database/ConnectFromR/s
 
 # Write temporary csv files
 conn <- OpenDatabaseConnection()
-dir <- "temp_test-csv"
+dir <- "temp-test-csv/dbtest"
+if (dir.exists(dir)) {
+  unlink(dir, recursive = TRUE)
+}
 SaveDataToCsv(conn, dir, create.folders = TRUE, overwrite = TRUE)
-CloseDatabaseConnection(conn)
 
 data.names <- c(names(GetColSpec()),
                 names(GetAquariusColSpec()))
 
 for (d.name in data.names) {
   test_that(paste0(d.name, ".csv matches data read from database"), {
-    c <- OpenDatabaseConnection()
-    db <- ReadAndFilterData(c, data.name = d.name)
-    CloseDatabaseConnection(c)
+    db <- ReadAndFilterData(conn, data.name = d.name)
     csv <- ReadAndFilterData(path.to.data = dir, data.source = "local", data.name = d.name)
-
     expect_dataframe_equal(db, csv)
   })
 }
+
+CloseDatabaseConnection(conn)
 
 # Remove temporary csv's
 unlink(dir, recursive = TRUE)
