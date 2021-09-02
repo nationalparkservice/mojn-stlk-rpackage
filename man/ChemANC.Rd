@@ -20,7 +20,7 @@ ChemANC(conn, path.to.data, park, site, field.season, data.source = "database")
 \item{data.source}{Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.}
 }
 \value{
-A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, SampleFrame, VisitDate, VisitType, SampleCollectionMethod, Characteristic, CharacteristicLabel, LabValue, ReportingGroup, SampleType, DQF, DQFNote, DPL, Unit
+A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, SampleFrame, VisitDate, VisitType, SampleCollectionMethod, Characteristic, CharacteristicLabel, LabValue, ReportingGroup, SampleType, Flag, FlagNote, DPL, Unit
 }
 \description{
 Calculate acid neutralizing capacity (ANC) from alkalinity (ALK2)
