@@ -345,7 +345,7 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
     ## Read Aquarius data
     filtered.data <- ReadAquarius(conn, data.name)
   } else if (data.source == "local") {
-    filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec.all[[data.name]])
+    filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec.all[[data.name]], lazy = FALSE)
     if(data.name %in% names(col.spec.aq) & "DateTime" %in% names(filtered.data)) {
       filtered.data$DateTime <- lubridate::with_tz(filtered.data$DateTime, "America/Los_Angeles")
     }

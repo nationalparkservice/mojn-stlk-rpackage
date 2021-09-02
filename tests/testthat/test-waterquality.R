@@ -114,7 +114,7 @@ dummy_visit <- tibble::tibble(Park = "GRBA",
                               Notes = "These are some notes",
                               DataProcessingLevel = c("Accepted", "Accepted", "Raw", "Raw"))
 
-dir <- "temp-test-csv/wq"
+dir <- "temp-test-csv"
 if (dir.exists(dir)) {
   unlink(dir, recursive = TRUE)
 }
