@@ -7,7 +7,7 @@
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
-#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType, DQF, DQFNote.
+#' @return A tibble with columns SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType, Flag, FlagNote.
 #' @export
 #'
 #' @examples
@@ -21,8 +21,8 @@ qcChemFlags <- function(conn, path.to.data, park, site, field.season, data.sourc
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     flags.list <- chem %>%
-        filter(DQF %in% c("I", "W", "C")) %>%
-        select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType, DQF, DQFNote) %>%
+        filter(Flag %in% c("I", "W", "C")) %>%
+        select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType, Flag, FlagNote) %>%
         arrange(SampleFrame, VisitDate, SiteCode)
 
 return(flags.list)
@@ -415,7 +415,7 @@ qcChemML <- function(conn, path.to.data, park, site, field.season, data.source =
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
-#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, SampleFrame, VisitDate, VisitType, SampleCollectionMethod, Characteristic, CharacteristicLabel, LabValue, ReportingGroup, SampleType, DQF, DQFNote, DPL, Unit
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, SampleFrame, VisitDate, VisitType, SampleCollectionMethod, Characteristic, CharacteristicLabel, LabValue, ReportingGroup, SampleType, Flag, FlagNote, DPL, Unit
 #' @export
 #'
 #' @examples
@@ -434,8 +434,8 @@ ChemANC <- function(conn, path.to.data, park, site, field.season, data.source = 
         dplyr::mutate(Characteristic = "ANC",
                CharacteristicLabel = "Acid neutralizing capacity",
                Unit = "ueq/L",
-               DQF = "NF",
-               DQFNote = NA,
+               Flag = "NF",
+               FlagNote = NA,
                LabValue = LabValue*20)
 
     chem.anc <- rbind(chem, chem.anc.rows)
