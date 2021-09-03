@@ -402,13 +402,13 @@ WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, fie
 
   if (tolower(param) == "ph") {
     plot_wq <- plot_wq +
-      ggplot2::scale_fill_gradient2(low = "#f28500", mid = "#E6FFFF", high = "#00e2f2", midpoint = 7.0)
+      ggplot2::scale_color_gradient2(low = "#f28500", mid = "#E6FFFF", high = "#00e2f2", midpoint = 7.0)
   } else if (tolower(param) == "temperature") {
     plot_wq <- plot_wq +
       ggplot2::scale_color_gradient(low = "#59dae3", high = "#f28500")
   } else {
     plot_wq <- plot_wq +
-      ggplot2::scale_fill_gradient(low = "#edfeff", high = "#003e42")
+      ggplot2::scale_color_gradient(low = "#edfeff", high = "#003e42")
   }
 
 
