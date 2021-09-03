@@ -396,19 +396,20 @@ WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, fie
     n.col.facet = 2,
     transform.y = "reverse"
   ) +
-    ggplot2::aes(fill = Median) +
+    ggplot2::aes(color = Median) +
     ggplot2::labs(fill = paste0("Median ", param, ifelse(tolower(param) == "ph", "", paste0(" (", units, ")")))) +
-    ggplot2::geom_point(size = 6, pch = 21, color = "#3b3b3b")
+    ggplot2::geom_point(size = 6, pch = 19, stroke = 2, color = "#3b3b3b") +
+    ggplot2::geom_point(size = 6, pch = 19) # color = "#3b3b3b", pch = 21
 
   if (tolower(param) == "ph") {
     plot_wq <- plot_wq +
-      ggplot2::scale_fill_gradient2(low = "#f28500", mid = "#E6FFFF", high = "#00e2f2", midpoint = 7.0)
+      ggplot2::scale_color_gradient2(low = "#f28500", mid = "#E6FFFF", high = "#00e2f2", midpoint = 7.0)
   } else if (tolower(param) == "temperature") {
     plot_wq <- plot_wq +
-      ggplot2::scale_fill_gradient(low = "#59dae3", high = "#f28500")
+      ggplot2::scale_color_gradient(low = "#59dae3", high = "#f28500")
   } else {
     plot_wq <- plot_wq +
-      ggplot2::scale_fill_gradient(low = "#edfeff", high = "#003e42")
+      ggplot2::scale_color_gradient(low = "#edfeff", high = "#003e42")
   }
 
 

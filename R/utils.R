@@ -53,7 +53,7 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
 #' }
 CloseDatabaseConnection <- function(conn) {
   pool::poolClose(conn$db)
-  if (!is.na(conn$aquarius)) {
+  if (isS4(conn$aquarius)) {
     conn$aquarius$disconnect()
   }
 }
@@ -266,7 +266,7 @@ GetAquariusColSpec <- function() {
 #' @details \code{data.name} options are: TimeseriesDO, TimeseriesDOSat, TimeseriespH, TimeseriesSpCond, TimeseriesTemperature
 #'
 ReadAquarius <- function(conn, data.name) {
-  if (is.na(conn$aquarius)) {
+  if (!isS4(conn$aquarius)) {
     stop("Aquarius connection does not exist.")
   }
   timeseries <- conn$aquarius
@@ -345,7 +345,7 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
     ## Read Aquarius data
     filtered.data <- ReadAquarius(conn, data.name)
   } else if (data.source == "local") {
-    filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec.all[[data.name]])
+    filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec.all[[data.name]], lazy = FALSE)
     if(data.name %in% names(col.spec.aq) & "DateTime" %in% names(filtered.data)) {
       filtered.data$DateTime <- lubridate::with_tz(filtered.data$DateTime, "America/Los_Angeles")
     }
@@ -656,13 +656,28 @@ FormatPlot <- function(data, x.col, y.col, facet.col, n.col.facet = 2, sample.si
 #' @param expected Expected data frame
 #' @param ignore_col_order Ignore order of columns in dataframe? Defaults to FALSE.
 #' @param ignore_row_order Ignore order of rows in dataframe? Defaults to TRUE.
-#' @param convert Convert similar classes (factor to character, int to double)?
 #'
 #' @return If test passes, nothing. If it fails, description of failure.
 #'
 #' @export
 #'
-expect_dataframe_equal <- function(result, expected, ignore_col_order = FALSE, ignore_row_order = TRUE, convert = FALSE) {
-  test_result <- dplyr::all_equal(result, expected, ignore_col_order, ignore_row_order, convert)
-  return(expect_true(test_result, label = test_result))
+expect_dataframe_equal <- function(result, expected, ignore_col_order = FALSE, ignore_row_order = TRUE) {
+  # Check for same columns
+  cols_match <- ifelse(ignore_col_order,
+                       all(names(result) %in% names(expected)) & all(names(expected) %in% names(result)),
+                       names(result) == names(expected))
+
+  # Rearrange columns to match if ignoring column order
+  if (cols_match & ignore_col_order) {
+    result <- dplyr::select(result, names(expected))
+  }
+  # Rearrange row order to match if ignoring row order
+  if (ignore_row_order) {
+    result <- dplyr::arrange_at(result, names(result))
+    expected <- dplyr::arrange_at(expected, names(expected))
+  }
+  # Compare dataframes
+  test_result <- all.equal(result, expected, check.attributes = FALSE, use.names = TRUE, check.names = TRUE)
+
+  return(testthat::expect_true(test_result, label = test_result))
 }

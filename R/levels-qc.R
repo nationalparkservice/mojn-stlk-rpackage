@@ -311,8 +311,9 @@ PlotLakeSurfaceElevation <- function(conn, path.to.data, park, site, field.seaso
                     plot.title = ifelse(include.title, "Lake surface elevation over time", ""),
                     x.lab = "Field Season",
                     y.lab = "Elevation (ft)") +
-    ggplot2::geom_point(ggplot2::aes(color = SiteName, group = SiteName, shape = SurveyType)) +
-    ggplot2::geom_line(ggplot2::aes(color = SiteName, group = SiteName)) +
+    ggplot2::aes(color = SiteName, group = SiteName) +
+    ggplot2::geom_point(ggplot2::aes()) +
+    ggplot2::geom_line() +
     ggplot2::scale_shape_discrete(na.translate = FALSE)
 
   if (plotly) {

@@ -8,8 +8,7 @@ expect_dataframe_equal(
   result,
   expected,
   ignore_col_order = FALSE,
-  ignore_row_order = TRUE,
-  convert = FALSE
+  ignore_row_order = TRUE
 )
 }
 \arguments{
@@ -20,8 +19,6 @@ expect_dataframe_equal(
 \item{ignore_col_order}{Ignore order of columns in dataframe? Defaults to FALSE.}
 
 \item{ignore_row_order}{Ignore order of rows in dataframe? Defaults to TRUE.}
-
-\item{convert}{Convert similar classes (factor to character, int to double)?}
 }
 \value{
 If test passes, nothing. If it fails, description of failure.

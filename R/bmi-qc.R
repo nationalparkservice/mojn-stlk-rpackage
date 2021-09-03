@@ -20,7 +20,6 @@
 #' }
 BMILong <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   bmi <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "BMI")
-  bmi <- ReadAndFilterData(conn, data.source = "database", data.name = "BMI")
   # Fix column names (will eventually be fixed in db and we can get rid of this code)
   if ("PlecopteraTaxa" %in% names(bmi)) {
     bmi %<>% dplyr::rename(PlecopteraTaxaCount = PlecopteraTaxa)

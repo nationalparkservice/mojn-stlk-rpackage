@@ -43,6 +43,9 @@ dummy.strings <- tibble::tibble(Park = c("PARK", "PARK", "PARK", "PARK", "PARK",
                                 Height_ft = c(-0.62, -0.60, -0.63, -0.63, -0.64, -0.61, -0.61, 0.39, 0.38, 0.38, 0.41, 0.40, 0.37, 0.37, 1.36, 1.35, 1.35, 1.37, 1.35, 1.38, 1.37, 0.99, 0.98, 1.00, 1.02, 0.99, 0.98, 1.00, 2.01, 2.00, 2.00, 1.97, 1.99, 2.01, 2.02, 3.03, 3.00, 2.99, 2.99, 3.01, 3.00, 2.98, 0.54, 0.51, 0.56, 0.59, 0.59, 0.54, 0.53, 11.40, 11.40, 11.43, 11.42, 11.41, 11.41, 11.42, 14.36, 14.39, 14.40, 14.41, 14.40, 14.38, 14.39, 15.43, 15.40, 15.41, 15.36, 15.42, 15.40, 15.42, NA, NA, NA))
 
 dir <- "temp-test-csv"
+if (dir.exists(dir)) {
+  unlink(dir, recursive = TRUE)
+}
 dir.create(dir)
 readr::write_csv(dummy.levels, file.path(dir, "LakeLevelSurvey.csv"), na = "")
 readr::write_csv(dummy.strings, file.path(dir, "LakeLevelString.csv"), na = "")
