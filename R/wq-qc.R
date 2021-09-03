@@ -398,6 +398,7 @@ WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, fie
   ) +
     ggplot2::aes(color = Median) +
     ggplot2::labs(fill = paste0("Median ", param, ifelse(tolower(param) == "ph", "", paste0(" (", units, ")")))) +
+    ggplot2::geom_point(size = 6, pch = 19, stroke = 2, color = "#3b3b3b") +
     ggplot2::geom_point(size = 6, pch = 19) # color = "#3b3b3b", pch = 21
 
   if (tolower(param) == "ph") {
