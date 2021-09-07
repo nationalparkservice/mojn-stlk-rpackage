@@ -109,17 +109,17 @@ qcDPLCheck <- function(conn, path.to.data, park, site, field.season, parameter, 
     distinct()
 
   dpl <- visit.DPL %>%
-    left_join(chem.DPL) %>%
-    left_join(bmi.DPL) %>%
-    left_join(channel.DPL) %>%
-    left_join(clarity.DPL) %>%
-    left_join(lakesurvey.DPL) %>%
-    left_join(lakestring.DPL) %>%
-    left_join(xsection.DPL) %>%
-    left_join(temp.DPL) %>%
-    left_join(ph.DPL) %>%
-    left_join(spcond.DPL) %>%
-    left_join(do.DPL) %>%
+    left_join(chem.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "SampleFrame", "VisitType")) %>%
+    left_join(bmi.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    left_join(channel.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason")) %>%
+    left_join(clarity.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    left_join(lakesurvey.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    left_join(lakestring.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    left_join(xsection.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    left_join(temp.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    left_join(ph.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    left_join(spcond.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    left_join(do.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
     unique() %>%
     filter_all(any_vars(. %in% c("Raw", "Provisional"))) %>%
     arrange(SampleFrame, FieldSeason, SiteCode)
