@@ -16,7 +16,7 @@
 #' }
 OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), ...) {
   if (use.mojn.default) {
-    params <- readr::read_csv("M:/MONITORING/StreamsLakes/Data/Database/ConnectFromR/stlk-database-conn.csv") %>%
+    params <- readr::read_csv("M:/MONITORING/StreamsLakes/Data/Database/ConnectFromR/stlk-database-conn.csv", col_types = "cccc", ) %>%
       as.list()
     params$drv <- drv
     my.pool <- do.call(pool::dbPool, params)
