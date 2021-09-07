@@ -307,7 +307,10 @@ ReadAquarius <- function(conn, data.name) {
                     Approval)
 
     aq_data <- rbind(aq_data, site.data) %>%
-      tibble::as_tibble()
+      tibble::as_tibble() %>%
+      dplyr::mutate_if(is.character, trimws, whitespace = "[\\h\\v]") %>%
+      dplyr::mutate_if(is.character, stringr::str_replace_all, pattern = "[\\v]+", replacement = ";  ") %>%
+      dplyr::mutate_if(is.character, dplyr::na_if, "")
   }
 
   return(aq_data)
@@ -339,7 +342,8 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
   if (data.source == "database" & data.name %in% names(col.spec)) {
     filtered.data <- dplyr::tbl(conn$db, dbplyr::in_schema("analysis", data.name)) %>%
       dplyr::collect() %>%
-      dplyr::mutate_if(is.character, trimws) %>%
+      dplyr::mutate_if(is.character, trimws, whitespace = "[\\h\\v]") %>%
+      dplyr::mutate_if(is.character, stringr::str_replace_all, pattern = "[\\v]+", replacement = ";  ") %>%
       dplyr::mutate_if(is.character, dplyr::na_if, "")
   } else if (data.source == "database" & data.name %in% names(col.spec.aq)) {
     ## Read Aquarius data
@@ -422,8 +426,7 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
   # Write each analysis view in the database to csv
 
   for (view.name in analysis.views) {
-    df <- dplyr::tbl(conn$db, dbplyr::in_schema("analysis", view.name)) %>%
-      dplyr::collect()
+    df <- ReadAndFilterData(conn, data.source = "database", data.name = view.name)
     readr::write_csv(df, file.path(dest.folder, paste0(view.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
   }
 
