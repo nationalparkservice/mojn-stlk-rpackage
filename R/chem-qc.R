@@ -689,7 +689,7 @@ ChemStreamNutrientBarPlot <- function(conn, path.to.data, park, site, field.seas
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     stream.nut.bar <- chem %>%
-        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Nutrient") %>%
+        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Nutrient", SiteShort != "BAKR2") %>%
         tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup)) %>%
         dplyr::mutate(Nutrient = ifelse(Characteristic %in% c("UTN", "TDN", "NO3NO2-N"), "Nitrogen",
                                         ifelse(Characteristic %in% c("UTP", "TDP"), "Phosphorus",
