@@ -392,6 +392,8 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
 #' @param dest.folder The folder in which to save the .csv files.
 #' @param create.folders Should \code{dest.folder} be created automatically if it doesn't exist? Defaults to \code{FALSE}.
 #' @param overwrite Should existing data be automatically overwritten? Defaults to \code{FALSE}.
+#' @param aquarius Include Aquarius data?
+#' @param calculated Include calculated data (median stream wq, median lake wq, and lake surface elevation)?
 #'
 #' @return None.
 #' @export
@@ -402,7 +404,7 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
 #' SaveDataToCsv(conn, "C:/Users/myusername/Documents/R/streamsandlakes-data", TRUE, TRUE)
 #' CloseDatabaseConnection(conn)
 #' }
-SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite = FALSE) {
+SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite = FALSE, aquarius = TRUE, calculated = TRUE) {
   analysis.views <- names(GetColSpec())
   aq.data <- names(GetAquariusColSpec())
   dest.folder <- file.path(dirname(dest.folder), basename(dest.folder)) # Get destination directory in a consistent format. Seems like there should be a better way to do this.
@@ -431,35 +433,40 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
 
   #write calculated summary tables to csv
 
-  df <- StreamWqMedian(conn)
-  readr::write_csv(df, file.path(dest.folder, paste0("WQStreamXSection_CALCULATED", ".csv")), na = "", append = FALSE, col_names = TRUE)
+  if (calculated) {
+    df <- StreamWqMedian(conn)
+    readr::write_csv(df, file.path(dest.folder, paste0("WQStreamXSection_CALCULATED", ".csv")), na = "", append = FALSE, col_names = TRUE)
 
-  df <- LakeWqMedian(conn)
-  readr::write_csv(df, file.path(dest.folder, paste0("WaterQuality_CALCULATED", ".csv")), na = "", append = FALSE, col_names = TRUE)
+    df <- LakeWqMedian(conn)
+    readr::write_csv(df, file.path(dest.folder, paste0("WaterQuality_CALCULATED", ".csv")), na = "", append = FALSE, col_names = TRUE)
 
-  df <- LakeSurfaceElevation(conn)
-  readr::write_csv(df, file.path(dest.folder, paste0("LakeLevel_CALCULATED", ".csv")), na = "", append = FALSE, col_names = TRUE)
-
-  # Write each Aquarius data table to csv
-
-  for (aq.name in aq.data) {
-    tryCatch(
-      {
-        df <- ReadAquarius(conn, aq.name)
-        # Include time zone in dates
-        if("DateTime" %in% names(df)) {
-          df$DateTime <- format(df$DateTime, "%y-%m-%d %H:%M:%S %z")
-        }
-        readr::write_csv(df, file.path(dest.folder, paste0(aq.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
-      },
-      error = function(e) {
-        if (e$message == "Aquarius connection does not exist.") {
-          warning(paste0("Could not connect to Aquarius. Skipping", aq.name, ".csv"))
-        }
-        else {e}
-      }
-    )
+    df <- LakeSurfaceElevation(conn)
+    readr::write_csv(df, file.path(dest.folder, paste0("LakeLevel_CALCULATED", ".csv")), na = "", append = FALSE, col_names = TRUE)
   }
+
+  if (aquarius) {
+    # Write each Aquarius data table to csv
+
+    for (aq.name in aq.data) {
+      tryCatch(
+        {
+          df <- ReadAquarius(conn, aq.name)
+          # Include time zone in dates
+          if("DateTime" %in% names(df)) {
+            df$DateTime <- format(df$DateTime, "%y-%m-%d %H:%M:%S %z")
+          }
+          readr::write_csv(df, file.path(dest.folder, paste0(aq.name, ".csv")), na = "", append = FALSE, col_names = TRUE)
+        },
+        error = function(e) {
+          if (e$message == "Aquarius connection does not exist.") {
+            warning(paste0("Could not connect to Aquarius. Skipping", aq.name, ".csv"))
+          }
+          else {e}
+        }
+      )
+    }
+  }
+
 }
 
 #' Raw data dump
