@@ -140,7 +140,6 @@ GetColSpec <- function() {
       InsectAbundance = readr::col_integer(),
       NonInsectTaxaCount = readr::col_integer(),
       NonInsectAbundance = readr::col_integer(),
-      ID = readr::col_integer(),
       .default = readr::col_character()
     ),
     Channel = readr::cols(
