@@ -1,11 +1,11 @@
 Package: streamsandlakes
 Type: Package
 Title: Streams and Lakes Protocol R Package
-Version: 0.1.0
+Version: 1.0.0
 Author: c(person("Jennifer", "Bailard", email = "jennifer_bailard@nps.gov", role=c("aut")),
     person("Mark", "Lehman", email = "mark_lehman@nps.gov", role=c("aut")),
     person("Sarah", "Wright", email = "sarah_wright@nps.gov", role=c("aut","cre")))
-Maintainer: The package maintainer <yourself@somewhere.net>
+Maintainer: Sarah Wright <sarah_wright@nps.gov>
 Description: This R package is intended to provide automated QA/QC, visualization, and
     basic analysis and statistical summaries of data collected for the Streams and Lakes
     monitoring protocol.
@@ -28,7 +28,9 @@ Imports:
     odbc,
     fuzzyjoin,
     measurements,
-    statip
+    statip,
+    plyr,
+    stringr
 RoxygenNote: 7.1.1
 Suggests: 
     testthat,

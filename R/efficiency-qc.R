@@ -12,7 +12,7 @@
 #'     qcNoAnnualVisit(conn, site = "GRBA_L_DEAD0", field.season = c("2012", "2013", "2014", "2015"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcNoAnnualVisit <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+qcNoAnnualVisit <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
 visit.data <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
 visit <- visit.data %>%
@@ -44,7 +44,7 @@ return(visit)
 #'     qcDPLCheck(conn, site = "GRBA_L_JHNS0", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcDPLCheck <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+qcDPLCheck <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
   visit <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
   chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
@@ -143,7 +143,7 @@ return(dpl)
 #'     WqDailyMeanLong(conn, site = "GRBA_S_LHMN1", field.season = c("2012", "2013", "2014", "2015"))
 #'     CloseDatabaseConnection(conn)
 #' }
-WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
   wt <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "TimeseriesTemperature")
   ph <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "TimeseriespH")
@@ -286,7 +286,6 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, parame
 #' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
 #' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param parameter Optional. Water quality parameter to filter on.
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, SiteType, Date, FieldSeason, Temp_C, Temp_C_Grade, pH, pH_Grade, SpCond_uScm, SpCond_uScm_Grade, DO_pct, DO_pct_Grade, DO_mgL, DO_mgL_Grade
@@ -299,7 +298,7 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, parame
 #'     WqDailyMean(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-WqDailyMean <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+WqDailyMean <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
 wq.long <- WqDailyMeanLong(conn, path.to.data, park, site, field.season, data.source)
 
@@ -332,7 +331,6 @@ return(wq.daily)
 #' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
 #' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param parameter Optional. Water quality parameter to filter on.
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble
@@ -345,7 +343,7 @@ return(wq.daily)
 #'     qcWqCompleteness(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcWqCompleteness <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+qcWqCompleteness <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
 wq.long <- WqDailyMeanLong(conn, path.to.data, park, site, field.season, data.source)
 
@@ -382,7 +380,6 @@ return(wq.comp)
 #' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
 #' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param parameter Optional. Water quality parameter to filter on.
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble
@@ -395,7 +392,7 @@ return(wq.comp)
 #'     qcWqGradesLong(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcWqGradesLong <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+qcWqGradesLong <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
 wq.long <- WqDailyMeanLong(conn, path.to.data, park, site, field.season, data.source)
 
@@ -425,7 +422,6 @@ return(wq.grds.long)
 #' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
 #' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param parameter Optional. Water quality parameter to filter on.
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A tibble
@@ -438,7 +434,7 @@ return(wq.grds.long)
 #'     qcWqGrades(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcWqGrades <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+qcWqGrades <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
 wq.daily <- WqDailyMean(conn, path.to.data, park, site, field.season, data.source)
 
@@ -630,7 +626,6 @@ return(wq.grds)
 #' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
 #' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param parameter Optional. Water quality parameter to filter on.
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A ggplot object
@@ -643,7 +638,7 @@ return(wq.grds)
 #'     qcWqCompletenessPlot(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcWqCompletenessPlot <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+qcWqCompletenessPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
 wq.comp <- qcWqCompleteness(conn, path.to.data, park, site, field.season, data.source)
 
@@ -667,7 +662,6 @@ return(wq.comp.plot)
 #' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
 #' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param parameter Optional. Water quality parameter to filter on.
 #' @param data.source Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
 #' @return A ggplot object
@@ -680,7 +674,7 @@ return(wq.comp.plot)
 #'     qcWqGradesPlot(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcWqGradesPlot <- function(conn, path.to.data, park, site, field.season, parameter, data.source = "database") {
+qcWqGradesPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
 
 wq.grds.long <- qcWqGradesLong(conn, path.to.data, park, site, field.season, data.source)
 
