@@ -650,10 +650,13 @@ wq.comp <- qcWqCompleteness(conn, path.to.data, park, site, field.season, data.s
 wq.comp.concat <- wq.comp %>%
   tidyr::unite("Parameter", Parameter, Units, sep = "_")
 
+wq.comp.concat$Parameter_f = factor(wq.comp.concat$Parameter, levels = c("Temperature_C", "pH_units", "SpCond_uS/cm", "DO_%", "DO_mg/L"))
+
 wq.comp.plot <- ggplot(data = wq.comp.concat, aes(x = FieldSeason, y = PercentCompleteness)) +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
-  facet_grid(Parameter~SiteCode) +
-  scale_x_discrete()
+  facet_grid(Parameter_f~SiteCode) +
+  scale_x_discrete(breaks = scales::pretty_breaks()) +
+  theme(axis.text.x = element_text(angle = 90), legend.position = "bottom")
 
 return(wq.comp.plot)
 
@@ -687,12 +690,16 @@ wq.grds.long <- qcWqGradesLong(conn, path.to.data, park, site, field.season, dat
 wq.grds.concat <- wq.grds.long %>%
   tidyr::unite("Parameter", Parameter, Units, sep = "_")
 
-wq.grds.plot <- ggplot(data = wq.grds.concat, aes(x = FieldSeason, y = Percent, fill = factor(Grade, levels = c("Excellent", "Est. Excellent", "Good", "Est. Good", "Fair", "Est. Fair", "Poor", "Est. Poor")))) +
+wq.grds.concat$Parameter_f = factor(wq.grds.concat$Parameter, levels = c("Temperature_C", "pH_units", "SpCond_uS/cm", "DO_%", "DO_mg/L"))
+wq.grds.concat$Grade_f = factor(wq.grds.concat$Grade, levels = c("Excellent", "Est. Excellent", "Good", "Est. Good", "Fair", "Est. Fair", "Poor", "Est. Poor"))
+
+wq.grds.plot <- ggplot(data = wq.grds.concat, aes(x = FieldSeason, y = Percent, fill = Grade_f)) +
   geom_col() +
-  facet_grid(Parameter~SiteCode) +
+  facet_grid(Parameter_f~SiteCode) +
   labs(fill = "Grade") +
   scale_fill_manual(values = c("forestgreen", "gold", "khaki1", "darkorange", "Red")) +
-  scale_x_discrete()
+  scale_x_discrete(breaks = scales::pretty_breaks()) +
+  theme(axis.text.x = element_text(angle = 90), legend.position = "bottom")
 
 return(wq.grds.plot)
 
