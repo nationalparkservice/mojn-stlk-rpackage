@@ -128,10 +128,3 @@ qcSecchiDepthMissing <- function(conn, path.to.data, park, site, field.season, d
 
   return(error.list)
 }
-
-clarity <- ReadAndFilterData(conn, data.source = "database", data.name = "Clarity")
-
-clarity.stats <- clarity %>%
-  group_by(SiteName) %>%
-  mutate(MaxDepth_m = max(DepthToBottom_m, na.rm = T),
-         MinDepth_m = min(DepthToBottom_m, na.rm = T))
