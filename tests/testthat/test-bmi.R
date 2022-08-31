@@ -1,5 +1,5 @@
 context("BMI")
-skip("Test not written yet")
+# skip("Test not written yet")
 
 dummy.bmi <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA"),
                                 SiteShort = c("LHMN2","BAKR3","MILL1","PINE1","RDGE1","SHNG1","SNKE4","SFBW1","STRW2","STRW2","SFBW1","SNKE4","BAKR3","MILL1","LHMN2","RDGE1","PINE1","SHNG1"),

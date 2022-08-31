@@ -1,5 +1,5 @@
 context("Completeness and grade percentage QC")
-skip("Test not written yet")
+# skip("Test not written yet")
 
 dummy.completeness <- tibble::tibble(Park = c("GRBA", "GRBA", "GRBA", "GRBA", "GRBA", "GRBA", "GRBA", "PARA"),
                                      Subunit = c("GRBA Unknown", "GRBA Unknown", "GRBA Unknown", "GRBA Unknown", "GRBA Unknown", "GRBA Unknown", "GRBA Unknown", "PARA Unknown"),
@@ -27,10 +27,10 @@ test_that("QcCompleteness works as expected", {
                              Count = as.integer(c(1, 1, 2, 1)),
                              Percent = c(1/20*100, 1/60*100, 2/10*100, 1/35*100))
   expected$Percent <- round(expected$Percent, 3)
-  result <- QcCompleteness(path.to.data = dir, data.source = "local")
-  result_GRBA <- QcCompleteness(path.to.data = dir, data.source = "local", park = "GRBA")
-  result_2019 <- QcCompleteness(path.to.data = dir, data.source = "local", field.season = "2019")
-  result_CAMO <- QcCompleteness(path.to.data = dir, data.source = "local", park = "CAMO")
+  result <- qcWqCompleteness(path.to.data = dir, data.source = "local")
+  result_GRBA <- qcWqCompleteness(path.to.data = dir, data.source = "local", park = "GRBA")
+  result_2019 <- qcWqCompleteness(path.to.data = dir, data.source = "local", field.season = "2019")
+  result_CAMO <- qcWqCompleteness(path.to.data = dir, data.source = "local", park = "CAMO")
   expect_dataframe_equal(result, expected)
   expect_dataframe_equal(result_GRBA, dplyr::filter(expected, Park == "GRBA"))
   expect_dataframe_equal(result_2019, dplyr::filter(expected, FieldSeason == "2019"))

@@ -57,7 +57,7 @@ qcLakeDryMeasurementsExist <- function(conn, path.to.data, park, site, field.sea
   error.list <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "Clarity")
 
   error.list %<>%
-    dplyr::filter(IsLakeDry == 1) %>%
+    dplyr::filter(IsLakeDry == TRUE) %>%
     dplyr::filter(!is.na(SurfaceCalm) | !is.na(OnBottom) |  !is.na(DepthToBottom_m) | !is.na(SecchiDepth_m))
 
   return(error.list)
@@ -128,4 +128,3 @@ qcSecchiDepthMissing <- function(conn, path.to.data, park, site, field.season, d
 
   return(error.list)
 }
-
