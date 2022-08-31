@@ -10,7 +10,6 @@ qcWqGradesLong(
   park,
   site,
   field.season,
-  parameter,
   data.source = "database"
 )
 }
@@ -24,8 +23,6 @@ qcWqGradesLong(
 \item{site}{Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".}
 
 \item{field.season}{Optional. Field season name to filter on, e.g. "2019".}
-
-\item{parameter}{Optional. Water quality parameter to filter on.}
 
 \item{data.source}{Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.}
 }
