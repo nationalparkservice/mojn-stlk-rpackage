@@ -93,7 +93,8 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
       dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL, SurveyPoint, Benchmark, ClosureError_ft, FinalCorrectedElevation_ft) %>%
       unique() %>%
       dplyr::filter(!grepl("TP", SurveyPoint)) %>%
-      dplyr::ungroup()
+      dplyr::ungroup() %>%
+      dplyr::filter(!(SiteShort == "DEAD0" & FieldSeason == "2021" & SurveyPoint == "WS"))
 
     return(final_lvls)
 }
