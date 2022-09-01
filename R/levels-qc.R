@@ -247,6 +247,104 @@ qcStringSurveyElevations <- function(conn, path.to.data, park, site, field.seaso
   return(str_survey)
 }
 
+
+#' Check the difference between benchmark and water surface elevations calculated in R with those calculated in the Survey123 app
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return Tibble
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     qcStringSurveyElevations(conn)
+#'     qQcStringSurveyElevations(conn, site = "GRBA_L_BAKR0", field.season = c("2019", "2021"))
+#'     qcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
+#'     CloseDatabaseConnection(conn)
+#' }
+qcElevationDiscrepancies <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+ r_elevs <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source)
+ survey_elevs <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "LakeLevelSurvey")
+
+ r_elevs_data <- r_elevs %>%
+   dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, SurveyPoint, Benchmark, FinalCorrectedElevation_ft) %>%
+   dplyr::rename(R_Elev_ft = FinalCorrectedElevation_ft)
+
+ survey_elevs_data <- survey_elevs %>%
+   dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, FieldCalculatedWaterSurfaceElevation_m, FieldCalculatedRM2Elevation_m, FieldCalculatedRM3Elevation_m) %>%
+   tidyr::pivot_longer(cols = -c(SiteCode, SiteName, VisitDate, FieldSeason),
+                       names_to = "SurveyPoint",
+                       values_to = "Survey_Elev_m") %>%
+   unique() %>%
+   dplyr::mutate(SurveyPoint = dplyr::case_when(SurveyPoint == "FieldCalculatedWaterSurfaceElevation_m" ~ "WS",
+                                                SurveyPoint == "FieldCalculatedRM2Elevation_m" ~ "RM2",
+                                                SurveyPoint == "FieldCalculatedRM3Elevation_m" ~ "RM3",
+                                                TRUE ~ SurveyPoint)) %>%
+   dplyr::filter(!is.na(Survey_Elev_m)) %>%
+   dplyr::mutate(Survey_Elev_ft = Survey_Elev_m * 3.28084) %>%
+   dplyr::select(-c("Survey_Elev_m"))
+
+ elevs_data_joined <- r_elevs_data %>%
+   dplyr::inner_join(survey_elevs_data, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "SurveyPoint")) %>%
+   dplyr::mutate(Elev_diff = round(as.numeric(format(R_Elev_ft - Survey_Elev_ft, scientific = FALSE)), 5)) %>%
+   dplyr::arrange(desc(abs(Elev_diff)))
+
+ return(elevs_data_joined)
+}
+
+
+#' Check the difference between closure errors calculated in R with those calculated in the Survey123 app
+#'
+#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
+#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#' @param data.source Character string indicating whether to access data in the live database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
+#'
+#' @return Tibble
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'     conn <- OpenDatabaseConnection()
+#'     qcStringSurveyElevations(conn)
+#'     qQcStringSurveyElevations(conn, site = c("GRBA_L_BAKR0", "GRBA_L_JHNS0"), field.season = "2021")
+#'     qcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
+#'     CloseDatabaseConnection(conn)
+#' }
+qcClosureErrorDiscrepancies <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+  r_elevs <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source)
+  survey_elevs <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "LakeLevelSurvey")
+
+  r_ce_data <- r_elevs %>%
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, ClosureError_ft) %>%
+    dplyr::rename(R_CE_ft = ClosureError_ft) %>%
+    dplyr::mutate(R_CE_ft = round(as.numeric(format(R_CE_ft, scientific = FALSE)), 4)) %>%
+    unique()
+
+  survey_ce_data <- survey_elevs %>%
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, FieldCalculatedClosureError) %>%
+    dplyr::rename(Survey_CE_ft = FieldCalculatedClosureError) %>%
+    unique() %>%
+    dplyr::mutate(Survey_CE_ft = round(as.numeric(format(Survey_CE_ft, scientific = FALSE)), 4)) %>%
+    dplyr::filter(!is.na(Survey_CE_ft))
+
+
+  ce_data_joined <- r_ce_data %>%
+    dplyr::inner_join(survey_ce_data, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason")) %>%
+    dplyr::mutate(CE_diff = round(as.numeric(format(R_CE_ft - Survey_CE_ft, scientific = FALSE)), 5))
+
+  return(ce_data_joined)
+}
+
+
 #' Plot benchmark elevations over time
 #'
 #' @inheritParams WqPlotDepthProfile
