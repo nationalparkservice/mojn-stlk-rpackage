@@ -339,7 +339,8 @@ qcClosureErrorDiscrepancies <- function(conn, path.to.data, park, site, field.se
 
   ce_data_joined <- r_ce_data %>%
     dplyr::inner_join(survey_ce_data, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason")) %>%
-    dplyr::mutate(CE_diff = round(as.numeric(format(R_CE_ft - Survey_CE_ft, scientific = FALSE)), 5))
+    dplyr::mutate(CE_diff = round(as.numeric(format(R_CE_ft - Survey_CE_ft, scientific = FALSE)), 5)) %>%
+    dplyr::arrange(desc(abs(CE_diff)))
 
   return(ce_data_joined)
 }
