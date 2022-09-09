@@ -387,7 +387,7 @@ WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, fie
 
   plot_wq <- FormatPlot(
     data = wq,
-    x.col = VisitDate,
+    x.col = FieldSeason,
     y.col = MeasurementDepth_m,
     facet.col = SiteCode,
     plot.title = dplyr::if_else(include.title, paste(param, "Depth Profile"), ""),

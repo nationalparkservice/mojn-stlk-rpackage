@@ -402,8 +402,9 @@ PlotLakeSurfaceElevation <- function(conn, path.to.data, park, site, field.seaso
   elev <- LakeSurfaceElevation(conn, path.to.data, park, site, field.season, data.source)
 
   elev %<>%
-    tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName)) %>%
-    dplyr::relocate(FieldSeason, .after = VisitDate)
+    tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName)) %>%
+    dplyr::relocate(FieldSeason, .after = VisitDate) %>%
+    dplyr::filter((FieldSeason == "2018" & SurveyType == "Theodolite") | FieldSeason != "2018")
 
   plt <- FormatPlot(data = elev,
                     x.col = FieldSeason,
