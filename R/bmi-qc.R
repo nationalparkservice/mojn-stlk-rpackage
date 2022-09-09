@@ -110,13 +110,8 @@ BMILong <- function(conn, path.to.data, park, site, field.season, data.source = 
 #' }
 qcBMIDiscrepancies <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   bmi_issues <- BMILong(conn, path.to.data, park, site, field.season, data.source) %>%
-<<<<<<< HEAD
     dplyr::select(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, VisitType, SampleType, SampleCollectionMethod, BMIMethod, LabSampleNumber, TaxaGroup, TaxaGroupRichness, TaxaGroupDensity, LabNotes) %>%
     dplyr::filter((TaxaGroupRichness == 0 & TaxaGroupDensity > 0) | (TaxaGroupDensity == 0 & TaxaGroupRichness > 0))
-=======
-    dplyr::select(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, VisitType, SampleType, SampleCollectionMethod, BMIMethod, LabSampleNumber, TaxaGroup, TaxaGroupCount, TaxaGroupAbundance, LabNotes) %>%
-    dplyr::filter((TaxaGroupCount == 0 & TaxaGroupAbundance > 0) | (TaxaGroupAbundance == 0 & TaxaGroupCount > 0))
->>>>>>> 8926bdd8edfe8962b7ce9f2a6bb61e38436c3e56
 
   return(bmi_issues)
 }
