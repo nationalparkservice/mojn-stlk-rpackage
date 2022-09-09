@@ -74,7 +74,11 @@ BMILong <- function(conn, path.to.data, park, site, field.season, data.source = 
     dplyr::mutate(TaxaGroup = gsub("Abundance", "", TaxaGroup),
                   TaxaGroup = gsub("Taxa", "", TaxaGroup))
 
+<<<<<<< HEAD
   bmi_long <- dplyr::inner_join(count_pivot, abundance_pivot, by = c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate", "VisitType", "SampleType", "SampleCollectionMethod", "DPL", "BMIMethod", "LabSampleNumber", "DateCollected", "LabNotes", "FieldNotes", "SampleArea_m2", "FieldSplit", "LabSplit", "SplitCount", "FixedCount", "BigRareCount", "ShannonsDiversity", "SimpsonsDiversity", "Hilsenhoff", "Evenness", "USFSCommunityToleranceQuo", "DominantFamily", "DominantFamilyPercent", "DominantTaxon", "DominantTaxonPercent", "LabName", "TaxaGroup"))
+=======
+  bmi_long <- dplyr::inner_join(count_pivot, abundance_pivot, by = c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate", "VisitType", "SampleType", "SampleCollectionMethod", "DPL", "BMIMethod", "LabSampleNumber", "DateCollected", "LabNotes", "FieldNotes", "SampleArea_m2", "FieldSplit", "LabSplit", "SplitCount", "FixedCount", "BigRareCount", "ShannonsDiversity", "SimpsonsDiversity", "Hilsenhoff", "Evenness", "USFSCommunityToleranceQuo", "DominantFamily", "DominantFamilyPercent", "DominantTaxon", "LabName", "TaxaGroup"))
+>>>>>>> 8926bdd8edfe8962b7ce9f2a6bb61e38436c3e56
 
   # Throw error if join gets messed up somehow
   if ((nrow(bmi_long) != nrow(count_pivot)) | (nrow(bmi_long) != nrow(abundance_pivot))) {
@@ -106,8 +110,13 @@ BMILong <- function(conn, path.to.data, park, site, field.season, data.source = 
 #' }
 qcBMIDiscrepancies <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   bmi_issues <- BMILong(conn, path.to.data, park, site, field.season, data.source) %>%
+<<<<<<< HEAD
     dplyr::select(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, VisitType, SampleType, SampleCollectionMethod, BMIMethod, LabSampleNumber, TaxaGroup, TaxaGroupRichness, TaxaGroupDensity, LabNotes) %>%
     dplyr::filter((TaxaGroupRichness == 0 & TaxaGroupDensity > 0) | (TaxaGroupDensity == 0 & TaxaGroupRichness > 0))
+=======
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, VisitType, SampleType, SampleCollectionMethod, BMIMethod, LabSampleNumber, TaxaGroup, TaxaGroupCount, TaxaGroupAbundance, LabNotes) %>%
+    dplyr::filter((TaxaGroupCount == 0 & TaxaGroupAbundance > 0) | (TaxaGroupAbundance == 0 & TaxaGroupCount > 0))
+>>>>>>> 8926bdd8edfe8962b7ce9f2a6bb61e38436c3e56
 
   return(bmi_issues)
 }

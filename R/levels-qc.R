@@ -16,11 +16,16 @@
 #'     CloseDatabaseConnection(conn)
 #' }
 SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    levels <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelSurvey")
+    levels.import <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelSurvey")
+    dry <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "Visit") # Data to filter out dry lakes
     StandardTemperature_F <- 68  # Standard temperature to be used for temperature corrections
 
+    dry %<>% dplyr::select(SiteCode, VisitDate, FieldSeason, IsLakeDry)
+
     # Parse out survey point names, types, and setup number. Consolidate rod temperature into one column
-    levels %<>%
+    levels <- levels.import %>%
+      dplyr::inner_join(dry, by = c("SiteCode", "VisitDate", "FieldSeason")) %>%
+      dplyr::filter(IsLakeDry != TRUE) %>%
       tidyr::separate(SurveyPointType, into = c("SurveyPoint", "ReadingType", "SetupNumber"), sep = "-", remove = TRUE) %>%
       dplyr::mutate(SetupNumber = readr::parse_number(SetupNumber),
                     RodTemperature_F = ifelse(SetupNumber == 1, RodTemperatureSetup1_F,

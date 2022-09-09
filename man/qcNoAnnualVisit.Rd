@@ -10,7 +10,6 @@ qcNoAnnualVisit(
   park,
   site,
   field.season,
-  parameter,
   data.source = "database"
 )
 }

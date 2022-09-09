@@ -1,4 +1,5 @@
 context("Clarity")
+# skip("Test not written yet")
 
 dummy.clarity <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA"),
                                 SiteShort = c("BAKR0","BRWN0","DEAD0","JHNS0","STLL0", "STLL0"),
@@ -20,7 +21,7 @@ if (dir.exists(dir)) {
   unlink(dir, recursive = TRUE)
 }
 dir.create(dir)
-readr::write_csv(dummy.clarity, file.path(dir, "Clarity.csv"),na = "")
+readr::write_csv(dummy.clarity, file.path(dir, "Clarity.csv"), na = "")
 
 test_that("qcSecchiGTDepth finds secchi depth greater than lake depth", {
   expected <- tibble::tibble(Park = c("GRBA"),

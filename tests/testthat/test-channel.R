@@ -1,5 +1,5 @@
 context("Channel")
-skip("Test not written yet")
+# skip("Test not written yet")
 
 dummy.channelcharacteristic <- tibble::tibble(Park = c("GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA","GRBA"),
                                 SiteShort = c("MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","MILL1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1","SHNG1"),

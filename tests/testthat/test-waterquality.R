@@ -1,4 +1,5 @@
 context("Water quality preprocessing and QC")
+# skip("Test not written yet")
 
 dummy_do <- tibble::tibble(Park = "GRBA",
                            SiteShort = c(rep("S0001", 6), rep("S0002", 3)),

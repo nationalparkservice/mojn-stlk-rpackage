@@ -4,7 +4,14 @@
 \alias{SaveDataToCsv}
 \title{Save Streams and Lakes analysis views as a set of .csv files}
 \usage{
-SaveDataToCsv(conn, dest.folder, create.folders = FALSE, overwrite = FALSE)
+SaveDataToCsv(
+  conn,
+  dest.folder,
+  create.folders = FALSE,
+  overwrite = FALSE,
+  aquarius = TRUE,
+  calculated = TRUE
+)
 }
 \arguments{
 \item{conn}{A database connection pool object generated from a call to \code{OpenDatabaseConnection()}.}
@@ -14,6 +21,10 @@ SaveDataToCsv(conn, dest.folder, create.folders = FALSE, overwrite = FALSE)
 \item{create.folders}{Should \code{dest.folder} be created automatically if it doesn't exist? Defaults to \code{FALSE}.}
 
 \item{overwrite}{Should existing data be automatically overwritten? Defaults to \code{FALSE}.}
+
+\item{aquarius}{Include Aquarius data?}
+
+\item{calculated}{Include calculated data (median stream wq, median lake wq, and lake surface elevation)?}
 }
 \value{
 None.
