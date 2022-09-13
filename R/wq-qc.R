@@ -109,6 +109,9 @@ qcWqSanity <- function(conn, path.to.data, park, site, field.season, data.source
 #'
 qcLakeWqFlags <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   lake.flags <- qcWqFlags(conn, path.to.data, park, site, field.season, data.source, wq.type = "lake")
+
+  lake.flags %<>% dplyr::filter(!is.na(Median))
+
   return(lake.flags)
 }
 
@@ -126,6 +129,9 @@ qcLakeWqFlags <- function(conn, path.to.data, park, site, field.season, data.sou
 #'
 qcStreamWqFlags <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   stream.flags <- qcWqFlags(conn, path.to.data, park, site, field.season, data.source, wq.type = "stream")
+
+  stream.flags %<>% dplyr::filter(!is.na(Median))
+
   return(stream.flags)
 }
 

@@ -125,7 +125,7 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
   string <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString")
   survey <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source) %>%
     dplyr::filter(Benchmark == "Water Surface") %>%
-    dplyr::mutate(SurveyType = "Theodolite", BenchmarkUsed = NA) %>%
+    dplyr::mutate(SurveyType = "Digital Level", BenchmarkUsed = NA) %>%
     dplyr::rename(FinalElevation_ft = FinalCorrectedElevation_ft) %>%
     dplyr::select(-SurveyPoint, -Benchmark)
 
@@ -379,14 +379,22 @@ PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season,
                     plot.title = ifelse(include.title, "Benchmark elevation over time", ""),
                     x.lab = "Field Season",
                     y.lab = "Elevation (ft)") +
-    ggplot2::geom_point(ggplot2::aes(color = Benchmark, group = Benchmark)) +
-    ggplot2::geom_line(ggplot2::aes(color = Benchmark, group = Benchmark))
+    ggplot2::aes(color = Benchmark,
+                 group = Benchmark,
+                 text = paste0("Site Name: ", SiteName, "<br>",
+                               "Field Season: ", FieldSeason, "<br>",
+                               "Survey Point: ", SurveyPoint, "<br>",
+                               "Benchmark: ", Benchmark, "<br>",
+                               "Elevation (ft): ", round(FinalCorrectedElevation_ft, 2))) +
+    ggplot2::geom_point(ggplot2::aes()) +
+    ggplot2::geom_line()
 
-  if (plotly) {
-    plt <- plotly::ggplotly(plt)
-  }
 
-  return(plt)
+    if (plotly) {
+      plt <- plotly::ggplotly(plt, tooltip = "text")
+    }
+
+   return(plt)
 }
 
 #' Plot lake surface elevations over time
@@ -409,7 +417,7 @@ PlotLakeSurfaceElevation <- function(conn, path.to.data, park, site, field.seaso
   elev %<>%
     tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName)) %>%
     dplyr::relocate(FieldSeason, .after = VisitDate) %>%
-    dplyr::filter((FieldSeason == "2018" & SurveyType == "Theodolite") | FieldSeason != "2018")
+    dplyr::filter((FieldSeason == "2018" & SurveyType == "Digital Level") | FieldSeason != "2018")
 
   plt <- FormatPlot(data = elev,
                     x.col = FieldSeason,
@@ -417,14 +425,19 @@ PlotLakeSurfaceElevation <- function(conn, path.to.data, park, site, field.seaso
                     plot.title = ifelse(include.title, "Lake surface elevation over time", ""),
                     x.lab = "Field Season",
                     y.lab = "Elevation (ft)") +
-    ggplot2::aes(color = SiteName, group = SiteName) +
+    ggplot2::aes(color = SiteName,
+                 group = SiteName,
+                 text = paste0("Site Name: ", SiteName, "<br>",
+                              "Field Season: ", FieldSeason, "<br>",
+                              "Survey Type: ", SurveyType, "<br>",
+                              "Elevation (ft): ", round(FinalElevation_ft, 2))) +
     ggplot2::geom_point(ggplot2::aes()) +
     ggplot2::geom_line() +
     ggplot2::scale_shape_discrete(na.translate = FALSE)
 
-  if (plotly) {
-    plt <- plotly::ggplotly(plt, tooltip = c("SurveyType", "FinalElevation_ft"))
-  }
+    if (plotly) {
+      plt <- plotly::ggplotly(plt, tooltip = "text")
+    }
 
   return(plt)
 }
