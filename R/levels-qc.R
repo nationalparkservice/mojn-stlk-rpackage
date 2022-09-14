@@ -381,8 +381,7 @@ PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season,
                     y.lab = "Elevation (ft)") +
     ggplot2::aes(color = Benchmark,
                  group = Benchmark,
-                 text = paste0("Site Name: ", SiteName, "<br>",
-                               "Field Season: ", FieldSeason, "<br>",
+                 text = paste0("Field Season: ", FieldSeason, "<br>",
                                "Survey Point: ", SurveyPoint, "<br>",
                                "Benchmark: ", Benchmark, "<br>",
                                "Elevation (ft): ", round(FinalCorrectedElevation_ft, 2))) +
@@ -427,10 +426,9 @@ PlotLakeSurfaceElevation <- function(conn, path.to.data, park, site, field.seaso
                     y.lab = "Elevation (ft)") +
     ggplot2::aes(color = SiteName,
                  group = SiteName,
-                 text = paste0("Site Name: ", SiteName, "<br>",
-                              "Field Season: ", FieldSeason, "<br>",
-                              "Survey Type: ", SurveyType, "<br>",
-                              "Elevation (ft): ", round(FinalElevation_ft, 2))) +
+                 text = paste0("Field Season: ", FieldSeason, "<br>",
+                               "Survey Type: ", SurveyType, "<br>",
+                               "Elevation (ft): ", round(FinalElevation_ft, 2))) +
     ggplot2::geom_point(ggplot2::aes()) +
     ggplot2::geom_line() +
     ggplot2::scale_shape_discrete(na.translate = FALSE)

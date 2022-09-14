@@ -379,7 +379,8 @@ WqPlotTemperatureDepthProfile <- function(conn, path.to.data, park, site, field.
 WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
 
   wq <- qcLakeWqCleaned(conn, path.to.data, park, site, field.season, data.source) %>%
-    dplyr::filter(tolower(Parameter) == tolower(param), !is.na(Median))
+    dplyr::filter(tolower(Parameter) == tolower(param), !is.na(Median)) %>%
+    dplyr::rename(Depth_m = MeasurementDepth_m)
 
   # Filter on unit if looking at DO. If not DO, set units
   if (tolower(param) == "do") {
@@ -394,7 +395,7 @@ WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, fie
   plot_wq <- FormatPlot(
     data = wq,
     x.col = FieldSeason,
-    y.col = MeasurementDepth_m,
+    y.col = Depth_m,
     facet.col = SiteCode,
     plot.title = dplyr::if_else(include.title, paste(param, "Depth Profile"), ""),
     x.lab = "Field Season",
@@ -403,8 +404,11 @@ WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, fie
     transform.y = "reverse"
   ) +
     ggplot2::aes(color = Median) +
-    ggplot2::labs(fill = paste0("Median ", param, ifelse(tolower(param) == "ph", "", paste0(" (", units, ")")))) +
-    ggplot2::geom_point(size = 3, pch = 19, stroke = 2, color = "#3b3b3b") +
+    # ggplot2::aes(text = paste0("Field Season: ", FieldSeason, "<br>",
+    #                            "Value: ", Median, "<br>",
+    #                            "Measurement Depth (m): ", Depth_m, "<br>")) +
+    ggplot2::labs(color = paste0("Median ", param, ifelse(tolower(param) == "ph", "", paste0(" (", units, ")")))) +
+    ggplot2::geom_point(size = 3, pch = 19, stroke = 2, color = "black") +
     ggplot2::geom_point(size = 3, pch = 19) # color = "#3b3b3b", pch = 21
 
   if (tolower(param) == "ph") {
@@ -420,7 +424,9 @@ WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, fie
 
 
   if (plotly) {
-    plot_wq <- plotly::ggplotly(plot_wq)
+    plot_wq <- plotly::ggplotly(plot_wq
+#                                , tooltip = "text"
+                                )
   }
 
   return(plot_wq)

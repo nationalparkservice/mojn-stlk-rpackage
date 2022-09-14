@@ -560,7 +560,13 @@ ChemLakeNutrientPlot <- function(conn, path.to.data, park, site, field.season, d
 
     lake.nut$Characteristic_f = factor(lake.nut$Characteristic, levels = c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"))
 
-    lake.nut.plot <- ggplot2::ggplot(lake.nut, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+    lake.nut.plot <- ggplot2::ggplot(lake.nut,
+                                     aes(x = FieldSeason,
+                                         y = LabValue,
+                                         group = Characteristic,
+                                         text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                       "Lab Value: ", LabValue, "<br>",
+                                                       "Parameter: ", Characteristic_f))) +
         geom_point() +
         geom_line() +
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
@@ -599,7 +605,12 @@ ChemLakeNutrientBarPlot <- function(conn, path.to.data, park, site, field.season
     lake.nut.bar %<>% dplyr::arrange(match(Characteristic_f, c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"), desc(Characteristic_f))) %>%
         filter(Characteristic != "DOC")
 
-    lake.nut.bar.plot <- ggplot2::ggplot(lake.nut.bar, aes(x = FieldSeason, y = LabValue, fill = Characteristic_f)) +
+    lake.nut.bar.plot <- ggplot2::ggplot(lake.nut.bar, aes(x = FieldSeason,
+                                                           y = LabValue,
+                                                           fill = Characteristic_f,
+                                                           text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                                         "Lab Value: ", LabValue, "<br>",
+                                                                         "Parameter: ", Characteristic_f))) +
         geom_bar(stat = "identity", position = "identity", color = "white") +
         facet_grid(Nutrient_f~SiteShort, scales = "free_y") +
         ylab(label = "Concentration (mg/L)") +
@@ -631,7 +642,12 @@ ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.s
 
     lake.ion$Characteristic_f = factor(lake.ion$Characteristic, levels = c("Na", "Mg", "K", "Ca", "SO4-S", "Cl", "ALK2"))
 
-    lake.ion.plot <- ggplot2::ggplot(lake.ion, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+    lake.ion.plot <- ggplot2::ggplot(lake.ion, aes(x = FieldSeason,
+                                                   y = LabValue,
+                                                   group = Characteristic,
+                                                   text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                                 "Lab Value: ", LabValue, "<br>",
+                                                                 "Parameter: ", Characteristic_f))) +
         geom_point() +
         geom_line() +
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
@@ -663,7 +679,12 @@ ChemStreamNutrientPlot <- function(conn, path.to.data, park, site, field.season,
 
     stream.nut$Characteristic_f = factor(stream.nut$Characteristic, levels = c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"))
 
-    stream.nut.plot <- ggplot2::ggplot(stream.nut, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+    stream.nut.plot <- ggplot2::ggplot(stream.nut, aes(x = FieldSeason,
+                                                       y = LabValue,
+                                                       group = Characteristic,
+                                                       text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                                     "Lab Value: ", LabValue, "<br>",
+                                                                     "Parameter: ", Characteristic_f))) +
         geom_point() +
         geom_line() +
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +
@@ -701,7 +722,12 @@ ChemStreamNutrientBarPlot <- function(conn, path.to.data, park, site, field.seas
     stream.nut.bar %<>% dplyr::arrange(match(Characteristic_f, c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"), desc(Characteristic_f))) %>%
         filter(Characteristic != "DOC")
 
-    stream.nut.bar.plot <- ggplot2::ggplot(stream.nut.bar, aes(x = FieldSeason, y = LabValue, fill = Characteristic_f)) +
+    stream.nut.bar.plot <- ggplot2::ggplot(stream.nut.bar, aes(x = FieldSeason,
+                                                               y = LabValue,
+                                                               fill = Characteristic_f,
+                                                               text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                                             "Lab Value: ", LabValue, "<br>",
+                                                                             "Parameter: ", Characteristic_f))) +
         geom_bar(stat = "identity", position = "identity", color = "white") +
         facet_grid(Nutrient_f~SiteShort, scales = "free_y") +
         ylab(label = "Concentration (mg/L)") +
@@ -732,7 +758,12 @@ ChemStreamIonPlot <- function(conn, path.to.data, park, site, field.season, data
 
     stream.ion$Characteristic_f = factor(stream.ion$Characteristic, levels = c("Na", "Mg", "K", "Ca", "SO4-S", "Cl", "ALK2"))
 
-    stream.ion.plot <- ggplot2::ggplot(stream.ion, aes(x = FieldSeason, y = LabValue, group = Characteristic)) +
+    stream.ion.plot <- ggplot2::ggplot(stream.ion, aes(x = FieldSeason,
+                                                       y = LabValue,
+                                                       group = Characteristic,
+                                                       text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                                     "Lab Value: ", LabValue, "<br>",
+                                                                     "Parameter: ", Characteristic_f))) +
         geom_point() +
         geom_line() +
         facet_grid(Characteristic_f~SiteShort, scales = "free_y") +

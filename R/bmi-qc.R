@@ -259,7 +259,13 @@ BMIGeneralMetricsPlot <- function(conn, path.to.data, park, site, field.season, 
   bmi.gen$Metric_f = factor(bmi.gen$Metric, levels = c("Richness", "Density"))
   bmi.gen$TaxaGroup_f = factor(bmi.gen$TaxaGroup, levels = c("Total", "DominantFamily"))
 
-  bmi.gen.plot <- ggplot2::ggplot(bmi.gen, aes(x = FieldSeason, y = Count, group = TaxaGroup, color = TaxaGroup_f)) +
+  bmi.gen.plot <- ggplot2::ggplot(bmi.gen, aes(x = FieldSeason,
+                                               y = Count,
+                                               group = TaxaGroup,
+                                               color = TaxaGroup_f,
+                                               text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                             "Count: ", Count, "<br>",
+                                                             "Taxa Group: ", TaxaGroup_f))) +
     geom_point() +
     geom_line() +
     facet_grid(Metric_f~SiteShort, scales = "free_y") +
@@ -300,7 +306,12 @@ BMIDiversityMetricsPlot <- function(conn, path.to.data, park, site, field.season
 
   bmi.div$Metric_f = factor(bmi.div$Metric, levels = c("ShannonsDiversity", "SimpsonsDiversity", "Evenness", "HilsenhoffIndex"))
 
-  bmi.div.plot <- ggplot2::ggplot(bmi.div, aes(x = FieldSeason, y = Value, group = Metric)) +
+  bmi.div.plot <- ggplot2::ggplot(bmi.div, aes(x = FieldSeason,
+                                               y = Value,
+                                               group = Metric,
+                                               text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                             "Value: ", Value, "<br>",
+                                                             "Metric: ", Metric_f))) +
     geom_point() +
     geom_line() +
     facet_grid(Metric_f~SiteShort, scales = "free_y") +
@@ -337,7 +348,12 @@ BMIToleranceMetricsPlot <- function(conn, path.to.data, park, site, field.season
   bmi.tol$Metric_f = factor(bmi.tol$Metric, levels = c("Richness", "Density"))
   bmi.tol$TaxaGroup_f = factor(bmi.tol$TaxaGroup, levels = c("EPT", "Tolerant", "Intolerant", "LongLived", "Clinger"))
 
-  bmi.tol.plot <- ggplot2::ggplot(bmi.tol, aes(x = FieldSeason, y = Count, color = TaxaGroup_f)) +
+  bmi.tol.plot <- ggplot2::ggplot(bmi.tol, aes(x = FieldSeason,
+                                               y = Count,
+                                               color = TaxaGroup_f,
+                                               text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                             "Count: ", Count, "<br>",
+                                                             "Taxa Group: ", TaxaGroup_f))) +
     geom_point() +
     geom_line(aes(group = TaxaGroup)) +
     facet_grid(Metric_f~SiteShort, scales = "free_y") +
@@ -374,7 +390,12 @@ BMIFunctionalMetricsPlot <- function(conn, path.to.data, park, site, field.seaso
   bmi.fun$Metric_f = factor(bmi.fun$Metric, levels = c("Richness", "Density"))
   bmi.fun$TaxaGroup_f = factor(bmi.fun$TaxaGroup, levels = c("Shredder", "Scraper", "CollectorFilterer", "CollectorGatherer", "Predator"))
 
-  bmi.fun.plot <- ggplot2::ggplot(bmi.fun, aes(x = FieldSeason, y = Count, color = TaxaGroup_f)) +
+  bmi.fun.plot <- ggplot2::ggplot(bmi.fun, aes(x = FieldSeason,
+                                               y = Count,
+                                               color = TaxaGroup_f,
+                                               text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                             "Count: ", Count, "<br>",
+                                                             "Taxa Group: ", TaxaGroup_f))) +
     geom_point() +
     geom_line(aes(group = TaxaGroup)) +
     facet_grid(Metric_f~SiteShort, scales = "free_y") +
@@ -411,7 +432,12 @@ BMITaxonomicMetricsPlot <- function(conn, path.to.data, park, site, field.season
   bmi.tax$Metric_f = factor(bmi.tax$Metric, levels = c("Richness", "Density"))
   bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemeroptera", "Megaloptera", "Plecoptera", "Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
 
-  bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason, y = Count, color = TaxaGroup_f)) +
+  bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason,
+                                               y = Count,
+                                               color = TaxaGroup_f,
+                                               text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                             "Count: ", Count, "<br>",
+                                                             "Taxa Group: ", TaxaGroup_f))) +
     geom_point() +
     geom_line(aes(group = TaxaGroup)) +
     facet_grid(Metric_f~SiteShort, scales = "free_y") +
