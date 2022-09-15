@@ -427,10 +427,14 @@ BMITaxonomicMetricsPlot <- function(conn, path.to.data, park, site, field.season
 
   bmi.tax <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
-                  TaxaGroup %in% c("Insect", "Coleoptera", "Diptera", "Ephemeroptera", "Megaloptera", "Plecoptera","Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+                  TaxaGroup %in% c("Insect", "Coleoptera", "Diptera", "Ephemeroptera", "Megaloptera", "Plecoptera","Trichoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete")) %>%
+    dplyr::mutate(TaxaGroup = case_when(TaxaGroup == "Insect" ~ "Insecta",
+                                        TaxaGroup == "NonInsect" ~ "NonInsecta",
+                                        TaxaGroup == "Oligochaete" ~ "Oligochaeta",
+                                        TRUE ~ TaxaGroup))
 
   bmi.tax$Metric_f = factor(bmi.tax$Metric, levels = c("Richness", "Density"))
-  bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insect", "Coleoptera", "Diptera", "Ephemeroptera", "Megaloptera", "Plecoptera", "Tricoptera", "Chironomidae", "Elmidae", "NonInsect", "Mollusca", "Crustacea", "Oligochaete"))
+  bmi.tax$TaxaGroup_f = factor(bmi.tax$TaxaGroup, levels = c("Insecta", "Coleoptera", "Diptera", "Ephemeroptera", "Megaloptera", "Plecoptera", "Trichoptera", "Chironomidae", "Elmidae", "NonInsecta", "Mollusca", "Crustacea", "Oligochaeta"))
 
   bmi.tax.plot <- ggplot2::ggplot(bmi.tax, aes(x = FieldSeason,
                                                y = Count,
@@ -444,8 +448,8 @@ BMITaxonomicMetricsPlot <- function(conn, path.to.data, park, site, field.season
     ylab(label = "Count") +
     theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
     labs(title = "BMI taxonomic group metrics", color = "Taxonomic Group") +
-    scale_y_continuous(breaks = pretty_breaks(), limits = c(0, NA)) +
-    scale_x_discrete(breaks = pretty_breaks())
+    scale_y_continuous(breaks = scales::pretty_breaks(), limits = c(0, NA)) +
+    scale_x_discrete(breaks = scales::pretty_breaks())
 
   return(bmi.tax.plot)
 

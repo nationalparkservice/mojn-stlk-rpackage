@@ -143,7 +143,8 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
     dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL, SurveyType, BenchmarkUsed, ClosureError_ft, FinalElevation_ft) %>%
     unique()
 
-  lake_elevation <- rbind(string, survey)
+  lake_elevation <- rbind(string, survey) %>%
+    dplyr::filter((FieldSeason == "2018" & SurveyType == "Digital Level") | FieldSeason != "2018")
 
   return(lake_elevation)
 }
@@ -173,8 +174,9 @@ qcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, d
     dplyr::select(Park, SiteShort, SiteCode, SiteName, Benchmark, FinalCorrectedElevation_ft) %>%
     dplyr::filter(Benchmark != "Water Surface") %>%
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, Benchmark) %>%
-    dplyr::summarize(AverageElevation_ft = mean(FinalCorrectedElevation_ft),
-                  StDevElevation_ft = sd(FinalCorrectedElevation_ft)) %>%
+    dplyr::summarize(MeanElevation_ft = mean(FinalCorrectedElevation_ft),
+                  StDevElevation_ft = sd(FinalCorrectedElevation_ft),
+                  Count = n()) %>%
     dplyr::ungroup()
 
   if (!is.na(sd_cutoff)) {
