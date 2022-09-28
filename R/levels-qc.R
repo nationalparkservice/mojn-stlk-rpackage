@@ -16,8 +16,8 @@
 #'     CloseDatabaseConnection(conn)
 #' }
 SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    levels.import <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelSurvey")
-    dry <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "Visit") # Data to filter out dry lakes
+    levels.import <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "LakeLevelSurvey")
+    dry <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit") # Data to filter out dry lakes
     StandardTemperature_F <- 68  # Standard temperature to be used for temperature corrections
 
     dry %<>% dplyr::select(SiteCode, VisitDate, FieldSeason, IsLakeDry)
@@ -123,11 +123,30 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
 #' }
 LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   string <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString")
+
+  t <- try(SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source))
+
+  if("try-error" %in% class(t)) {
+    survey <- tibble::tibble(
+      Park = character(),
+      SiteShort = character(),
+      SiteCode = character(),
+      SiteName = character(),
+      VisitDate = date(),
+      FieldSeason = character(),
+      VisitType = character(),
+      ClosureError_ft = double(),
+      FinalElevation_ft = double(),
+      SurveyType = character(),
+      BenchmarkUsed = logical()
+    )
+  } else {
   survey <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source) %>%
     dplyr::filter(Benchmark == "Water Surface") %>%
     dplyr::mutate(SurveyType = "Digital Level", BenchmarkUsed = NA) %>%
     dplyr::rename(FinalElevation_ft = FinalCorrectedElevation_ft) %>%
-    dplyr::select(-SurveyPoint, -Benchmark)
+    dplyr::select(-SurveyPoint, -Benchmark, -DPL)
+  }
 
   string %<>%
     dplyr::mutate(BenchmarkNumber = substring(Benchmark, nchar(Benchmark))) %>%
@@ -140,11 +159,14 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
     dplyr::mutate(BenchmarkUsed = Benchmark,
                   ClosureError_ft = NA,
                   SurveyType = "String") %>%
-    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL, SurveyType, BenchmarkUsed, ClosureError_ft, FinalElevation_ft) %>%
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SurveyType, FinalElevation_ft, ClosureError_ft, BenchmarkUsed) %>%
     unique()
 
+  not_all_na <- function(x) any(!is.na(x))
+
   lake_elevation <- rbind(string, survey) %>%
-    dplyr::filter((FieldSeason == "2018" & SurveyType == "Digital Level") | FieldSeason != "2018")
+    dplyr::filter((FieldSeason == "2018" & SurveyType == "Digital Level") | FieldSeason != "2018") %>%
+    dplyr::select(where(not_all_na))
 
   return(lake_elevation)
 }
@@ -154,7 +176,7 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
 #' @inheritParams ReadAndFilterData
 #' @param sd_cutoff Optional. If specified, only return benchmarks where standard deviation of final corrected elevations is greater than or equal to `sd_cutoff`.
 #'
-#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, Benchmark, AverageElevation_ft, StDevElevation_ft.
+#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, Benchmark, MeanElevation_ft, StDevElevation_ft.
 #' @export
 #'
 #' @importFrom magrittr %>% %<>%
