@@ -310,7 +310,7 @@ getMDLLookup <- function() {
     lookup <- tibble::tibble(Characteristic = c("ALK2", "Ca", "DOC", "Cl", "Mg", "NO3NO2-N", "UTN", "UTP", "K", "Na", "SO4-S"),
                              Unit = c("mg CaCO3/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L"),
                              StartYear = c(2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009),
-                             EndYear = c(2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021, 2021),
+                             EndYear = c(2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022),
                              MDL = c(0.2, 0.06, 0.05, 0.01, 0.02, 0.001, 0.01, 0.002, 0.03, 0.01, 0.01),
                              ML = c(0.6, 0.19, 0.16, 0.03, 0.06, 0.003, 0.03, 0.006, 0.10, 0.03, 0.03))
 
@@ -637,7 +637,8 @@ ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.s
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     lake.ion <- chem %>%
-        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Ion") %>%
+        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Ion",
+                      Characteristic %in% c("Na", "Mg", "K", "Ca", "Cl", "SO4-S", "ALK2")) %>%
         tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
 
     lake.ion$Characteristic_f = factor(lake.ion$Characteristic, levels = c("Na", "Mg", "K", "Ca", "SO4-S", "Cl", "ALK2"))
@@ -753,7 +754,8 @@ ChemStreamIonPlot <- function(conn, path.to.data, park, site, field.season, data
     chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
 
     stream.ion <- chem %>%
-        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Ion", SiteShort != "BAKR2") %>%
+        dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Ion", SiteShort != "BAKR2",
+                      Characteristic %in% c("Na", "Mg", "K", "Ca", "Cl", "SO4-S", "ALK2")) %>%
         tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
 
     stream.ion$Characteristic_f = factor(stream.ion$Characteristic, levels = c("Na", "Mg", "K", "Ca", "SO4-S", "Cl", "ALK2"))
