@@ -122,11 +122,31 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
 #'     CloseDatabaseConnection(conn)
 #' }
 LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  string <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString")
 
-  t <- try(SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source))
+  t1 <- try(ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString"))
 
-  if("try-error" %in% class(t)) {
+  if("try-error" %in% class(t1)) {
+    string <- tibble::tibble(
+      Park = character(),
+      SiteShort = character(),
+      SiteCode = character(),
+      SiteName = character(),
+      VisitDate = date(),
+      FieldSeason = character(),
+      VisitType = character(),
+      DPL = character(),
+      Benchmark = character(),
+      RM1_GivenElevation_m = double(),
+      IsLakeDry = logical(),
+      Height_ft = double()
+    )
+  } else {
+    string <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString")
+  }
+
+  t2 <- try(SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source))
+
+  if("try-error" %in% class(t2)) {
     survey <- tibble::tibble(
       Park = character(),
       SiteShort = character(),
@@ -135,17 +155,20 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
       VisitDate = date(),
       FieldSeason = character(),
       VisitType = character(),
-      ClosureError_ft = double(),
-      FinalElevation_ft = double(),
       SurveyType = character(),
+      FinalElevation_ft = double(),
+      ClosureError_ft = double(),
       BenchmarkUsed = logical()
     )
   } else {
   survey <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source) %>%
     dplyr::filter(Benchmark == "Water Surface") %>%
-    dplyr::mutate(SurveyType = "Digital Level", BenchmarkUsed = NA) %>%
+    dplyr::mutate(SurveyType = "Digital Level",
+                  BenchmarkUsed = NA_character_) %>%
     dplyr::rename(FinalElevation_ft = FinalCorrectedElevation_ft) %>%
-    dplyr::select(-SurveyPoint, -Benchmark, -DPL)
+    dplyr::select(-SurveyPoint, -Benchmark, -DPL) %>%
+    dplyr::relocate(SurveyType, .after = "VisitType") %>%
+    dplyr::relocate(FinalElevation_ft, .after = "SurveyType")
   }
 
   string %<>%
@@ -157,7 +180,7 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
     dplyr::mutate(FinalElevation_ft = mean(BenchmarkElevation_ft - Height_ft)) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(BenchmarkUsed = Benchmark,
-                  ClosureError_ft = NA,
+                  ClosureError_ft = as.double(NA),
                   SurveyType = "String") %>%
     dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SurveyType, FinalElevation_ft, ClosureError_ft, BenchmarkUsed) %>%
     unique()
@@ -166,7 +189,10 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
 
   lake_elevation <- rbind(string, survey) %>%
     dplyr::filter((FieldSeason == "2018" & SurveyType == "Digital Level") | FieldSeason != "2018") %>%
-    dplyr::select(where(not_all_na))
+    dplyr::select(where(not_all_na)) %>%
+    dplyr::mutate(FinalElevation_m = measurements::conv_unit(FinalElevation_ft, "ft", "m"),
+                  ClosureError_m = measurements::conv_unit(ClosureError_ft, "ft", "m")) %>%
+    dplyr::relocate(any_of("BenchmarkUsed"), .after = "ClosureError_m")
 
   return(lake_elevation)
 }
