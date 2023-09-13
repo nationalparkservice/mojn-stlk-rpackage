@@ -413,15 +413,20 @@ WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, fie
 
   if (tolower(param) == "ph") {
     plot_wq <- plot_wq +
-      ggplot2::scale_color_gradient2(low = "#f28500", mid = "#E6FFFF", high = "#00e2f2", midpoint = 7.0)
+      khroma::scale_color_vik(midpoint = 7.0, discrete = FALSE, reverse = TRUE)
   } else if (tolower(param) == "temperature") {
     plot_wq <- plot_wq +
-      ggplot2::scale_color_gradient(low = "#59dae3", high = "#f28500")
+      khroma::scale_color_sunset(discrete = FALSE, midpoint = mean(wq$Median))
+      # khroma::scale_color_smoothrainbow(range = c(0.25, 0.8))
+  } else if (tolower(param) == "spcond") {
+    plot_wq <- plot_wq +
+      # khroma::scale_color_lapaz(discrete = FALSE, reverse = FALSE)
+      ggplot2::scale_color_distiller(palette = "YlGnBu", direction = -1)
   } else {
     plot_wq <- plot_wq +
-      ggplot2::scale_color_gradient(low = "#edfeff", high = "#003e42")
+      ggplot2::scale_color_distiller(palette = "PuBu", direction = 1)
+      # khroma::scale_color_oslo(discrete = FALSE, reverse = TRUE, range = c(0, 0.8))
   }
-
 
   if (plotly) {
     plot_wq <- plotly::ggplotly(plot_wq
