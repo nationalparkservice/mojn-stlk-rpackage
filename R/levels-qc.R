@@ -421,12 +421,13 @@ PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season,
     dplyr::filter(Benchmark != "Water Surface") %>%
     tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left")
 
+  ptol_muted_6 <- c("#CC6677", "#332288", "#DDCC77", "#117733", "#88CCEE", "#882255")
 
   plt <- FormatPlot(lvls,
                     FieldSeason,
                     FinalCorrectedElevation_ft,
                     SiteName,
-                    plot.title = ifelse(include.title, "Benchmark elevation over time", ""),
+                    # plot.title = ifelse(include.title, "Benchmark elevation over time", ""),
                     x.lab = "Field Season",
                     y.lab = "Elevation (ft)") +
     ggplot2::aes(color = Benchmark,
@@ -436,8 +437,8 @@ PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season,
                                "Benchmark: ", Benchmark, "<br>",
                                "Elevation (ft): ", round(FinalCorrectedElevation_ft, 2))) +
     ggplot2::geom_point(ggplot2::aes()) +
-    ggplot2::geom_line()
-
+    ggplot2::geom_line(linewidth = 1) +
+    khroma::scale_color_muted()
 
     if (plotly) {
       plt <- plotly::ggplotly(plt, tooltip = "text")
@@ -480,8 +481,9 @@ PlotLakeSurfaceElevation <- function(conn, path.to.data, park, site, field.seaso
                                "Survey Type: ", SurveyType, "<br>",
                                "Elevation (ft): ", round(FinalElevation_ft, 2))) +
     ggplot2::geom_point(ggplot2::aes()) +
-    ggplot2::geom_line() +
-    ggplot2::scale_shape_discrete(na.translate = FALSE)
+    ggplot2::geom_line(linewidth = 1) +
+    ggplot2::scale_shape_discrete(na.translate = FALSE) +
+    khroma::scale_color_muted()
 
     if (plotly) {
       plt <- plotly::ggplotly(plt, tooltip = "text")
