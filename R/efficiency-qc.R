@@ -16,14 +16,14 @@ qcNoAnnualVisit <- function(conn, path.to.data, park, site, field.season, data.s
 
 visit.data <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
 visit <- visit.data %>%
-  select(Park, Subunit, SiteShort, SiteCode, SiteName, SampleFrame, VisitDate, FieldSeason, VisitType, MonitoringStatus) %>%
-  filter(VisitType == "Primary", SiteCode != "GRBA_S_BAKR2") %>%
-  pivot_wider(id_cols = c(Park, Subunit, SiteShort, SiteCode, SiteName, SampleFrame),
-              names_from = FieldSeason,
-              values_from = VisitDate) %>%
-  pivot_longer(!c(Park, Subunit, SiteShort, SiteCode, SiteName, SampleFrame), names_to = "FieldSeason", values_to = "VisitDate") %>%
-  filter(is.na(VisitDate)) %>%
-  select(Park, SiteShort, SiteCode, SiteName, SampleFrame, FieldSeason, VisitDate)
+  dplyr::select(Park, Subunit, SiteShort, SiteCode, SiteName, SampleFrame, VisitDate, FieldSeason, VisitType, MonitoringStatus) %>%
+  dplyr::filter(VisitType == "Primary", SiteCode != "GRBA_S_BAKR2") %>%
+  tidyr::pivot_wider(id_cols = c(Park, Subunit, SiteShort, SiteCode, SiteName, SampleFrame),
+                     names_from = FieldSeason,
+                     values_from = VisitDate) %>%
+  tidyr::pivot_longer(!c(Park, Subunit, SiteShort, SiteCode, SiteName, SampleFrame), names_to = "FieldSeason", values_to = "VisitDate") %>%
+  dplyr::filter(is.na(VisitDate)) %>%
+  dplyr::select(Park, SiteShort, SiteCode, SiteName, SampleFrame, FieldSeason, VisitDate)
 
 return(visit)
 
@@ -60,69 +60,69 @@ qcDPLCheck <- function(conn, path.to.data, park, site, field.season, data.source
   do <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WaterQualityDO")
 
   visit.DPL <- visit %>%
-    rename(Visit.DPL = DataProcessingLevel) %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, SampleFrame, VisitType, Visit.DPL)
+    dplyr::rename(Visit.DPL = DataProcessingLevel) %>%
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, SampleFrame, VisitType, Visit.DPL)
   chem.DPL <- chem %>%
-    filter(SampleType == "Routine") %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SampleFrame, DPL) %>%
-    rename(Chem.DPL = DPL) %>%
-    distinct()
+    dplyr::filter(SampleType == "Routine") %>%
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SampleFrame, DPL) %>%
+    dplyr::rename(Chem.DPL = DPL) %>%
+    dplyr::distinct()
   bmi.DPL <- bmi %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
-    rename(BMI.DPL = DPL) %>%
-    distinct()
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    dplyr::rename(BMI.DPL = DPL) %>%
+    dplyr::distinct()
   channel.DPL <- channel %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, DPL) %>%
-    rename(Channel.DPL = DPL) %>%
-    distinct()
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, DPL) %>%
+    dplyr::rename(Channel.DPL = DPL) %>%
+    dplyr::distinct()
   clarity.DPL <- clarity %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
-    rename(Clarity.DPL = DPL) %>%
-    distinct()
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    dplyr::rename(Clarity.DPL = DPL) %>%
+    dplyr::distinct()
   lakesurvey.DPL <- lakesurvey %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
-    rename(LakeSurvey.DPL = DPL) %>%
-    distinct()
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    dplyr::rename(LakeSurvey.DPL = DPL) %>%
+    dplyr::distinct()
   lakestring.DPL <- lakestring %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
-    rename(LakeString.DPL = DPL) %>%
-    distinct()
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    dplyr::rename(LakeString.DPL = DPL) %>%
+    dplyr::distinct()
   xsection.DPL <- xsection %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
-    rename(Xsection.DPL = DPL) %>%
-    distinct()
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    dplyr::rename(Xsection.DPL = DPL) %>%
+    dplyr::distinct()
   temp.DPL <- temp %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
-    rename(TempC.DPL = DPL) %>%
-    distinct()
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    dplyr::rename(TempC.DPL = DPL) %>%
+    dplyr::distinct()
   ph.DPL <- ph %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
-    rename(pH.DPL = DPL) %>%
-    distinct()
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    dplyr::rename(pH.DPL = DPL) %>%
+    dplyr::distinct()
   spcond.DPL <- spcond %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
-    rename(SpCond.DPL = DPL) %>%
-    distinct()
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    dplyr::rename(SpCond.DPL = DPL) %>%
+    dplyr::distinct()
   do.DPL <- do %>%
-    select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
-    rename(DO.DPL = DPL) %>%
-    distinct()
+    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+    dplyr::rename(DO.DPL = DPL) %>%
+    dplyr::distinct()
 
   dpl <- visit.DPL %>%
-    left_join(chem.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "SampleFrame", "VisitType")) %>%
-    left_join(bmi.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
-    left_join(channel.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason")) %>%
-    left_join(clarity.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
-    left_join(lakesurvey.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
-    left_join(lakestring.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
-    left_join(xsection.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
-    left_join(temp.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
-    left_join(ph.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
-    left_join(spcond.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
-    left_join(do.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    dplyr::left_join(chem.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "SampleFrame", "VisitType")) %>%
+    dplyr::left_join(bmi.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    dplyr::left_join(channel.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason")) %>%
+    dplyr::left_join(clarity.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    dplyr::left_join(lakesurvey.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    dplyr::left_join(lakestring.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    dplyr::left_join(xsection.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    dplyr::left_join(temp.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    dplyr::left_join(ph.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    dplyr::left_join(spcond.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    dplyr::left_join(do.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
     unique() %>%
-    filter_all(any_vars(. %in% c("Raw", "Provisional"))) %>%
-    arrange(SampleFrame, FieldSeason, SiteCode)
+    dplyr::filter_all(any_vars(. %in% c("Raw", "Provisional"))) %>%
+    dplyr::arrange(SampleFrame, FieldSeason, SiteCode)
 
 return(dpl)
 
