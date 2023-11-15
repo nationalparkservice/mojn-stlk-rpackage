@@ -556,7 +556,7 @@ ChemLakeNutrientPlot <- function(conn, path.to.data, park, site, field.season, d
 
     lake.nut <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Nutrient") %>%
-        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
+        tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
 
     lake.nut$Characteristic_f = factor(lake.nut$Characteristic, levels = c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"))
 
@@ -594,7 +594,7 @@ ChemLakeNutrientBarPlot <- function(conn, path.to.data, park, site, field.season
 
     lake.nut.bar <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Nutrient") %>%
-        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup)) %>%
+        tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup)) %>%
         dplyr::mutate(Nutrient = ifelse(Characteristic %in% c("UTN", "TDN", "NO3NO2-N"), "Nitrogen",
                                         ifelse(Characteristic %in% c("UTP", "TDP"), "Phosphorus",
                                                ifelse(Characteristic %in% c("DOC"), "Carbon", NA))))
@@ -639,7 +639,7 @@ ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.s
     lake.ion <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Ion",
                       Characteristic %in% c("Na", "Mg", "K", "Ca", "Cl", "SO4-S", "ALK2")) %>%
-        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
+        tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
 
     lake.ion$Characteristic_f = factor(lake.ion$Characteristic, levels = c("Na", "Mg", "K", "Ca", "SO4-S", "Cl", "ALK2"))
 
@@ -676,7 +676,7 @@ ChemStreamNutrientPlot <- function(conn, path.to.data, park, site, field.season,
 
     stream.nut <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Nutrient", SiteShort != "BAKR2") %>%
-        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
+        tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
 
     stream.nut$Characteristic_f = factor(stream.nut$Characteristic, levels = c("UTN", "TDN", "NO3NO2-N", "UTP", "TDP", "DOC"))
 
@@ -712,7 +712,7 @@ ChemStreamNutrientBarPlot <- function(conn, path.to.data, park, site, field.seas
 
     stream.nut.bar <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Nutrient", SiteShort != "BAKR2") %>%
-        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup)) %>%
+        tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup)) %>%
         dplyr::mutate(Nutrient = ifelse(Characteristic %in% c("UTN", "TDN", "NO3NO2-N"), "Nitrogen",
                                         ifelse(Characteristic %in% c("UTP", "TDP"), "Phosphorus",
                                                ifelse(Characteristic %in% c("DOC"), "Carbon", NA))))
@@ -756,7 +756,7 @@ ChemStreamIonPlot <- function(conn, path.to.data, park, site, field.season, data
     stream.ion <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Ion", SiteShort != "BAKR2",
                       Characteristic %in% c("Na", "Mg", "K", "Ca", "Cl", "SO4-S", "ALK2")) %>%
-        tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
+        tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Characteristic, CharacteristicLabel, ReportingGroup))
 
     stream.ion$Characteristic_f = factor(stream.ion$Characteristic, levels = c("Na", "Mg", "K", "Ca", "SO4-S", "Cl", "ALK2"))
 

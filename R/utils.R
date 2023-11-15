@@ -270,7 +270,7 @@ ReadAquarius <- function(conn, data.name) {
   }
   timeseries <- conn$aquarius
   aq_data <- tibble::tibble()
-  sites <- c("GRBA_S_BAKR1", "GRBA_S_LHMN1", "GRBA_S_SNKE1", "GRBA_S_SNKE3", "GRBA_S_STRW1")
+  sites <- c("GRBA_S_BAKR1", "GRBA_S_LHMN1", "GRBA_S_SNKE1", "GRBA_S_SNKE2", "GRBA_S_STRW1")
   identifiers <- tibble::tibble(data_name = c("TimeseriesDO", "TimeseriesDOSat", "TimeseriespH", "TimeseriesSpCond", "TimeseriesTemperature"),
                                 identifier = c("O2 (Dis).Cumulative@", "Dis Oxygen Sat.Cumulative@", "pH.Cumulative@", "Sp Cond.Cumulative@", "Water Temp.Cumulative@"),
                                 col_name = c("DissolvedOxygen_mg_per_L", "DissolvedOxygen_percent", "pH", "SpecificConductance_microS_per_cm", "WaterTemperature_C"))
