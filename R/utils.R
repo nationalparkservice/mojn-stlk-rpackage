@@ -25,11 +25,12 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
   }
 
   #Connect to Aquarius
-  tryCatch({timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
+  tryCatch({#fetchaquarius::connectToAquarius("aqreadonly", "aqreadonly")
+    timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
     aq <<- timeseries},
     error = function(e) {
-      aq <<- NA
-      warning(paste("Could not connect to Aquarius. Verify that you are on the NPS network and that Aquarius is not down.", "Error message:", e, sep = "\n"))
+       aq <<- NA
+       warning(paste("Could not connect to Aquarius. Verify that you are on the NPS network and that Aquarius is not down.", "Error message:", e, sep = "\n"))
     }
   )
 
@@ -271,9 +272,9 @@ ReadAquarius <- function(conn, data.name) {
   timeseries <- conn$aquarius
   aq_data <- tibble::tibble()
   sites <- c("GRBA_S_BAKR1", "GRBA_S_LHMN1", "GRBA_S_SNKE1", "GRBA_S_SNKE2", "GRBA_S_STRW1")
-  identifiers <- tibble::tibble(data_name = c("TimeseriesDO", "TimeseriesDOSat", "TimeseriespH", "TimeseriesSpCond", "TimeseriesTemperature"),
-                                identifier = c("O2 (Dis).Cumulative@", "Dis Oxygen Sat.Cumulative@", "pH.Cumulative@", "Sp Cond.Cumulative@", "Water Temp.Cumulative@"),
-                                col_name = c("DissolvedOxygen_mg_per_L", "DissolvedOxygen_percent", "pH", "SpecificConductance_microS_per_cm", "WaterTemperature_C"))
+  identifiers <- tibble::tibble(data_name = c("TimeseriesDO", "TimeseriesDOSat", "TimeseriespH", "TimeseriesSpCond", "TimeseriesTemperature", "TimeseriesDischarge"),
+                                identifier = c("O2 (Dis).Cumulative@", "Dis Oxygen Sat.Cumulative@", "pH.Cumulative@", "Sp Cond.Cumulative@", "Water Temp.Cumulative@", "Discharge.Cumulative@"),
+                                col_name = c("DissolvedOxygen_mg_per_L", "DissolvedOxygen_percent", "pH", "SpecificConductance_microS_per_cm", "WaterTemperature_C", "Discharge_cfs"))
 
   aq_identifier <- identifiers[identifiers$data_name == data.name, ]$identifier
   aq_col_name <- identifiers[identifiers$data_name == data.name, ]$col_name
@@ -283,10 +284,18 @@ ReadAquarius <- function(conn, data.name) {
 
     site.data <- site.imp$Points
 
+    site.data
+
+    # site.imp <- fetchaquarius::getTimeSeries(paste0(aq_identifier, location))
+
+    # site.values <- site.imp$Points %>% dplyr::rename(NumericValue1 = Value)
+    # site.grades <- site.imp$Grades %>% dplyr::rename(NumericValue1 = Value)
+    # site.approvals <- site.imp$Approvals %>% dplyr::select(LevelDescription)
+
     site.data %<>%
       dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
       dplyr::rename(!!aq_col_name := NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
-      dplyr::filter(Approval == "Approved") %>%
+      # dplyr::filter(Approval == "Approved") %>%
       dplyr::mutate(SiteCode = location) %>%
       dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
 
@@ -314,6 +323,127 @@ ReadAquarius <- function(conn, data.name) {
 
   return(aq_data)
 }
+
+
+# Custom function that takes a ggplotly figure and its facets as arguments.
+# The upper x-values for each domain is set programmatically, but you can adjust
+# the look of the figure by adjusting the width of the facet domain and the
+# corresponding annotations labels through the domain_offset variable
+fixfacets <- function(figure, facets, domain_offset){
+
+  # split x ranges from 0 to 1 into
+  # intervals corresponding to number of facets
+  # xHi = highest x for shape
+  xHi <- seq(0, 1, len = n_facets+1)
+  xHi <- xHi[2:length(xHi)]
+
+  xOs <- domain_offset
+
+  # Shape manipulations, identified by dark grey backround: "rgba(217,217,217,1)"
+  # structure: p$x$layout$shapes[[2]]$
+  shp <- fig$x$layout$shapes
+  j <- 1
+  for (i in seq_along(shp)){
+    if (shp[[i]]$fillcolor=="rgba(217,217,217,1)" & (!is.na(shp[[i]]$fillcolor))){
+      #$x$layout$shapes[[i]]$fillcolor <- 'rgba(0,0,255,0.5)' # optionally change color for each label shape
+      fig$x$layout$shapes[[i]]$x1 <- xHi[j]
+      fig$x$layout$shapes[[i]]$x0 <- (xHi[j] - xOs)
+      #fig$x$layout$shapes[[i]]$y <- -0.05
+      j<-j+1
+    }
+  }
+
+  # annotation manipulations, identified by label name
+  # structure: p$x$layout$annotations[[2]]
+  ann <- fig$x$layout$annotations
+  annos <- facets
+  j <- 1
+  for (i in seq_along(ann)){
+    if (ann[[i]]$text %in% annos){
+      # but each annotation between high and low x,
+      # and set adjustment to center
+      fig$x$layout$annotations[[i]]$x <- (((xHi[j]-xOs)+xHi[j])/2)
+      fig$x$layout$annotations[[i]]$xanchor <- 'center'
+      #print(fig$x$layout$annotations[[i]]$y)
+      #fig$x$layout$annotations[[i]]$y <- -0.05
+      j<-j+1
+    }
+  }
+
+  # domain manipulations
+  # set high and low x for each facet domain
+  xax <- names(fig$x$layout)
+  j <- 1
+  for (i in seq_along(xax)){
+    if (!is.na(pmatch('xaxis', lot[i]))){
+      #print(p[['x']][['layout']][[lot[i]]][['domain']][2])
+      fig[['x']][['layout']][[xax[i]]][['domain']][2] <- xHi[j]
+      fig[['x']][['layout']][[xax[i]]][['domain']][1] <- xHi[j] - xOs
+      j<-j+1
+    }
+  }
+
+  return(fig)
+}
+
+
+ReadAquariusLakes <- function(conn, data.name) {
+  if (!isS4(conn$aquarius)) {
+    stop("Aquarius connection does not exist.")
+  }
+  timeseries <- conn$aquarius
+  aq_data <- tibble::tibble()
+  sites <- c("GRBA_L_BAKR0", "GRBA_L_BRWN0", "GRBA_L_DEAD0", "GRBA_L_JHNS0", "GRBA_L_STLL0", "GRBA_L_TRSA0")
+  identifiers <- tibble::tibble(data_name = c("TimeseriesWaterLevel"),
+                                identifier = c("Water Level.Cumulative@"),
+                                col_name = c("WaterLevel_m"))
+
+  aq_identifier <- identifiers[identifiers$data_name == data.name, ]$identifier
+  aq_col_name <- identifiers[identifiers$data_name == data.name, ]$col_name
+
+  for (location in sites) {
+    site.imp <- timeseries$getTimeSeriesData(paste0(aq_identifier, location))
+
+    site.data <- site.imp$Points
+
+    # site.imp <- fetchaquarius::getTimeSeries(paste0(aq_identifier, location))
+
+    # site.values <- site.imp$Points %>% dplyr::rename(NumericValue1 = Value)
+    # site.grades <- site.imp$Grades %>% dplyr::rename(NumericValue1 = Value)
+    # site.approvals <- site.imp$Approvals %>% dplyr::select(LevelDescription)
+
+    site.data %<>%
+      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
+      dplyr::rename(!!aq_col_name := NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
+      # dplyr::filter(Approval == "Approved") %>%
+      dplyr::mutate(SiteCode = location) %>%
+      dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
+
+    site.data$DateTime <- lubridate::ymd_hms(site.data$DateTime, tz = "America/Los_Angeles", quiet = TRUE)
+
+    site.data %<>%
+      dplyr::mutate(FieldSeason = ifelse(lubridate::month(DateTime) < 10,
+                                         lubridate::year(DateTime),
+                                         lubridate::year(DateTime) + 1)) %>%
+      dplyr::select(Park,
+                    SampleFrame,
+                    SiteCode,
+                    FieldSeason,
+                    DateTime,
+                    !!aq_col_name,
+                    Grade,
+                    Approval)
+
+    aq_data <- rbind(aq_data, site.data) %>%
+      tibble::as_tibble() %>%
+      dplyr::mutate_if(is.character, trimws, whitespace = "[\\h\\v]") %>%
+      dplyr::mutate_if(is.character, stringr::str_replace_all, pattern = "[\\v]+", replacement = ";  ") %>%
+      dplyr::mutate_if(is.character, dplyr::na_if, "")
+  }
+
+  return(aq_data)
+}
+
 
 #' Read Streams and Lakes data from database or .csv
 #'
