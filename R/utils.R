@@ -459,10 +459,11 @@ ReadAquariusLakes <- function(conn, data.name) {
 #'
 #' @details \code{data.name} options are: Site, Visit, BMI, Channel, Chemistry, Clarity, WaterQualityDO, WaterQualitypH, WaterQualitySpCond, WaterQualityTemperature, WQStreamXSection, TimeseriesDO, TimeseriesDOSat, TimeseriespH, TimeseriesSpCond, TimeseriesTemperature
 #'
-ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data.source = "database", data.name) {
+ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data.source = "database", data.name,
+                              agol_url_dict = hash::hash(keys = c("BMI"), values = c("https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer"))) {
   col.spec <- GetColSpec()
   col.spec.aq <- GetAquariusColSpec()
-  col.spec.agol <- list("BMI")
+  col.spec.agol <- c("BMI")
   col.spec.all <- c(col.spec, col.spec.aq, col.spec.agol)
 
   if (!(data.source %in% c("database", "local"))) {
@@ -478,9 +479,9 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
   } else if (data.source == "database" & data.name %in% names(col.spec.aq)) {
     ## Read Aquarius data
     filtered.data <- ReadAquarius(conn, data.name)
-  } else if (data.source == "database" & data.name %in% names(col.spec.agol)) {
+  } else if (data.source == "database" & data.name %in% col.spec.agol) {
     # TODO: create list/dictionary that can hold multiple URLS for different agol databases
-    filtered.data <- fetchagol::fetchRawData("https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer", "mojn_data")
+    filtered.data <- fetchagol::fetchRawData(agol_url_dict[[data.name]], "mojn_data")
     filtered.data <- fetchagol::cleanData(filtered.data)
     filtered.data <- filtered.data$data
   } else if (data.source == "local") {
@@ -490,32 +491,36 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
     }
   }
 
-  if (!missing(park)) {
-    filtered.data %<>%
-      dplyr::filter(Park == park)
-    if (nrow(filtered.data) == 0) {
-      warning(paste0(data.name, ": Data are not available for the park specified"))
+  if (data.name %in% col.spec.agol) {
+
+  } else{
+    if (!missing(park)) {
+      filtered.data %<>%
+        dplyr::filter(Park == park)
+      if (nrow(filtered.data) == 0) {
+        warning(paste0(data.name, ": Data are not available for the park specified"))
+      }
     }
-  }
 
-  if (!missing(site) & nrow(filtered.data) > 0) {
-    filtered.data %<>%
-      dplyr::filter(SiteCode %in% site)
+    if (!missing(site) & nrow(filtered.data) > 0) {
+      filtered.data %<>%
+        dplyr::filter(SiteCode %in% site)
 
-    if (nrow(filtered.data) == 0) {
-      warning(paste0(data.name, ": Data are not available for the site specified"))
+      if (nrow(filtered.data) == 0) {
+        warning(paste0(data.name, ": Data are not available for the site specified"))
+      }
     }
-  }
 
-  if ("FieldSeason" %in% names(filtered.data)) {
-    filtered.data %<>% dplyr::mutate(FieldSeason = as.character(FieldSeason))
-  }
+    if ("FieldSeason" %in% names(filtered.data)) {
+      filtered.data %<>% dplyr::mutate(FieldSeason = as.character(FieldSeason))
+    }
 
-  if (!missing(field.season) & ("FieldSeason" %in% colnames(filtered.data)) & nrow(filtered.data) > 0) {
-    filtered.data %<>%
-      dplyr::filter(FieldSeason %in% field.season)
-    if (nrow(filtered.data) == 0) {
-      warning(paste0(data.name, ": Data are not available for one or more of the field seasons specified"))
+    if (!missing(field.season) & ("FieldSeason" %in% colnames(filtered.data)) & nrow(filtered.data) > 0) {
+      filtered.data %<>%
+        dplyr::filter(FieldSeason %in% field.season)
+      if (nrow(filtered.data) == 0) {
+        warning(paste0(data.name, ": Data are not available for one or more of the field seasons specified"))
+      }
     }
   }
 
