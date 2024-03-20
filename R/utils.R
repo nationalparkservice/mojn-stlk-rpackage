@@ -491,8 +491,53 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
     }
   }
 
+  # Filtering for data from AGOL
   if (data.name %in% col.spec.agol) {
+    if (!missing(park)) {
 
+      filtered.data <- lapply(filtered.data, function(table){
+        # If the table has a Park column filter for specified park
+        if("Park" %in% colnames(table)) {
+          table <- table %>% dplyr::filter(Park == park)
+        }
+        if (nrow(table) == 0) {
+          warning(paste0(data.name, ": Data are not available for the park specified"))
+        }
+        return(table)
+      })}
+
+    if (!missing(site) & length(filtered.data) > 0) {
+      # If the table has a SiteCode column filter for specified site
+      filtered.data <- lapply(filtered.data, function(table){
+        if("SiteCode" %in% colnames(table)) {
+          table <- table %>% dplyr::filter(SiteCode %in% site)
+
+        }
+        if (nrow(table) == 0) {
+          warning(paste0(data.name, ": Data are not available for the site specified"))
+        }
+        return(table)
+      })}
+
+    # TODO: I dont think this is necessary for the AGOL data
+    # if ("FieldSeason" %in% names(filtered.data)) {
+    #   filtered.data %<>% dplyr::mutate(FieldSeason = as.character(FieldSeason))
+    # }
+
+    if (!missing(field.season) & length(filtered.data) > 0) {
+
+      # If the table has a SiteCode column filter for specified site
+      filtered.data <- lapply(filtered.data, function(table){
+        if("FieldSeason" %in% colnames(table)) {
+          table <- table %>% dplyr::filter(FieldSeason %in% field.season)
+
+        }
+        if (nrow(table) == 0) {
+          warning(paste0(data.name, ": Data are not available for the field season specified"))
+        }
+        return(table)
+      })}
+    # Filtering for any other data source besides AGOL
   } else{
     if (!missing(park)) {
       filtered.data %<>%
