@@ -15,18 +15,6 @@ writeBMI(
   cols_to_remove = c("Editor", "Creator"),
   ...
 )
-
-writeBMI(
-  all_data,
-  data_dir = here::here("data", "final"),
-  dictionary_dir = here::here("data", "dictionary"),
-  dictionary_filenames = c(tables = "data_dictionary_tables.txt", attributes =
-    "data_dictionary_attributes.txt", categories = "data_dictionary_categories.txt"),
-  verbose = FALSE,
-  removeColumns = TRUE,
-  cols_to_remove = c("Editor", "Creator"),
-  ...
-)
 }
 \arguments{
 \item{all_data}{Output of \code{fetchRawData()}}
@@ -44,7 +32,5 @@ writeBMI(
 \item{cols_to_remove}{Columns that should be removed, \code{c("Editor", "Creator")} is the default because they can contain personally identifiable information}
 }
 \description{
-Write BMI data to CSV
-
 Write BMI data to CSV
 }

@@ -256,17 +256,6 @@ GetAquariusColSpec <- function() {
   return(col.spec.aq)
 }
 
-#' Get AGOL databases and their URLs
-#'
-#' @param agol_url_dict A dictionary of database names and URLs
-#'
-#' @returns A dict where keys are databases in AGOL and the values are the associated database URLs
-#'
-#' TODO add info about columns??
-GetAGOLInfo <- function(agol_url_dict = hash::hash(keys = c("BMI"), values = c("https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer"))) {
-  return(agol_url_dict)
-}
-
 #' Read Streams and Lakes data from Aquarius
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
@@ -473,10 +462,7 @@ ReadAquariusLakes <- function(conn, data.name) {
 ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data.source = "database", data.name) {
   col.spec <- GetColSpec()
   col.spec.aq <- GetAquariusColSpec()
-  col.spec.agol <- hash::keys(GetAGOLInfo())
-  #col.spec.agol <- c("BMI")
-  # TODO add agol stuff to this list correctly
-  col.spec.all <- c(col.spec, col.spec.aq, col.spec.agol)
+  col.spec.all <- c(col.spec, col.spec.aq)
 
   if (!(data.source %in% c("database", "local"))) {
     stop("Please choose either 'database' or 'local' for data.source")
@@ -491,11 +477,6 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
   } else if (data.source == "database" & data.name %in% names(col.spec.aq)) {
     ## Read Aquarius data
     filtered.data <- ReadAquarius(conn, data.name)
-  } else if (data.source == "database" & data.name %in% col.spec.agol) {
-    # Read AGOL data
-    filtered.data <- fetchagol::fetchRawData(GetAGOLInfo()[[data.name]], "mojn_data")
-    filtered.data <- fetchagol::cleanData(filtered.data)
-    filtered.data <- filtered.data$data
   } else if (data.source == "local") {
     filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec.all[[data.name]], lazy = FALSE)
     if(data.name %in% names(col.spec.aq) & "DateTime" %in% names(filtered.data)) {
@@ -503,54 +484,6 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
     }
   }
 
-  # Filtering for data from AGOL
-  if (data.name %in% col.spec.agol) {
-    if (!missing(park)) {
-
-      filtered.data <- lapply(filtered.data, function(table){
-        # If the table has a Park column filter for specified park
-        if("Park" %in% colnames(table)) {
-          table <- table %>% dplyr::filter(Park == park)
-        }
-        if (nrow(table) == 0) {
-          warning(paste0(data.name, ": Data are not available for the park specified"))
-        }
-        return(table)
-      })}
-
-    if (!missing(site) & length(filtered.data) > 0) {
-      # If the table has a SiteCode column filter for specified site
-      filtered.data <- lapply(filtered.data, function(table){
-        if("SiteCode" %in% colnames(table)) {
-          table <- table %>% dplyr::filter(SiteCode %in% site)
-
-        }
-        if (nrow(table) == 0) {
-          warning(paste0(data.name, ": Data are not available for the site specified"))
-        }
-        return(table)
-      })}
-
-    # TODO: I dont think this is necessary for the AGOL data
-    # if ("FieldSeason" %in% names(filtered.data)) {
-    #   filtered.data %<>% dplyr::mutate(FieldSeason = as.character(FieldSeason))
-    # }
-
-    if (!missing(field.season) & length(filtered.data) > 0) {
-
-      # If the table has a SiteCode column filter for specified site
-      filtered.data <- lapply(filtered.data, function(table){
-        if("FieldSeason" %in% colnames(table)) {
-          table <- table %>% dplyr::filter(FieldSeason %in% field.season)
-
-        }
-        if (nrow(table) == 0) {
-          warning(paste0(data.name, ": Data are not available for the field season specified"))
-        }
-        return(table)
-      })}
-    # Filtering for any other data source besides AGOL
-  } else{
     if (!missing(park)) {
       filtered.data %<>%
         dplyr::filter(Park == park)
@@ -579,7 +512,6 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
         warning(paste0(data.name, ": Data are not available for one or more of the field seasons specified"))
       }
     }
-  }
 
   return(filtered.data)
 }
@@ -591,7 +523,6 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
 #' @param create.folders Should \code{dest.folder} be created automatically if it doesn't exist? Defaults to \code{FALSE}.
 #' @param overwrite Should existing data be automatically overwritten? Defaults to \code{FALSE}.
 #' @param aquarius Include Aquarius data?
-#' @param agol Include AGOL data?
 #' @param calculated Include calculated data (median stream wq, median lake wq, and lake surface elevation)?
 #'
 #' @return None.
@@ -603,10 +534,9 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
 #' SaveDataToCsv(conn, "C:/Users/myusername/Documents/R/streamsandlakes-data", TRUE, TRUE)
 #' CloseDatabaseConnection(conn)
 #' }
-SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite = FALSE, aquarius = TRUE, agol = FALSE, calculated = TRUE) {
+SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite = FALSE, aquarius = TRUE, calculated = TRUE) {
   analysis.views <- names(GetColSpec())
   aq.data <- names(GetAquariusColSpec())
-  agol.databases <- hash::keys(GetAGOLInfo())
   dest.folder <- file.path(dirname(dest.folder), basename(dest.folder)) # Get destination directory in a consistent format. Seems like there should be a better way to do this.
   file.paths <- c(file.path(dest.folder, paste0(analysis.views, ".csv")),
                   file.path(dest.folder, paste0(aq.data, ".csv")))
@@ -666,54 +596,6 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
       )
     }
   }
-
-  if(agol){
-
-    for (agol.name in agol.databases) {
-      # tryCatch(
-      #   {
-          # df <- ReadAquarius(conn, aq.name)
-
-          raw_df <- fetchagol::fetchRawData(GetAGOLInfo()[[agol.name]], "mojn_data")
-          raw_df <- fetchagol::cleanData(raw_df)
-
-          # TODO update this so its nicer/more dynamic - maybe put in a function
-          if(agol.name == "BMI"){
-            df <- list(
-              BMI_Metrics = raw_df$data$BMI_Metrics,
-              BMI_Species = raw_df$data$BMI_Species,
-              BMI_SiteVisit = raw_df$data$BMI_SiteVisit
-            )
-            # $BMI_Metrics <- raw_df$data$BMI_Metrics
-            # df$BMI_Species <- raw_df$data$BMI_Species
-          } else {
-            df <- raw_df$data
-          }
-
-
-          for (i in 1:length(df)) {
-
-            # Include time zone in dates
-            # if("DateTime" %in% names(df)) {
-            #   df$DateTime <- format(df$DateTime, "%y-%m-%d %H:%M:%S %z")
-            # }
-            readr::write_csv(df[[i]], file.path(dest.folder, paste0(names(df)[i], ".csv")), na = "", append = FALSE, col_names = TRUE)
-
-          }
-
-
-        # },
-        # error = function(e) {
-        #   if (e$message == "Aquarius connection does not exist.") {
-        #     warning(paste0("Could not connect to Aquarius. Skipping", aq.name, ".csv"))
-        #   }
-        #   else {e}
-        # }
-      # )
-    }
-
-  }
-
 }
 
 #' Raw data dump
@@ -936,42 +818,6 @@ expect_dataframe_equal <- function(result, expected, ignore_col_order = FALSE, i
   test_result <- all.equal(result, expected, check.attributes = FALSE, use.names = TRUE, check.names = TRUE)
 
   return(testthat::expect_true(test_result, label = test_result))
-}
-
-
-#' Fetch BMI data from AGOL and do preliminary data wrangling
-#'
-#' @param bmi_url URL to AGOL BMI database
-#' @param agol_username Authentication token (not needed for public layers)
-#'
-#' @return A list of data frames and metadata
-#' @export
-fetchAndWrangleBMI <- function(bmi_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer",
-                               agol_username = "mojn_data") {
-  # Import BMI database
-  raw_data <- fetchagol::fetchRawData(bmi_url, agol_username)
-  raw_data <- fetchagol::cleanData(raw_data)
-
-  # Remove unwanted data and metadata
-  raw_data$data[['BMI_Metadata']] <- NULL
-  raw_data$metadata[['BMI_Metadata']] <- NULL
-
-  invisible(raw_data)
-}
-
-
-#' Write BMI data to CSV
-#'
-#' @inheritParams fetchagol::writeToFiles
-#'
-#' @export
-writeBMI <- function(all_data, data_dir = here::here("data", "final"), dictionary_dir = here::here("data", "dictionary"),
-                     dictionary_filenames = c(tables = "data_dictionary_tables.txt",
-                                              attributes = "data_dictionary_attributes.txt",
-                                              categories = "data_dictionary_categories.txt"),
-                     verbose = FALSE, removeColumns = TRUE, cols_to_remove = c("Editor", "Creator"), ...)
-{
-  fetchagol::writeToFiles(all_data = all_data, data_dir = data_dir, dictionary_dir = dictionary_dir, lookup_dir = NA, verbose = verbose, removeColumns = TRUE, cols_to_remove = c("Editor", "Creator"))
 }
 
 #' Fetch BMI data from AGOL and do preliminary data wrangling

@@ -9,12 +9,6 @@ fetchAndWrangleBMI(
     "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer",
   agol_username = "mojn_data"
 )
-
-fetchAndWrangleBMI(
-  bmi_url =
-    "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer",
-  agol_username = "mojn_data"
-)
 }
 \arguments{
 \item{bmi_url}{URL to AGOL BMI database}
@@ -23,11 +17,7 @@ fetchAndWrangleBMI(
 }
 \value{
 A list of data frames and metadata
-
-A list of data frames and metadata
 }
 \description{
-Fetch BMI data from AGOL and do preliminary data wrangling
-
 Fetch BMI data from AGOL and do preliminary data wrangling
 }
