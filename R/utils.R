@@ -78,71 +78,71 @@ GetColSpec <- function() {
       DataStoreReferenceCode = readr::col_integer(),
       .default = readr::col_character()
     ),
-    # BMI = readr::cols(
-    #   VisitDate = readr::col_date(),
-    #   DateCollected = readr::col_date(),
-    #   FieldSplit = readr::col_integer(),
-    #   LabSplit = readr::col_double(),
-    #   SampleArea_m2 = readr::col_double(),
-    #   Abundance = readr::col_integer(),
-    #   Richness = readr::col_integer(),
-    #   DominantTaxaPercent = readr::col_double(),
-    #   SplitCount = readr::col_integer(),
-    #   FixedCount = readr::col_integer(),
-    #   BigRareCount = readr::col_integer(),
-    #   ShannonsDiversity = readr::col_double(),
-    #   SimpsonsDiversity = readr::col_double(),
-    #   Evenness = readr::col_double(),
-    #   EPTTaxaCount = readr::col_integer(),
-    #   EPTTaxaAbundance = readr::col_integer(),
-    #   DominantFamilyAbundance = readr::col_integer(),
-    #   DominantTaxaAbundance = readr::col_integer(),
-    #   Hilsenhoff = readr::col_double(),
-    #   IntolerantTaxaCount = readr::col_integer(),
-    #   IntolerantTaxaAbundance = readr::col_integer(),
-    #   TolerantTaxaCount = readr::col_integer(),
-    #   TolerantTaxaAbundance = readr::col_integer(),
-    #   USFSCommunityToleranceQuo = readr::col_integer(),
-    #   ShredderTaxaCount = readr::col_integer(),
-    #   ShredderAbundance = readr::col_integer(),
-    #   ScraperTaxaCount = readr::col_integer(),
-    #   ScraperAbundance = readr::col_integer(),
-    #   CollectorFiltererCount = readr::col_integer(),
-    #   CollectorFiltererAbundance = readr::col_integer(),
-    #   CollectorGathererCount = readr::col_integer(),
-    #   CollectorGathererAbundance = readr::col_integer(),
-    #   PredatorTaxaCount = readr::col_integer(),
-    #   PredatorTaxaAbundance = readr::col_integer(),
-    #   ClingerTaxaCount = readr::col_integer(),
-    #   LongLivedTaxa = readr::col_integer(),
-    #   EphemeropteraTaxaCount = readr::col_integer(),
-    #   EphemeropteraTaxaAbundance = readr::col_integer(),
-    #   PlecopteraTaxa = readr::col_integer(),
-    #   PlecopteraTaxaAbundance = readr::col_integer(),
-    #   TrichopteraTaxaCount = readr::col_integer(),
-    #   TrichopteraAbundance = readr::col_integer(),
-    #   ColeopteraTaxaCount = readr::col_integer(),
-    #   ColeopteraAbundance = readr::col_integer(),
-    #   ElmidaeTaxaCount = readr::col_integer(),
-    #   ElmidaeAbundance = readr::col_integer(),
-    #   MegalopteraTaxaCount = readr::col_integer(),
-    #   MegalopteraAbundance = readr::col_integer(),
-    #   DipteraTaxaCount = readr::col_integer(),
-    #   DipteraAbundance = readr::col_integer(),
-    #   ChironomidaeTaxaCount = readr::col_integer(),
-    #   ChironomidaeAbundance = readr::col_integer(),
-    #   CrustaceaTaxaCount = readr::col_integer(),
-    #   CrustaceaAbundance = readr::col_integer(),
-    #   OligochaeteTaxaCount = readr::col_integer(),
-    #   OligochaeteAbundance = readr::col_integer(),
-    #   MolluscaTaxaCount = readr::col_integer(),
-    #   MolluscaAbundance = readr::col_integer(),
-    #   InsectTaxaCount = readr::col_integer(),
-    #   InsectAbundance = readr::col_integer(),
-    #   NonInsectTaxaCount = readr::col_integer(),
-    #   NonInsectAbundance = readr::col_integer(),
-    #   .default = readr::col_character()
-    # ),
+    BMI = readr::cols(
+      VisitDate = readr::col_date(),
+      DateCollected = readr::col_date(),
+      FieldSplit = readr::col_integer(),
+      LabSplit = readr::col_double(),
+      SampleArea_m2 = readr::col_double(),
+      Abundance = readr::col_integer(),
+      Richness = readr::col_integer(),
+      DominantTaxaPercent = readr::col_double(),
+      SplitCount = readr::col_integer(),
+      FixedCount = readr::col_integer(),
+      BigRareCount = readr::col_integer(),
+      ShannonsDiversity = readr::col_double(),
+      SimpsonsDiversity = readr::col_double(),
+      Evenness = readr::col_double(),
+      EPTTaxaCount = readr::col_integer(),
+      EPTTaxaAbundance = readr::col_integer(),
+      DominantFamilyAbundance = readr::col_integer(),
+      DominantTaxaAbundance = readr::col_integer(),
+      Hilsenhoff = readr::col_double(),
+      IntolerantTaxaCount = readr::col_integer(),
+      IntolerantTaxaAbundance = readr::col_integer(),
+      TolerantTaxaCount = readr::col_integer(),
+      TolerantTaxaAbundance = readr::col_integer(),
+      USFSCommunityToleranceQuo = readr::col_integer(),
+      ShredderTaxaCount = readr::col_integer(),
+      ShredderAbundance = readr::col_integer(),
+      ScraperTaxaCount = readr::col_integer(),
+      ScraperAbundance = readr::col_integer(),
+      CollectorFiltererCount = readr::col_integer(),
+      CollectorFiltererAbundance = readr::col_integer(),
+      CollectorGathererCount = readr::col_integer(),
+      CollectorGathererAbundance = readr::col_integer(),
+      PredatorTaxaCount = readr::col_integer(),
+      PredatorTaxaAbundance = readr::col_integer(),
+      ClingerTaxaCount = readr::col_integer(),
+      LongLivedTaxa = readr::col_integer(),
+      EphemeropteraTaxaCount = readr::col_integer(),
+      EphemeropteraTaxaAbundance = readr::col_integer(),
+      PlecopteraTaxa = readr::col_integer(),
+      PlecopteraTaxaAbundance = readr::col_integer(),
+      TrichopteraTaxaCount = readr::col_integer(),
+      TrichopteraAbundance = readr::col_integer(),
+      ColeopteraTaxaCount = readr::col_integer(),
+      ColeopteraAbundance = readr::col_integer(),
+      ElmidaeTaxaCount = readr::col_integer(),
+      ElmidaeAbundance = readr::col_integer(),
+      MegalopteraTaxaCount = readr::col_integer(),
+      MegalopteraAbundance = readr::col_integer(),
+      DipteraTaxaCount = readr::col_integer(),
+      DipteraAbundance = readr::col_integer(),
+      ChironomidaeTaxaCount = readr::col_integer(),
+      ChironomidaeAbundance = readr::col_integer(),
+      CrustaceaTaxaCount = readr::col_integer(),
+      CrustaceaAbundance = readr::col_integer(),
+      OligochaeteTaxaCount = readr::col_integer(),
+      OligochaeteAbundance = readr::col_integer(),
+      MolluscaTaxaCount = readr::col_integer(),
+      MolluscaAbundance = readr::col_integer(),
+      InsectTaxaCount = readr::col_integer(),
+      InsectAbundance = readr::col_integer(),
+      NonInsectTaxaCount = readr::col_integer(),
+      NonInsectAbundance = readr::col_integer(),
+      .default = readr::col_character()
+    ),
     Channel = readr::cols(
       VisitDate = readr::col_date(),
       .default = readr::col_character()
@@ -254,6 +254,17 @@ GetAquariusColSpec <- function() {
   )
 
   return(col.spec.aq)
+}
+
+#' Get AGOL databases and their URLs
+#'
+#' @param agol_url_dict A dictionary of database names and URLs
+#'
+#' @returns A dict where keys are databases in AGOL and the values are the associated database URLs
+#'
+#' TODO add info about columns??
+GetAGOLInfo <- function(agol_url_dict = hash::hash(keys = c("BMI"), values = c("https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer"))) {
+  return(agol_url_dict)
 }
 
 #' Read Streams and Lakes data from Aquarius
@@ -459,11 +470,12 @@ ReadAquariusLakes <- function(conn, data.name) {
 #'
 #' @details \code{data.name} options are: Site, Visit, BMI, Channel, Chemistry, Clarity, WaterQualityDO, WaterQualitypH, WaterQualitySpCond, WaterQualityTemperature, WQStreamXSection, TimeseriesDO, TimeseriesDOSat, TimeseriespH, TimeseriesSpCond, TimeseriesTemperature
 #'
-ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data.source = "database", data.name,
-                              agol_url_dict = hash::hash(keys = c("BMI"), values = c("https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer"))) {
+ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data.source = "database", data.name) {
   col.spec <- GetColSpec()
   col.spec.aq <- GetAquariusColSpec()
-  col.spec.agol <- c("BMI")
+  col.spec.agol <- hash::keys(GetAGOLInfo())
+  #col.spec.agol <- c("BMI")
+  # TODO add agol stuff to this list correctly
   col.spec.all <- c(col.spec, col.spec.aq, col.spec.agol)
 
   if (!(data.source %in% c("database", "local"))) {
@@ -480,8 +492,8 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
     ## Read Aquarius data
     filtered.data <- ReadAquarius(conn, data.name)
   } else if (data.source == "database" & data.name %in% col.spec.agol) {
-    # TODO: create list/dictionary that can hold multiple URLS for different agol databases
-    filtered.data <- fetchagol::fetchRawData(agol_url_dict[[data.name]], "mojn_data")
+    # Read AGOL data
+    filtered.data <- fetchagol::fetchRawData(GetAGOLInfo()[[data.name]], "mojn_data")
     filtered.data <- fetchagol::cleanData(filtered.data)
     filtered.data <- filtered.data$data
   } else if (data.source == "local") {
@@ -579,6 +591,7 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
 #' @param create.folders Should \code{dest.folder} be created automatically if it doesn't exist? Defaults to \code{FALSE}.
 #' @param overwrite Should existing data be automatically overwritten? Defaults to \code{FALSE}.
 #' @param aquarius Include Aquarius data?
+#' @param agol Include AGOL data?
 #' @param calculated Include calculated data (median stream wq, median lake wq, and lake surface elevation)?
 #'
 #' @return None.
@@ -590,9 +603,10 @@ ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data
 #' SaveDataToCsv(conn, "C:/Users/myusername/Documents/R/streamsandlakes-data", TRUE, TRUE)
 #' CloseDatabaseConnection(conn)
 #' }
-SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite = FALSE, aquarius = TRUE, calculated = TRUE) {
+SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite = FALSE, aquarius = TRUE, agol = FALSE, calculated = TRUE) {
   analysis.views <- names(GetColSpec())
   aq.data <- names(GetAquariusColSpec())
+  agol.databases <- hash::keys(GetAGOLInfo())
   dest.folder <- file.path(dirname(dest.folder), basename(dest.folder)) # Get destination directory in a consistent format. Seems like there should be a better way to do this.
   file.paths <- c(file.path(dest.folder, paste0(analysis.views, ".csv")),
                   file.path(dest.folder, paste0(aq.data, ".csv")))
@@ -651,6 +665,53 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
         }
       )
     }
+  }
+
+  if(agol){
+
+    for (agol.name in agol.databases) {
+      # tryCatch(
+      #   {
+          # df <- ReadAquarius(conn, aq.name)
+
+          raw_df <- fetchagol::fetchRawData(GetAGOLInfo()[[agol.name]], "mojn_data")
+          raw_df <- fetchagol::cleanData(raw_df)
+
+          # TODO update this so its nicer/more dynamic - maybe put in a function
+          if(agol.name == "BMI"){
+            df <- list(
+              BMI_Metrics = raw_df$data$BMI_Metrics,
+              BMI_Species = raw_df$data$BMI_Species,
+              BMI_SiteVisit = raw_df$data$BMI_SiteVisit
+            )
+            # $BMI_Metrics <- raw_df$data$BMI_Metrics
+            # df$BMI_Species <- raw_df$data$BMI_Species
+          } else {
+            df <- raw_df$data
+          }
+
+
+          for (i in 1:length(df)) {
+
+            # Include time zone in dates
+            # if("DateTime" %in% names(df)) {
+            #   df$DateTime <- format(df$DateTime, "%y-%m-%d %H:%M:%S %z")
+            # }
+            readr::write_csv(df[[i]], file.path(dest.folder, paste0(names(df)[i], ".csv")), na = "", append = FALSE, col_names = TRUE)
+
+          }
+
+
+        # },
+        # error = function(e) {
+        #   if (e$message == "Aquarius connection does not exist.") {
+        #     warning(paste0("Could not connect to Aquarius. Skipping", aq.name, ".csv"))
+        #   }
+        #   else {e}
+        # }
+      # )
+    }
+
   }
 
 }
@@ -876,3 +937,41 @@ expect_dataframe_equal <- function(result, expected, ignore_col_order = FALSE, i
 
   return(testthat::expect_true(test_result, label = test_result))
 }
+
+
+#' Fetch BMI data from AGOL and do preliminary data wrangling
+#'
+#' @param bmi_url URL to AGOL BMI database
+#' @param agol_username Authentication token (not needed for public layers)
+#'
+#' @return A list of data frames and metadata
+#' @export
+fetchAndWrangleBMI <- function(bmi_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer",
+                               agol_username = "mojn_data") {
+  # Import BMI database
+  raw_data <- fetchagol::fetchRawData(bmi_url, agol_username)
+  raw_data <- fetchagol::cleanData(raw_data)
+
+  # Remove unwanted data and metadata
+  raw_data$data[['BMI_Metadata']] <- NULL
+  raw_data$metadata[['BMI_Metadata']] <- NULL
+
+  invisible(raw_data)
+}
+
+
+#' Write BMI data to CSV
+#'
+#' @inheritParams fetchagol::writeToFiles
+#'
+#' @export
+writeBMI <- function(all_data, data_dir = here::here("data", "final"), dictionary_dir = here::here("data", "dictionary"),
+                     dictionary_filenames = c(tables = "data_dictionary_tables.txt",
+                                              attributes = "data_dictionary_attributes.txt",
+                                              categories = "data_dictionary_categories.txt"),
+                     verbose = FALSE, removeColumns = TRUE, cols_to_remove = c("Editor", "Creator"), ...)
+{
+  fetchagol::writeToFiles(all_data = all_data, data_dir = data_dir, dictionary_dir = dictionary_dir, lookup_dir = NA, verbose = verbose, removeColumns = TRUE, cols_to_remove = c("Editor", "Creator"))
+}
+
+
