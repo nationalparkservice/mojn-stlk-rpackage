@@ -78,71 +78,71 @@ GetColSpec <- function() {
       DataStoreReferenceCode = readr::col_integer(),
       .default = readr::col_character()
     ),
-    BMI = readr::cols(
-      VisitDate = readr::col_date(),
-      DateCollected = readr::col_date(),
-      FieldSplit = readr::col_integer(),
-      LabSplit = readr::col_double(),
-      SampleArea_m2 = readr::col_double(),
-      Abundance = readr::col_integer(),
-      Richness = readr::col_integer(),
-      DominantTaxaPercent = readr::col_double(),
-      SplitCount = readr::col_integer(),
-      FixedCount = readr::col_integer(),
-      BigRareCount = readr::col_integer(),
-      ShannonsDiversity = readr::col_double(),
-      SimpsonsDiversity = readr::col_double(),
-      Evenness = readr::col_double(),
-      EPTTaxaCount = readr::col_integer(),
-      EPTTaxaAbundance = readr::col_integer(),
-      DominantFamilyAbundance = readr::col_integer(),
-      DominantTaxaAbundance = readr::col_integer(),
-      Hilsenhoff = readr::col_double(),
-      IntolerantTaxaCount = readr::col_integer(),
-      IntolerantTaxaAbundance = readr::col_integer(),
-      TolerantTaxaCount = readr::col_integer(),
-      TolerantTaxaAbundance = readr::col_integer(),
-      USFSCommunityToleranceQuo = readr::col_integer(),
-      ShredderTaxaCount = readr::col_integer(),
-      ShredderAbundance = readr::col_integer(),
-      ScraperTaxaCount = readr::col_integer(),
-      ScraperAbundance = readr::col_integer(),
-      CollectorFiltererCount = readr::col_integer(),
-      CollectorFiltererAbundance = readr::col_integer(),
-      CollectorGathererCount = readr::col_integer(),
-      CollectorGathererAbundance = readr::col_integer(),
-      PredatorTaxaCount = readr::col_integer(),
-      PredatorTaxaAbundance = readr::col_integer(),
-      ClingerTaxaCount = readr::col_integer(),
-      LongLivedTaxa = readr::col_integer(),
-      EphemeropteraTaxaCount = readr::col_integer(),
-      EphemeropteraTaxaAbundance = readr::col_integer(),
-      PlecopteraTaxa = readr::col_integer(),
-      PlecopteraTaxaAbundance = readr::col_integer(),
-      TrichopteraTaxaCount = readr::col_integer(),
-      TrichopteraAbundance = readr::col_integer(),
-      ColeopteraTaxaCount = readr::col_integer(),
-      ColeopteraAbundance = readr::col_integer(),
-      ElmidaeTaxaCount = readr::col_integer(),
-      ElmidaeAbundance = readr::col_integer(),
-      MegalopteraTaxaCount = readr::col_integer(),
-      MegalopteraAbundance = readr::col_integer(),
-      DipteraTaxaCount = readr::col_integer(),
-      DipteraAbundance = readr::col_integer(),
-      ChironomidaeTaxaCount = readr::col_integer(),
-      ChironomidaeAbundance = readr::col_integer(),
-      CrustaceaTaxaCount = readr::col_integer(),
-      CrustaceaAbundance = readr::col_integer(),
-      OligochaeteTaxaCount = readr::col_integer(),
-      OligochaeteAbundance = readr::col_integer(),
-      MolluscaTaxaCount = readr::col_integer(),
-      MolluscaAbundance = readr::col_integer(),
-      InsectTaxaCount = readr::col_integer(),
-      InsectAbundance = readr::col_integer(),
-      NonInsectTaxaCount = readr::col_integer(),
-      NonInsectAbundance = readr::col_integer(),
-      .default = readr::col_character()
-    ),
+    # BMI = readr::cols(
+    #   VisitDate = readr::col_date(),
+    #   DateCollected = readr::col_date(),
+    #   FieldSplit = readr::col_integer(),
+    #   LabSplit = readr::col_double(),
+    #   SampleArea_m2 = readr::col_double(),
+    #   Abundance = readr::col_integer(),
+    #   Richness = readr::col_integer(),
+    #   DominantTaxaPercent = readr::col_double(),
+    #   SplitCount = readr::col_integer(),
+    #   FixedCount = readr::col_integer(),
+    #   BigRareCount = readr::col_integer(),
+    #   ShannonsDiversity = readr::col_double(),
+    #   SimpsonsDiversity = readr::col_double(),
+    #   Evenness = readr::col_double(),
+    #   EPTTaxaCount = readr::col_integer(),
+    #   EPTTaxaAbundance = readr::col_integer(),
+    #   DominantFamilyAbundance = readr::col_integer(),
+    #   DominantTaxaAbundance = readr::col_integer(),
+    #   Hilsenhoff = readr::col_double(),
+    #   IntolerantTaxaCount = readr::col_integer(),
+    #   IntolerantTaxaAbundance = readr::col_integer(),
+    #   TolerantTaxaCount = readr::col_integer(),
+    #   TolerantTaxaAbundance = readr::col_integer(),
+    #   USFSCommunityToleranceQuo = readr::col_integer(),
+    #   ShredderTaxaCount = readr::col_integer(),
+    #   ShredderAbundance = readr::col_integer(),
+    #   ScraperTaxaCount = readr::col_integer(),
+    #   ScraperAbundance = readr::col_integer(),
+    #   CollectorFiltererCount = readr::col_integer(),
+    #   CollectorFiltererAbundance = readr::col_integer(),
+    #   CollectorGathererCount = readr::col_integer(),
+    #   CollectorGathererAbundance = readr::col_integer(),
+    #   PredatorTaxaCount = readr::col_integer(),
+    #   PredatorTaxaAbundance = readr::col_integer(),
+    #   ClingerTaxaCount = readr::col_integer(),
+    #   LongLivedTaxa = readr::col_integer(),
+    #   EphemeropteraTaxaCount = readr::col_integer(),
+    #   EphemeropteraTaxaAbundance = readr::col_integer(),
+    #   PlecopteraTaxa = readr::col_integer(),
+    #   PlecopteraTaxaAbundance = readr::col_integer(),
+    #   TrichopteraTaxaCount = readr::col_integer(),
+    #   TrichopteraAbundance = readr::col_integer(),
+    #   ColeopteraTaxaCount = readr::col_integer(),
+    #   ColeopteraAbundance = readr::col_integer(),
+    #   ElmidaeTaxaCount = readr::col_integer(),
+    #   ElmidaeAbundance = readr::col_integer(),
+    #   MegalopteraTaxaCount = readr::col_integer(),
+    #   MegalopteraAbundance = readr::col_integer(),
+    #   DipteraTaxaCount = readr::col_integer(),
+    #   DipteraAbundance = readr::col_integer(),
+    #   ChironomidaeTaxaCount = readr::col_integer(),
+    #   ChironomidaeAbundance = readr::col_integer(),
+    #   CrustaceaTaxaCount = readr::col_integer(),
+    #   CrustaceaAbundance = readr::col_integer(),
+    #   OligochaeteTaxaCount = readr::col_integer(),
+    #   OligochaeteAbundance = readr::col_integer(),
+    #   MolluscaTaxaCount = readr::col_integer(),
+    #   MolluscaAbundance = readr::col_integer(),
+    #   InsectTaxaCount = readr::col_integer(),
+    #   InsectAbundance = readr::col_integer(),
+    #   NonInsectTaxaCount = readr::col_integer(),
+    #   NonInsectAbundance = readr::col_integer(),
+    #   .default = readr::col_character()
+    # ),
     Channel = readr::cols(
       VisitDate = readr::col_date(),
       .default = readr::col_character()
@@ -974,4 +974,37 @@ writeBMI <- function(all_data, data_dir = here::here("data", "final"), dictionar
   fetchagol::writeToFiles(all_data = all_data, data_dir = data_dir, dictionary_dir = dictionary_dir, lookup_dir = NA, verbose = verbose, removeColumns = TRUE, cols_to_remove = c("Editor", "Creator"))
 }
 
+#' Fetch BMI data from AGOL and do preliminary data wrangling
+#'
+#' @param bmi_url URL to AGOL BMI database
+#' @param agol_username Authentication token (not needed for public layers)
+#'
+#' @return A list of data frames and metadata
+#' @export
+fetchAndWrangleBMI <- function(bmi_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer",
+                               agol_username = "mojn_data") {
+  # Import BMI database
+  raw_data <- fetchagol::fetchRawData(bmi_url, agol_username)
+  raw_data <- fetchagol::cleanData(raw_data)
 
+  # Remove unwanted data and metadata
+  raw_data$data[['BMI_Metadata']] <- NULL
+  raw_data$metadata[['BMI_Metadata']] <- NULL
+
+  invisible(raw_data)
+}
+
+
+#' Write BMI data to CSV
+#'
+#' @inheritParams fetchagol::writeToFiles
+#'
+#' @export
+writeBMI <- function(all_data, data_dir = here::here("data", "final"), dictionary_dir = here::here("data", "dictionary"),
+                     dictionary_filenames = c(tables = "data_dictionary_tables.txt",
+                                              attributes = "data_dictionary_attributes.txt",
+                                              categories = "data_dictionary_categories.txt"),
+                     verbose = FALSE, removeColumns = TRUE, cols_to_remove = c("Editor", "Creator"), ...)
+{
+  fetchagol::writeToFiles(all_data = all_data, data_dir = data_dir, dictionary_dir = dictionary_dir, lookup_dir = NA, verbose = verbose, removeColumns = TRUE, cols_to_remove = c("Editor", "Creator"))
+}
