@@ -10,6 +10,7 @@ SaveDataToCsv(
   create.folders = FALSE,
   overwrite = FALSE,
   aquarius = TRUE,
+  agol = FALSE,
   calculated = TRUE
 )
 }
@@ -23,6 +24,8 @@ SaveDataToCsv(
 \item{overwrite}{Should existing data be automatically overwritten? Defaults to \code{FALSE}.}
 
 \item{aquarius}{Include Aquarius data?}
+
+\item{agol}{Include AGOL data?}
 
 \item{calculated}{Include calculated data (median stream wq, median lake wq, and lake surface elevation)?}
 }
