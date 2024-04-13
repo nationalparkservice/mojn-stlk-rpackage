@@ -1,3 +1,38 @@
+#' @importFrom magrittr %>% %<>%
+
+pkg_globals <- new.env(parent = emptyenv())
+
+# Load data from global package environment
+get_data <- function(data.name) {
+  if (!missing(data.name)) {
+    if (!(data.name %in% c(names(GetColSpec()), names(GetAGOLColSpec()), names(GetAquariusColSpec())))) {
+      stop("Invalid data table name. Use names(streamsandlakes:::GetColSpec()) to see valid options for data.name.")
+    }
+    tryCatch({data <- get(data.name, pkg_globals)},
+             error = function(e) {
+               if (grepl(".*object.* not found.*", e$message, ignore.case = TRUE)) {
+                 stop(paste0("Could not find data. Did you remember to call LoadStreamsAndLakes?\n\tOriginal error: ", e$message))
+               }
+               else {e}
+             })
+  } else {
+    tryCatch({
+      data <- lapply(c(names(GetColSpec()), names(GetAGOLColSpec()), names(GetAquariusColSpec())), get, pkg_globals)
+      names(data) <- c(names(GetColSpec()), names(GetAGOLColSpec()), names(GetAquariusColSpec()))
+    },
+    error = function(e) {
+      if (grepl(".*object.* not found.*", e$message, ignore.case = TRUE)) {
+        stop(paste0("Could not find data. Did you remember to call LoadStreamsAndLakes?\n\tOriginal error: ", e$message))
+      }
+      else {e}
+    }
+    )
+
+  }
+
+  return(data)
+}
+
 #' Open a Connection to the MOJN Streams and Lakes Database
 #'
 #' @param use.mojn.default Connect to the live MOJN Streams and Lakes database? MOJN staff should use this option. Defaults to \code{TRUE}.
@@ -5,7 +40,6 @@
 #' @param ... Additional arguments to \code{\link[pool]{dbPool}}. Ignored if \code{use.mojn.default} is \code{TRUE}.
 #'
 #' @return A database connection pool object
-#' @export
 #'
 #' @importFrom magrittr %>% %<>%
 #' @importFrom stats median
@@ -220,40 +254,85 @@ GetColSpec <- function() {
   return(col.spec)
 }
 
+GetAGOLColSpec <- function() {
+  col.spec <- list(
+    BMIMetrics = readr::cols(
+      SampleID = readr::col_integer(),
+      CollectionDate = readr::col_date(),
+      Value = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    BMISpecies = readr::cols(
+      SampleID = readr::col_integer(),
+      CollectionDate = readr::col_date(),
+      SplitCount = readr::col_integer(),
+      LabCount = readr::col_double(),
+      BigRareCount = readr::col_integer(),
+      Sample_ID = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    BMIVisit = readr::cols(
+      SampleID = readr::col_integer(),
+      NAMC_Latitude = readr::col_double(),
+      NAMC_Longitude = readr::col_double(),
+      Customer_Latitude = readr::col_double(),
+      Customer_Longitude = readr::col_double(),
+      CollectionDate = readr::col_date(),
+      Area = readr::col_double(),
+      FieldSplit = readr::col_double(),
+      LabSplit = readr::col_double(),
+      SplitCount = readr::col_integer(),
+      .default = readr::col_character()
+    )
+  )
+
+  return(col.spec)
+}
+
 #' Get column specifications for Aquarius data that have been written to csv.
 #'
 #' @return A list of column specifications for each csv of Aquarius data.
 #'
 GetAquariusColSpec <- function() {
-  col.spec.aq <- list(
-    TimeseriesDO = readr::cols(
+  col.spec <- list(
+    TimeseriesDOmgl = readr::cols(
       DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
-      DissolvedOxygen_mg_per_L = readr::col_double(),
+      Value = readr::col_double(),
       .default = readr::col_character()
     ),
-    TimeseriesDOSat = readr::cols(
+    TimeseriesDOpct = readr::cols(
       DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
-      DissolvedOxygen_percent = readr::col_double(),
+      Value = readr::col_double(),
       .default = readr::col_character()
     ),
     TimeseriespH = readr::cols(
       DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
-      pH = readr::col_double(),
+      Value = readr::col_double(),
       .default = readr::col_character()
     ),
     TimeseriesSpCond = readr::cols(
       DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
-      SpecificConductance_microS_per_cm = readr::col_double(),
+      Value = readr::col_double(),
       .default = readr::col_character()
     ),
     TimeseriesTemperature = readr::cols(
       DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
-      WaterTemperature_C = readr::col_double(),
+      Value = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    TimeseriesDischarge = readr::cols(
+      DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
+      Value = readr::col_double(),
+      .default = readr::col_character()
+    ),
+    TimeseriesWaterLevel = readr::cols(
+      DateTime = readr::col_datetime("%y-%m-%d %H:%M:%S %z"),
+      Value = readr::col_double(),
       .default = readr::col_character()
     )
   )
 
-  return(col.spec.aq)
+  return(col.spec)
 }
 
 #' Read Streams and Lakes data from Aquarius
@@ -265,16 +344,84 @@ GetAquariusColSpec <- function() {
 #'
 #' @details \code{data.name} options are: TimeseriesDO, TimeseriesDOSat, TimeseriespH, TimeseriesSpCond, TimeseriesTemperature
 #'
-ReadAquarius <- function(conn, data.name) {
+ReadAquariusStreams <- function() {
+  conn <- OpenDatabaseConnection()
+
   if (!isS4(conn$aquarius)) {
     stop("Aquarius connection does not exist.")
   }
   timeseries <- conn$aquarius
+  data <- list()
   aq_data <- tibble::tibble()
   sites <- c("GRBA_S_BAKR1", "GRBA_S_LHMN1", "GRBA_S_SNKE1", "GRBA_S_SNKE2", "GRBA_S_STRW1")
   identifiers <- tibble::tibble(data_name = c("TimeseriesDO", "TimeseriesDOSat", "TimeseriespH", "TimeseriesSpCond", "TimeseriesTemperature", "TimeseriesDischarge"),
                                 identifier = c("O2 (Dis).Cumulative@", "Dis Oxygen Sat.Cumulative@", "pH.Cumulative@", "Sp Cond.Cumulative@", "Water Temp.Cumulative@", "Discharge.Cumulative@"),
                                 col_name = c("DissolvedOxygen_mg_per_L", "DissolvedOxygen_percent", "pH", "SpecificConductance_microS_per_cm", "WaterTemperature_C", "Discharge_cfs"))
+
+  aq_identifier <- identifiers$identifier
+  aq_col_name <- identifiers$col_name
+
+for(name in aq_identifier) {
+
+  for (location in sites) {
+    site.imp <- timeseries$getTimeSeriesData(paste0(aq_identifier, location))
+
+    site.data <- site.imp$Points
+
+    site.data %<>%
+      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
+      dplyr::rename(Value = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
+      # dplyr::filter(Approval == "Approved") %>%
+      dplyr::mutate(SiteCode = location) %>%
+      dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
+
+    site.data$DateTime <- lubridate::ymd_hms(site.data$DateTime, tz = "America/Los_Angeles", quiet = TRUE)
+
+    site.data %<>%
+      dplyr::mutate(FieldSeason = ifelse(lubridate::month(DateTime) < 10,
+                                         lubridate::year(DateTime),
+                                         lubridate::year(DateTime) + 1)) %>%
+      dplyr::select(Park,
+                    SampleFrame,
+                    SiteCode,
+                    FieldSeason,
+                    DateTime,
+                    Value,
+                    Grade,
+                    Approval)
+
+    aq_data <- rbind(aq_data, site.data) %>%
+      tibble::as_tibble() %>%
+      dplyr::mutate_if(is.character, trimws, whitespace = "[\\h\\v]") %>%
+      dplyr::mutate_if(is.character, stringr::str_replace_all, pattern = "[\\v]+", replacement = ";  ") %>%
+      dplyr::mutate_if(is.character, dplyr::na_if, "")
+
+#    list_name <- as.character((identifiers |> dplyr::filter(identifier == aq_identifier))[1,1])
+
+#    aq_data <- list(aq_data)
+#    names(aq_data) <- list_name
+  }
+
+  data <- append(data, list(aq_data))
+}
+
+  names(data) <- identifiers$data_name
+
+  return(data)
+}
+
+ReadAquariusLakes <- function() {
+  conn <- OpenDatabaseConnection()
+
+  if (!isS4(conn$aquarius)) {
+    stop("Aquarius connection does not exist.")
+  }
+  timeseries <- conn$aquarius
+  aq_data <- tibble::tibble()
+  sites <- c("GRBA_L_BAKR0", "GRBA_L_BRWN0", "GRBA_L_DEAD0", "GRBA_L_JHNS0", "GRBA_L_STLL0", "GRBA_L_TRSA0")
+  identifiers <- tibble::tibble(data_name = c("TimeseriesWaterLevel"),
+                                identifier = c("Water Level.Cumulative@"),
+                                col_name = c("WaterLevel_m"))
 
   aq_identifier <- identifiers[identifiers$data_name == data.name, ]$identifier
   aq_col_name <- identifiers[identifiers$data_name == data.name, ]$col_name
@@ -283,8 +430,6 @@ ReadAquarius <- function(conn, data.name) {
     site.imp <- timeseries$getTimeSeriesData(paste0(aq_identifier, location))
 
     site.data <- site.imp$Points
-
-    site.data
 
     # site.imp <- fetchaquarius::getTimeSeries(paste0(aq_identifier, location))
 
@@ -295,7 +440,7 @@ ReadAquarius <- function(conn, data.name) {
     site.data %<>%
       dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
       dplyr::rename(!!aq_col_name := NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
-      # dplyr::filter(Approval == "Approved") %>%
+      dplyr::filter(Approval == "Approved") %>%
       dplyr::mutate(SiteCode = location) %>%
       dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
 
@@ -324,6 +469,132 @@ ReadAquarius <- function(conn, data.name) {
   return(aq_data)
 }
 
+ReadAquarius <- function() {
+  conn <- streamsandlakes:::OpenDatabaseConnection()
+
+  if (!isS4(conn$aquarius)) {
+    stop("Aquarius connection does not exist.")
+  }
+
+  timeseries <- conn$aquarius
+  data <- list()
+  wt_data <- tibble::tibble()
+  ph_data <- tibble::tibble()
+  sc_data <- tibble::tibble()
+  domgl_data <- tibble::tibble()
+  dopct_data <- tibble::tibble()
+  q_data <- tibble::tibble()
+  wl_data <- tibble::tibble()
+
+  stream <- c("GRBA_S_BAKR1", "GRBA_S_LHMN1", "GRBA_S_SNKE1", "GRBA_S_SNKE2", "GRBA_S_STRW1")
+  discharge <- c("GRBA_S_BAKR1", "GRBA_S_SNKE1", "GRBA_S_SNKE2", "GRBA_S_STRW1")
+  lake <- c("GRBA_L_BAKR0", "GRBA_L_BRWN0", "GRBA_L_DEAD0", "GRBA_L_JHNS0", "GRBA_L_STLL0", "GRBA_L_TRSA0")
+
+
+  for (location in stream) {
+    site.imp <- timeseries$getTimeSeriesData(paste0("Water Temp.Cumulative@", location))
+    site.data <- site.imp$Points |>
+      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) |>
+      dplyr::rename(Value = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) |>
+      dplyr::mutate(SiteCode = location) |>
+      dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
+    wt_data <- rbind(wt_data, site.data)
+   }
+
+  wt_data <- list(wt_data)
+  names(wt_data) <- "TimeseriesTemperature"
+
+  for (location in stream) {
+    site.imp <- timeseries$getTimeSeriesData(paste0("pH.Cumulative@", location))
+    site.data <- site.imp$Points |>
+      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) |>
+      dplyr::rename(Value = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) |>
+      dplyr::mutate(SiteCode = location) |>
+      dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
+    ph_data <- rbind(ph_data, site.data)
+  }
+
+  ph_data <- list(ph_data)
+  names(ph_data) <- "TimeseriespH"
+
+  for (location in c("GRBA_S_BAKR1", "GRBA_S_STRW1")) {
+    site.imp <- timeseries$getTimeSeriesData(paste0("Sp Cond.Cumulative@", location))
+    site.data <- as.data.frame(site.imp$Points) |>
+      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) |>
+      dplyr::rename(Value = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) |>
+      dplyr::mutate(SiteCode = location) |>
+      dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
+    sc_data <- rbind(sc_data, site.data)
+  }
+
+  sc_data <- list(sc_data)
+  names(sc_data) <- "TimeseriesSpCond"
+
+  for (location in stream) {
+    site.imp <- timeseries$getTimeSeriesData(paste0("O2 (Dis).Cumulative@", location))
+    site.data <- site.imp$Points |>
+      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) |>
+      dplyr::rename(Value = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) |>
+      dplyr::mutate(SiteCode = location) |>
+      dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
+    domgl_data <- rbind(domgl_data, site.data)
+  }
+
+  domgl_data <- list(domgl_data)
+  names(domgl_data) <- "TimeseriesDOmgl"
+
+  for (location in stream) {
+    site.imp <- timeseries$getTimeSeriesData(paste0("Dis Oxygen Sat.Cumulative@", location))
+    site.data <- site.imp$Points |>
+      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) |>
+      dplyr::rename(Value = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) |>
+      dplyr::mutate(SiteCode = location) |>
+      dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
+    dopct_data <- rbind(dopct_data, site.data)
+  }
+
+  dopct_data <- list(dopct_data)
+  names(dopct_data) <- "TimeseriesDOpct"
+
+  for (location in discharge) {
+    site.imp <- timeseries$getTimeSeriesData(paste0("Discharge.Cumulative@", location))
+    site.data <- site.imp$Points |>
+      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) |>
+      dplyr::rename(Value = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) |>
+      dplyr::mutate(SiteCode = location) |>
+      dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
+    q_data <- rbind(q_data, site.data)
+  }
+
+  q_data <- list(q_data)
+  names(q_data) <- "TimeseriesDischarge"
+
+  for (location in lake) {
+    site.imp <- timeseries$getTimeSeriesData(paste0("Water Level.Cumulative@", location))
+    site.data <- site.imp$Points |>
+      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) |>
+      dplyr::rename(Value = NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) |>
+      dplyr::mutate(SiteCode = location) |>
+      dplyr::mutate(Park = "GRBA", SampleFrame = "Lake")
+    wl_data <- rbind(wl_data, site.data)
+  }
+
+  wl_data <- list(wl_data)
+  names(wl_data) <- "TimeseriesWaterLevel"
+
+  data <- c(wt_data, ph_data, sc_data, domgl_data, dopct_data, q_data, wl_data)
+
+  # Tidy up the data
+  data <- lapply(data, function(df) {
+    df |>
+      dplyr::mutate(DateTime = lubridate::ymd_hms(DateTime, tz = "America/Los_Angeles", quiet = TRUE)) |>
+      dplyr::mutate(FieldSeason = ifelse(lubridate::month(DateTime) < 10,
+                                         lubridate::year(DateTime),
+                                         lubridate::year(DateTime) + 1))
+    })
+
+  return(data)
+}
 
 # Custom function that takes a ggplotly figure and its facets as arguments.
 # The upper x-values for each domain is set programmatically, but you can adjust
@@ -386,65 +657,6 @@ fixfacets <- function(figure, facets, domain_offset){
   return(fig)
 }
 
-
-ReadAquariusLakes <- function(conn, data.name) {
-  if (!isS4(conn$aquarius)) {
-    stop("Aquarius connection does not exist.")
-  }
-  timeseries <- conn$aquarius
-  aq_data <- tibble::tibble()
-  sites <- c("GRBA_L_BAKR0", "GRBA_L_BRWN0", "GRBA_L_DEAD0", "GRBA_L_JHNS0", "GRBA_L_STLL0", "GRBA_L_TRSA0")
-  identifiers <- tibble::tibble(data_name = c("TimeseriesWaterLevel"),
-                                identifier = c("Water Level.Cumulative@"),
-                                col_name = c("WaterLevel_m"))
-
-  aq_identifier <- identifiers[identifiers$data_name == data.name, ]$identifier
-  aq_col_name <- identifiers[identifiers$data_name == data.name, ]$col_name
-
-  for (location in sites) {
-    site.imp <- timeseries$getTimeSeriesData(paste0(aq_identifier, location))
-
-    site.data <- site.imp$Points
-
-    # site.imp <- fetchaquarius::getTimeSeries(paste0(aq_identifier, location))
-
-    # site.values <- site.imp$Points %>% dplyr::rename(NumericValue1 = Value)
-    # site.grades <- site.imp$Grades %>% dplyr::rename(NumericValue1 = Value)
-    # site.approvals <- site.imp$Approvals %>% dplyr::select(LevelDescription)
-
-    site.data %<>%
-      dplyr::select(Timestamp, NumericValue1, GradeName1, ApprovalName1) %>%
-      dplyr::rename(!!aq_col_name := NumericValue1, Grade = GradeName1, Approval = ApprovalName1, DateTime = Timestamp) %>%
-      # dplyr::filter(Approval == "Approved") %>%
-      dplyr::mutate(SiteCode = location) %>%
-      dplyr::mutate(Park = "GRBA", SampleFrame = "Stream")
-
-    site.data$DateTime <- lubridate::ymd_hms(site.data$DateTime, tz = "America/Los_Angeles", quiet = TRUE)
-
-    site.data %<>%
-      dplyr::mutate(FieldSeason = ifelse(lubridate::month(DateTime) < 10,
-                                         lubridate::year(DateTime),
-                                         lubridate::year(DateTime) + 1)) %>%
-      dplyr::select(Park,
-                    SampleFrame,
-                    SiteCode,
-                    FieldSeason,
-                    DateTime,
-                    !!aq_col_name,
-                    Grade,
-                    Approval)
-
-    aq_data <- rbind(aq_data, site.data) %>%
-      tibble::as_tibble() %>%
-      dplyr::mutate_if(is.character, trimws, whitespace = "[\\h\\v]") %>%
-      dplyr::mutate_if(is.character, stringr::str_replace_all, pattern = "[\\v]+", replacement = ";  ") %>%
-      dplyr::mutate_if(is.character, dplyr::na_if, "")
-  }
-
-  return(aq_data)
-}
-
-
 #' Read Streams and Lakes data from database or .csv
 #'
 #' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
@@ -459,59 +671,41 @@ ReadAquariusLakes <- function(conn, data.name) {
 #'
 #' @details \code{data.name} options are: Site, Visit, BMI, Channel, Chemistry, Clarity, WaterQualityDO, WaterQualitypH, WaterQualitySpCond, WaterQualityTemperature, WQStreamXSection, TimeseriesDO, TimeseriesDOSat, TimeseriespH, TimeseriesSpCond, TimeseriesTemperature
 #'
-ReadAndFilterData <- function(conn, path.to.data, park, site, field.season, data.source = "database", data.name) {
-  col.spec <- GetColSpec()
-  col.spec.aq <- GetAquariusColSpec()
-  col.spec.all <- c(col.spec, col.spec.aq)
+ReadAndFilterData <- function(park, site, field.season, data.name) {
+  filtered.data <- get_data(data.name)
 
-  if (!(data.source %in% c("database", "local"))) {
-    stop("Please choose either 'database' or 'local' for data.source")
+  if (!missing(field.season)) {
+    field.season <- as.character(field.season)
   }
 
-  if (data.source == "database" & data.name %in% names(col.spec)) {
-    filtered.data <- dplyr::tbl(conn$db, dbplyr::in_schema("analysis", data.name)) %>%
-      dplyr::collect() %>%
-      dplyr::mutate_if(is.character, trimws, whitespace = "[\\h\\v]") %>%
-      dplyr::mutate_if(is.character, stringr::str_replace_all, pattern = "[\\v]+", replacement = ";  ") %>%
-      dplyr::mutate_if(is.character, dplyr::na_if, "")
-  } else if (data.source == "database" & data.name %in% names(col.spec.aq)) {
-    ## Read Aquarius data
-    filtered.data <- ReadAquarius(conn, data.name)
-  } else if (data.source == "local") {
-    filtered.data <- readr::read_csv(file.path(path.to.data, paste0(data.name, ".csv")), na = "", col_types = col.spec.all[[data.name]], lazy = FALSE)
-    if(data.name %in% names(col.spec.aq) & "DateTime" %in% names(filtered.data)) {
-      filtered.data$DateTime <- lubridate::with_tz(filtered.data$DateTime, "America/Los_Angeles")
+  if (!missing(park)) {
+    filtered.data %<>%
+      dplyr::filter(Park %in% park) # Changed to allow filtering of multiple parks
+    if (nrow(filtered.data) == 0) {
+      warning(paste0(data.name, ": Data are not available for the park specified"))
     }
   }
 
-    if (!missing(park)) {
-      filtered.data %<>%
-        dplyr::filter(Park == park)
-      if (nrow(filtered.data) == 0) {
-        warning(paste0(data.name, ": Data are not available for the park specified"))
-      }
-    }
+  if (!missing(site) & nrow(filtered.data) > 0) {
+    filtered.data %<>%
+      dplyr::filter(SiteCode == site)
 
-    if (!missing(site) & nrow(filtered.data) > 0) {
-      filtered.data %<>%
-        dplyr::filter(SiteCode %in% site)
-
-      if (nrow(filtered.data) == 0) {
-        warning(paste0(data.name, ": Data are not available for the site specified"))
-      }
+    if (nrow(filtered.data) == 0) {
+      warning(paste0(data.name, ": Data are not available for the site specified"))
     }
+  }
 
-    if ("FieldSeason" %in% names(filtered.data)) {
-      filtered.data %<>% dplyr::mutate(FieldSeason = as.character(FieldSeason))
-    }
+  if ("FieldSeason" %in% names(filtered.data)) {
+    filtered.data %<>% dplyr::mutate(FieldSeason = as.character(FieldSeason))
+  }
 
-    if (!missing(field.season) & ("FieldSeason" %in% colnames(filtered.data)) & nrow(filtered.data) > 0) {
-      filtered.data %<>%
-        dplyr::filter(FieldSeason %in% field.season)
-      if (nrow(filtered.data) == 0) {
-        warning(paste0(data.name, ": Data are not available for one or more of the field seasons specified"))
-      }
+  if (!missing(field.season) & ("FieldSeason" %in% colnames(filtered.data)) & nrow(filtered.data) > 0) {
+    filtered.data %<>%
+      dplyr::filter(FieldSeason %in% field.season)
+    if (nrow(filtered.data) == 0) {
+      warning(paste0(data.name, ": Data are not available for one or more of the field seasons specified"))
     }
+  }
 
   return(filtered.data)
 }
@@ -613,9 +807,10 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
 GetRawData <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
   data.dump <- list()
   db.names <- names(GetColSpec())
+  bmi.names <- names(GetAGOLColSpec())
   aq.names <- names(GetAquariusColSpec())
 
-  data.names <- c(db.names, aq.names)
+  data.names <- c(db.names, bmi.names, aq.names)
 
   for (data.name in data.names) {
     tryCatch(data.dump[[data.name]] <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name),
@@ -837,9 +1032,145 @@ fetchAndWrangleBMI <- function(bmi_url = "https://services1.arcgis.com/fBc8EJBxQ
   raw_data$data[['BMI_Metadata']] <- NULL
   raw_data$metadata[['BMI_Metadata']] <- NULL
 
+  names(raw_data$data) <- c("BMISpecies", "BMIMetrics", "BMIVisit")
+
   invisible(raw_data)
 }
 
+fetchandWrangleAGOL <- function() {
+  # Placeholder until more STLK data beyond BMI are moved from SQL to AGOL
+}
+
+ReadAGOL <- function(...) {
+  #Placeholder until more STLK data beyond BMI are moved from SQL to AGOL
+  data <- fetchAndWrangleBMI()$data # Change name of variable to bmi once there are more data
+  # agol <- fetchAndWrangleAGOL()$data
+
+  # data <- c(bmi, agol)
+
+  return(data)
+}
+
+ReadSqlDatabase <- function(...) {
+  col.spec <- GetColSpec()
+  conn <- OpenDatabaseConnection(...)
+  data <- lapply(names(col.spec), function(data.name){
+    df <- dplyr::tbl(conn$db, dbplyr::in_schema("analysis", data.name)) %>%
+      dplyr::collect()
+    return(df)
+  })
+
+  names(data) <- names(col.spec)
+  CloseDatabaseConnection(conn)
+  return(data)
+}
+
+ReadCSV <- function(data_path) {
+  data_path <- normalizePath(data_path)
+  col.spec <- GetColSpec()
+  is_zip <- grepl("\\.zip", data_path, ignore.case = TRUE)
+
+  if(is_zip) {
+    file_list <- basename(unzip(data_path, list = TRUE)$Name)
+  } else {
+    file_list <- list.files(data_path)
+  }
+  # Make sure that files in folder are valid CSVs
+  expected_files <- paste0(names(col.spec), ".csv")
+  if (!all(expected_files %in% file_list)) {
+    missing_files <- setdiff(expected_files, file_list)
+    missing_files <- paste(missing_files, collapse = "\n")
+    stop(paste0("The folder provided is missing required data. Missing files:\n", missing_files))
+  }
+
+  # Read data
+  if (is_zip) {  # Unzip into a temporary directory to read files
+    temp_dir <- tempdir()
+    # Use this trycatch so that even if there's an error unzipping or reading, the temp dir will be deleted
+    tryCatch({
+      unzip(data_path, overwrite = TRUE, exdir = temp_dir, junkpaths = TRUE)
+      data <- lapply(names(col.spec), function(data.name){
+        file_path <- file.path(temp_dir, paste0(data.name, ".csv"))
+        df <- readr::read_csv(file = file_path, col_types = col.spec[[data.name]], locale = readr::locale(encoding = "UTF-8"))
+        return(df)
+      })
+    },
+    finally = unlink(temp_dir, recursive = TRUE)
+    )
+  } else {  # Read files from data path
+    data <- lapply(names(col.spec), function(data.name){
+      file_path <- file.path(data_path, paste0(data.name, ".csv"))
+      df <- readr::read_csv(file = file_path, col_types = col.spec[[data.name]], locale = readr::locale(encoding = "UTF-8"))
+      return(df)
+    })
+  }
+
+  names(data) <- names(col.spec)
+  return(data)
+}
+
+LoadStreamsAndLakes <- function(data_path = c("database", "aquarius",
+                                              bmi_db = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer",
+                                              calibration_db = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Calibration_Database/FeatureServer"),
+                                use_default_sql = TRUE, sql_drv = odbc::odbc(), agol_username = "mojn_data", agol_password = rstudioapi::askForPassword(paste("Please enter the password for AGOL account", agol_username)), ...) {
+
+  # Figure out the format of the data
+  agol_regex <- "^https:\\/\\/services1\\.arcgis\\.com\\/[^\\\\]+\\/arcgis\\/rest\\/services\\/[^\\\\]+\\/FeatureServer\\/?$"
+  is_agol <- ifelse(any(grepl(agol_regex, data_path) == TRUE), TRUE, FALSE)
+  is_db <- ifelse(any(grepl("^database$", data_path, ignore.case = TRUE) == TRUE), TRUE, FALSE)
+  is_aquarius <- ifelse(any(grepl("^aquarius$", data_path, ignore.case = TRUE) == TRUE), TRUE, FALSE)
+  if (!is_agol & !is_db) {
+    # Standardize data path
+    data_path <- normalizePath(data_path[1], mustWork = TRUE)
+  }
+  is_zip <- grepl("\\.zip$", data_path[1], ignore.case = TRUE) && file.exists(data_path[1])
+  is_folder <- dir.exists(data_path[1])
+
+  data <- list()
+
+  if (is_agol) {  # Read from AGOL feature layer
+    agol <- ReadAGOL(...)
+    data <- append(data, agol)
+  }
+
+  if(is_aquarius) { # Read from Aquarius
+    aquarius <- ReadAquarius(...)
+    data <- append(data, aquarius)
+  }
+
+  if (is_db) {  # Read from SQL Server database
+    sql <- ReadSqlDatabase(...)
+    data <- append(data, sql)
+  }
+
+  if (is_zip | is_folder) {  # Read from folder of CSVs (may be zipped)
+    csv <- ReadCSV(data_path[1])
+    data <- append(data, csv)
+  }
+
+  if (!is_agol & !is_db & !is_zip & !is_folder) {
+    stop(paste("Data path", data_path[1], "is invalid. See `?LoadStreamsAndLakes` for more information."))
+  }
+
+  # Tidy up the data
+  data <- lapply(data, function(df) {
+    df %>%
+      dplyr::mutate_if(is.character, utf8::utf8_encode) %>%
+      dplyr::mutate_if(is.character, trimws, whitespace = "[\\h\\v]") %>%  # Trim leading and trailing whitespace
+      dplyr::mutate_if(is.character, dplyr::na_if, "") %>%  # Replace empty strings with NA
+      dplyr::mutate_if(is.character, dplyr::na_if, "\\\\n") %>%  # Replace newlines with NA
+      dplyr::mutate_if(is.numeric, dplyr::na_if, -9999) %>%  # Replace -9999 or -999 with NA
+      dplyr::mutate_if(is.numeric, dplyr::na_if, -999) %>%
+      dplyr::mutate_if(is.character, dplyr::na_if, "NA") %>%  # Replace "NA" strings with NA
+      dplyr::mutate_if(is.character, stringr::str_replace_all, pattern = "[\\v|\\n]+", replacement = ";  ")  # Replace newlines with semicolons - reading certain newlines into R can cause problems
+  })
+
+  # Actually load the data into an environment for the package to use
+  tbl_names <- names(data)
+  lapply(tbl_names, function(n) {assign(n, data[[n]], envir = pkg_globals)})
+
+  invisible(data)
+}
 
 #' Write BMI data to CSV
 #'
