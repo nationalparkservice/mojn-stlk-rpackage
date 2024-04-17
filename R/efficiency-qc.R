@@ -12,9 +12,9 @@
 #'     qcNoAnnualVisit(conn, site = "GRBA_L_DEAD0", field.season = c("2012", "2013", "2014", "2015"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcNoAnnualVisit <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcNoAnnualVisit <- function(park, site, field.season) {
 
-visit.data <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
+visit.data <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit")
 visit <- visit.data %>%
   dplyr::select(Park, Subunit, SiteShort, SiteCode, SiteName, SampleFrame, VisitDate, FieldSeason, VisitType, MonitoringStatus) %>%
   dplyr::filter(VisitType == "Primary", SiteCode != "GRBA_S_BAKR2") %>%
@@ -44,20 +44,20 @@ return(visit)
 #'     qcDPLCheck(conn, site = "GRBA_L_JHNS0", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcDPLCheck <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcDPLCheck <- function(park, site, field.season) {
 
-  visit <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
-  chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
-  bmi <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "BMI")
-  channel <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Channel")
-  clarity <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Clarity")
-  lakesurvey <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "LakeLevelSurvey")
-  lakestring <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "LakeLevelString")
-  xsection <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WQStreamXSection")
-  temp <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WaterQualityTemperature")
-  ph <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WaterQualitypH")
-  spcond <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WaterQualitySpCond")
-  do <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "WaterQualityDO")
+  visit <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit")
+  chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
+  # bmi <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "BMI")
+  channel <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Channel")
+  clarity <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Clarity")
+  lakesurvey <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelSurvey")
+  lakestring <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelString")
+  xsection <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "WQStreamXSection")
+  temp <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "WaterQualityTemperature")
+  ph <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "WaterQualitypH")
+  spcond <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "WaterQualitySpCond")
+  do <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "WaterQualityDO")
 
   visit.DPL <- visit %>%
     dplyr::rename(Visit.DPL = DataProcessingLevel) %>%
@@ -67,10 +67,10 @@ qcDPLCheck <- function(conn, path.to.data, park, site, field.season, data.source
     dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SampleFrame, DPL) %>%
     dplyr::rename(Chem.DPL = DPL) %>%
     dplyr::distinct()
-  bmi.DPL <- bmi %>%
-    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
-    dplyr::rename(BMI.DPL = DPL) %>%
-    dplyr::distinct()
+  # bmi.DPL <- bmi %>%
+  #   dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL) %>%
+  #   dplyr::rename(BMI.DPL = DPL) %>%
+  #   dplyr::distinct()
   channel.DPL <- channel %>%
     dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, DPL) %>%
     dplyr::rename(Channel.DPL = DPL) %>%
@@ -110,7 +110,7 @@ qcDPLCheck <- function(conn, path.to.data, park, site, field.season, data.source
 
   dpl <- visit.DPL %>%
     dplyr::left_join(chem.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "SampleFrame", "VisitType")) %>%
-    dplyr::left_join(bmi.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
+    # dplyr::left_join(bmi.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
     dplyr::left_join(channel.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason")) %>%
     dplyr::left_join(clarity.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
     dplyr::left_join(lakesurvey.DPL, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "VisitType")) %>%
@@ -143,27 +143,28 @@ return(dpl)
 #'     WqDailyMeanLong(conn, site = "GRBA_S_LHMN1", field.season = c("2012", "2013", "2014", "2015"))
 #'     CloseDatabaseConnection(conn)
 #' }
-WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+WqDailyMeanLong <- function(park, site, field.season) {
 
-  wt <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "TimeseriesTemperature")
-  ph <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "TimeseriespH")
-  sc <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "TimeseriesSpCond")
-  do.pct <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "TimeseriesDOSat")
-  do.mgl <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "TimeseriesDO")
-  visit <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
+  wt <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "TimeseriesTemperature")
+  ph <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "TimeseriespH")
+  sc <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "TimeseriesSpCond")
+  do.pct <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "TimeseriesDOpct")
+  do.mgl <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "TimeseriesDOmgl")
+  visit <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit")
 
   wt.long <- wt %>%
     dplyr::filter(Approval == "Approved") %>%
     dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
+    dplyr::rename(WaterTemperature_C = Value) %>%
     dplyr::group_by(Park,
                     SiteCode,
                     SampleFrame,
                     FieldSeason,
                     Date) %>%
-    dplyr::summarise(Value = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(WaterTemperature_C)) > 77 ~ mean(WaterTemperature_C, na.rm = TRUE),
+    dplyr::summarise(Value = dplyr::case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(WaterTemperature_C)) > 77 ~ mean(WaterTemperature_C, na.rm = TRUE),
                                        !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(WaterTemperature_C)) > 19 ~ mean(WaterTemperature_C, na.rm = TRUE),
                                        TRUE ~ as.double(NA_integer_)),
-                     Grade = case_when(!is.na(WaterTemperature_C) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
+                     Grade = dplyr::case_when(!is.na(WaterTemperature_C) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
     unique() %>%
     dplyr::mutate(Parameter = "Temperature") %>%
     dplyr::mutate(Units = "C") %>%
@@ -176,15 +177,16 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, data.s
   ph.long <- ph %>%
     dplyr::filter(Approval == "Approved") %>%
     dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
+    dplyr::rename(pH = Value) %>%
     dplyr::group_by(Park,
                     SiteCode,
                     SampleFrame,
                     FieldSeason,
                     Date) %>%
-    dplyr::summarise(Value = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(pH)) > 77 ~ median(pH, na.rm = TRUE),
+    dplyr::summarise(Value = dplyr::case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(pH)) > 77 ~ median(pH, na.rm = TRUE),
                                        !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(pH)) > 19 ~ median(pH, na.rm = TRUE),
                                        TRUE ~ as.double(NA_integer_)),
-                     Grade = case_when(!is.na(pH) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
+                     Grade = dplyr::case_when(!is.na(pH) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
     unique() %>%
     dplyr::mutate(Parameter = "pH") %>%
     dplyr::mutate(Units = "units") %>%
@@ -197,15 +199,16 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, data.s
   sc.long <- sc %>%
     dplyr::filter(Approval == "Approved") %>%
     dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
+    dplyr::rename(SpecificConductance_microS_per_cm = Value) %>%
     dplyr::group_by(Park,
                     SiteCode,
                     SampleFrame,
                     FieldSeason,
                     Date) %>%
-    dplyr::summarise(Value = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(SpecificConductance_microS_per_cm)) > 77 ~ mean(SpecificConductance_microS_per_cm, na.rm = TRUE),
+    dplyr::summarise(Value = dplyr::case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(SpecificConductance_microS_per_cm)) > 77 ~ mean(SpecificConductance_microS_per_cm, na.rm = TRUE),
                                        !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(SpecificConductance_microS_per_cm)) > 19 ~ mean(SpecificConductance_microS_per_cm, na.rm = TRUE),
                                        TRUE ~ as.double(NA_integer_)),
-                     Grade = case_when(!is.na(SpecificConductance_microS_per_cm) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
+                     Grade = dplyr::case_when(!is.na(SpecificConductance_microS_per_cm) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
     unique() %>%
     dplyr::mutate(Parameter = "SpCond") %>%
     dplyr::mutate(Units = "uS/cm") %>%
@@ -218,15 +221,16 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, data.s
   do.pct.long <- do.pct %>%
     dplyr::filter(Approval == "Approved") %>%
     dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
+    dplyr::rename(DissolvedOxygen_percent = Value) %>%
     dplyr::group_by(Park,
                     SiteCode,
                     SampleFrame,
                     FieldSeason,
                     Date) %>%
-    dplyr::summarise(Value = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(DissolvedOxygen_percent)) > 77 ~ mean(DissolvedOxygen_percent, na.rm = TRUE),
+    dplyr::summarise(Value = dplyr::case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(DissolvedOxygen_percent)) > 77 ~ mean(DissolvedOxygen_percent, na.rm = TRUE),
                                        !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(DissolvedOxygen_percent)) > 19 ~ mean(DissolvedOxygen_percent, na.rm = TRUE),
                                        TRUE ~ as.double(NA_integer_)),
-                     Grade = case_when(!is.na(DissolvedOxygen_percent) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
+                     Grade = dplyr::case_when(!is.na(DissolvedOxygen_percent) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
     unique() %>%
     dplyr::mutate(Parameter = "DO") %>%
     dplyr::mutate(Units = "%") %>%
@@ -239,16 +243,16 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, data.s
   do.mgl.long <- do.mgl %>%
     dplyr::filter(Approval == "Approved") %>%
     dplyr::mutate(Date = as.Date(DateTime, format = "%Y-%m-%d", tz = "America/Los_Angeles")) %>%
+    dplyr::rename(DissolvedOxygen_mgL = Value) %>%
     dplyr::group_by(Park,
                     SiteCode,
                     SampleFrame,
                     FieldSeason,
                     Date) %>%
-    dplyr::rename(DissolvedOxygen_mgL = DissolvedOxygen_mg_per_L) %>%
-    dplyr::summarise(Value = case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(DissolvedOxygen_mgL)) > 77 ~ mean(DissolvedOxygen_mgL, na.rm = TRUE),
+    dplyr::summarise(Value = dplyr::case_when(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012 & sum(!is.na(DissolvedOxygen_mgL)) > 77 ~ mean(DissolvedOxygen_mgL, na.rm = TRUE),
                                        !(SiteCode == "GRBA_S_SNKE1" & FieldSeason == 2012) & sum(!is.na(DissolvedOxygen_mgL)) > 19 ~ mean(DissolvedOxygen_mgL, na.rm = TRUE),
                                        TRUE ~ as.double(NA_integer_)),
-                     Grade = case_when(!is.na(DissolvedOxygen_mgL) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
+                     Grade = dplyr::case_when(!is.na(DissolvedOxygen_mgL) ~ statip::mfv1(Grade, na_rm = TRUE))) %>%
     unique() %>%
     dplyr::mutate(Parameter = "DO") %>%
     dplyr::mutate(Units = "mg/L") %>%
@@ -261,16 +265,16 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, data.s
 
   wq.long.int <- dplyr::bind_rows(wt.long, ph.long, sc.long, do.pct.long, do.mgl.long)
 
-  gage.locations <- tibble::tibble(SiteShort = c("BAKR1", "SNKE1", "SNKE3", "STRW1"),
-                                   SiteCode = c("GRBA_S_BAKR1", "GRBA_S_SNKE1", "GRBA_S_SNKE3", "GRBA_S_STRW1"),
-                                   SiteName = c("Baker Creek (Gage)", "Snake Creek (Lower)", "Snake Creek (Upper)", "Strawberry Creek (Gage)"))
+  gage.locations <- tibble::tibble(SiteShort = c("BAKR1", "LHMN1", "SNKE1", "SNKE3", "STRW1"),
+                                   SiteCode = c("GRBA_S_BAKR1", "GRBA_S_LHMN1", "GRBA_S_SNKE1", "GRBA_S_SNKE3", "GRBA_S_STRW1"),
+                                   SiteName = c("Baker Creek (Gage)", "Lehman Creek (Gage)", "Snake Creek (Lower)", "Snake Creek (Upper)", "Strawberry Creek (Gage)"))
 
   visit.names <- visit %>%
     dplyr::select(SiteShort, SiteCode, SiteName) %>%
     unique() %>%
     dplyr::bind_rows(gage.locations)
 
-  wq.long <- left_join(wq.long.int, visit.names, by = c("SiteCode")) %>%
+  wq.long <- dplyr::left_join(wq.long.int, visit.names, by = c("SiteCode")) %>%
     dplyr::relocate(SiteShort, .before = SiteCode) %>%
     dplyr::relocate(SiteName, .after = SiteCode)
 
@@ -298,9 +302,9 @@ WqDailyMeanLong <- function(conn, path.to.data, park, site, field.season, data.s
 #'     WqDailyMean(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-WqDailyMean <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+WqDailyMean <- function(park, site, field.season) {
 
-wq.long <- WqDailyMeanLong(conn, path.to.data, park, site, field.season, data.source)
+wq.long <- WqDailyMeanLong(park = park, site = site, field.season = field.season)
 
 wq.daily <- wq.long %>%
   tidyr::unite(Parameter, c("Parameter", "Units")) %>%
@@ -343,9 +347,9 @@ return(wq.daily)
 #'     qcWqCompleteness(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcWqCompleteness <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcWqCompleteness <- function(park, site, field.season) {
 
-wq.long <- WqDailyMeanLong(conn, path.to.data, park, site, field.season, data.source)
+wq.long <- WqDailyMeanLong(park = park, site = site, field.season = field.season)
 
 wq.comp <- wq.long %>%
   dplyr::mutate(Month = lubridate::month(Date),
@@ -362,7 +366,7 @@ wq.comp <- wq.long %>%
   dplyr::summarise(CompletedDays = sum(!is.na(Value))) %>%
   dplyr::mutate(PercentCompleteness = CompletedDays/77*100) %>%
   dplyr::ungroup() %>%
-  tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Parameter, Units), fill = list(CompletedDays = 0, PercentCompleteness = 0)) %>%
+  tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Parameter, Units), fill = list(CompletedDays = 0, PercentCompleteness = 0)) %>%
   dplyr::relocate(FieldSeason, .after = SampleFrame) %>%
   dplyr::arrange(SiteCode, FieldSeason, Parameter)
 
@@ -392,9 +396,9 @@ return(wq.comp)
 #'     qcWqGradesLong(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcWqGradesLong <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcWqGradesLong <- function(park, site, field.season) {
 
-wq.long <- WqDailyMeanLong(conn, path.to.data, park, site, field.season, data.source)
+wq.long <- WqDailyMeanLong(park = park, site = site, field.season = field.season)
 
 wq.grds.long <- wq.long %>%
   dplyr::mutate(Month = lubridate::month(Date),
@@ -402,10 +406,10 @@ wq.grds.long <- wq.long %>%
   dplyr::filter(Month == 7 | Month == 8 | (Month == 9 & Day <= 15)) %>%
   dplyr::select(-c(Month, Day)) %>%
   dplyr::group_by(Park, SiteShort, SiteCode, SiteName, SampleFrame, FieldSeason, Parameter, Units, Grade) %>%
-  dplyr::summarise(Days = n()) %>%
+  dplyr::summarise(Days = dplyr::n()) %>%
   dplyr::mutate(Percent = Days/sum(Days)*100) %>%
   dplyr::ungroup() %>%
-  tidyr::complete(FieldSeason, nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Parameter, Units), fill = list(Days = 0, Percent = 0)) %>%
+  tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Parameter, Units), fill = list(Days = 0, Percent = 0)) %>%
   dplyr::relocate(FieldSeason, .after = SampleFrame) %>%
   dplyr::arrange(SiteCode, FieldSeason, Parameter, Grade)
 
@@ -434,9 +438,9 @@ return(wq.grds.long)
 #'     qcWqGrades(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcWqGrades <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcWqGrades <- function(park, site, field.season) {
 
-wq.daily <- WqDailyMean(conn, path.to.data, park, site, field.season, data.source)
+wq.daily <- WqDailyMean(park = park, site = site, field.season = field.season)
 
 wt.grds <- wq.daily %>%
   dplyr::group_by(Park,
@@ -638,20 +642,20 @@ return(wq.grds)
 #'     qcWqCompletenessPlot(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcWqCompletenessPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcWqCompletenessPlot <- function(park, site, field.season) {
 
-wq.comp <- qcWqCompleteness(conn, path.to.data, park, site, field.season, data.source)
+wq.comp <- qcWqCompleteness(park = park, site = site, field.season = field.season)
 
 wq.comp.concat <- wq.comp %>%
   tidyr::unite("Parameter", Parameter, Units, sep = "_")
 
 wq.comp.concat$Parameter_f = factor(wq.comp.concat$Parameter, levels = c("Temperature_C", "pH_units", "SpCond_uS/cm", "DO_%", "DO_mg/L"))
 
-wq.comp.plot <- ggplot(data = wq.comp.concat, aes(x = FieldSeason, y = PercentCompleteness)) +
-  geom_bar(stat = "identity", position = position_dodge(), color = "black") +
-  facet_grid(Parameter_f~SiteCode) +
-  scale_x_discrete(breaks = scales::pretty_breaks()) +
-  theme(axis.text.x = element_text(angle = 90), legend.position = "bottom")
+wq.comp.plot <- ggplot2::ggplot(data = wq.comp.concat, ggplot2::aes(x = FieldSeason, y = PercentCompleteness)) +
+  ggplot2::geom_bar(stat = "identity", position = ggplot2::position_dodge(), color = "black") +
+  ggplot2::facet_grid(Parameter_f~SiteCode) +
+  ggplot2::scale_x_discrete(breaks = scales::pretty_breaks()) +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90), legend.position = "bottom")
 
 return(wq.comp.plot)
 
@@ -677,9 +681,9 @@ return(wq.comp.plot)
 #'     qcWqGradesPlot(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 #'     CloseDatabaseConnection(conn)
 #' }
-qcWqGradesPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcWqGradesPlot <- function(park, site, field.season) {
 
-wq.grds.long <- qcWqGradesLong(conn, path.to.data, park, site, field.season, data.source)
+wq.grds.long <- qcWqGradesLong(park = park, site = site, field.season = field.season)
 
 wq.grds.concat <- wq.grds.long %>%
   tidyr::unite("Parameter", Parameter, Units, sep = "_")
@@ -687,13 +691,13 @@ wq.grds.concat <- wq.grds.long %>%
 wq.grds.concat$Parameter_f = factor(wq.grds.concat$Parameter, levels = c("Temperature_C", "pH_units", "SpCond_uS/cm", "DO_%", "DO_mg/L"))
 wq.grds.concat$Grade_f = factor(wq.grds.concat$Grade, levels = c("Excellent", "Est. Excellent", "Good", "Est. Good", "Fair", "Est. Fair", "Poor", "Est. Poor"))
 
-wq.grds.plot <- ggplot(data = wq.grds.concat, aes(x = FieldSeason, y = Percent, fill = Grade_f)) +
-  geom_col() +
-  facet_grid(Parameter_f~SiteCode) +
-  labs(fill = "Grade") +
-  scale_fill_manual(values = c("forestgreen", "gold", "khaki1", "darkorange", "Red")) +
-  scale_x_discrete(breaks = scales::pretty_breaks()) +
-  theme(axis.text.x = element_text(angle = 90), legend.position = "bottom")
+wq.grds.plot <- ggplot2::ggplot(data = wq.grds.concat, ggplot2::aes(x = FieldSeason, y = Percent, fill = Grade_f)) +
+  ggplot2::geom_col() +
+  ggplot2::facet_grid(Parameter_f~SiteCode) +
+  ggplot2::labs(fill = "Grade") +
+  ggplot2::scale_fill_manual(values = c("forestgreen", "gold", "khaki1", "darkorange", "Red")) +
+  ggplot2::scale_x_discrete(breaks = scales::pretty_breaks()) +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90), legend.position = "bottom")
 
 return(wq.grds.plot)
 

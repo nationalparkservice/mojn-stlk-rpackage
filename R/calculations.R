@@ -35,13 +35,13 @@ MaxDQF <- function(flags) {
 #' @return A tibble with columns for park, field season, site code, visit date, and the median values, flags, and counts for temperature, specific conductance, pH, and dissolved oxygen.
 #' @export
 #'
-LakeWqMedian <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  temp <- ReadAndFilterData(conn = conn, path.to.data = path.to.data, park = park, site = site, field.season = field.season, data.source = data.source, data.name = "WaterQualityTemperature")
-  spcond <- ReadAndFilterData(conn = conn, path.to.data = path.to.data, park = park, site = site, field.season = field.season, data.source = data.source, data.name = "WaterQualitySpCond")
-  ph <- ReadAndFilterData(conn = conn, path.to.data = path.to.data, park = park, site = site, field.season = field.season, data.source = data.source, data.name = "WaterQualitypH")
-  do <- ReadAndFilterData(conn = conn, path.to.data = path.to.data, park = park, site = site, field.season = field.season, data.source = data.source, data.name = "WaterQualityDO")
+LakeWqMedian <- function(park, site, field.season) {
+  temp <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "WaterQualityTemperature")
+  spcond <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "WaterQualitySpCond")
+  ph <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "WaterQualitypH")
+  do <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "WaterQualityDO")
 
-  wq.visits <- ReadAndFilterData(conn = conn, path.to.data = path.to.data, park = park, site = site, field.season = field.season, data.source = data.source, data.name = "Visit")
+  wq.visits <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit")
 
   temp.med <- temp %>%
     dplyr::left_join(dplyr::select(wq.visits, SampleFrame, Park, FieldSeason, SiteCode, VisitDate), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%
@@ -101,9 +101,9 @@ LakeWqMedian <- function(conn, path.to.data, park, site, field.season, data.sour
 #' @return A tibble with columns for park, field season, site code, visit date, and the median values, flags, and counts for temperature, specific conductance, pH, and dissolved oxygen.
 #' @export
 #'
-StreamWqMedian <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  stream_wq <- ReadAndFilterData(conn = conn, path.to.data = path.to.data, park = park, site = site, field.season = field.season, data.source = data.source, data.name = "WQStreamXSection")
-  wq.visits <- ReadAndFilterData(conn = conn, path.to.data = path.to.data, park = park, site = site, field.season = field.season, data.source = data.source, data.name = "Visit")
+StreamWqMedian <- function(park, site, field.season) {
+  stream_wq <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "WQStreamXSection")
+  wq.visits <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit")
 
   stream_wq_med <- stream_wq %>%
     dplyr::left_join(dplyr::select(wq.visits, SampleFrame, Park, FieldSeason, SiteCode, VisitDate, MonitoringStatus), by = c("Park", "FieldSeason", "SiteCode", "VisitDate")) %>%

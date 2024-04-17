@@ -11,8 +11,8 @@
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m, Parameter, Units, Median, Flag, and FlagNote.
 #' @export
 #'
-qcLakeWqSanity <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  lake.sanity <- qcWqSanity(conn, path.to.data, park, site, field.season, data.source, "lake")
+qcLakeWqSanity <- function(park, site, field.season) {
+  lake.sanity <- qcWqSanity(park = park, site = site, field.season = field.season, wq.type = "lake")
   return(lake.sanity)
 }
 
@@ -29,8 +29,8 @@ qcLakeWqSanity <- function(conn, path.to.data, park, site, field.season, data.so
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, Parameter, Units, Median, Flag, and FlagNote.
 #' @export
 #'
-qcStreamWqSanity <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  stream.sanity <- qcWqSanity(conn, path.to.data, park, site, field.season, data.source, "stream")
+qcStreamWqSanity <- function(park, site, field.season) {
+  stream.sanity <- qcWqSanity(park = park, site = site, field.season = field.season, wq.type = "stream")
   return(stream.sanity)
 }
 
@@ -48,11 +48,11 @@ qcStreamWqSanity <- function(conn, path.to.data, park, site, field.season, data.
 #'
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
 #'
-qcWqSanity <- function(conn, path.to.data, park, site, field.season, data.source = "database", wq.type) {
+qcWqSanity <- function(park, site, field.season, wq.type) {
   if (wq.type == "stream") {
-    wq.sanity.predata <- StreamWqMedian(conn, path.to.data, park, site, field.season, data.source)
+    wq.sanity.predata <- StreamWqMedian(park = park, site = site, field.season = field.season)
   } else if (wq.type == "lake") {
-    wq.sanity.predata <- LakeWqMedian(conn, path.to.data, park, site, field.season, data.source)
+    wq.sanity.predata <- LakeWqMedian(park = park, site = site, field.season = field.season)
   } else {
     stop("Invalid wq.type")
   }
@@ -107,8 +107,8 @@ qcWqSanity <- function(conn, path.to.data, park, site, field.season, data.source
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
 #' @export
 #'
-qcLakeWqFlags <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  lake.flags <- qcWqFlags(conn, path.to.data, park, site, field.season, data.source, wq.type = "lake")
+qcLakeWqFlags <- function(park, site, field.season) {
+  lake.flags <- qcWqFlags(park = park, site = site, field.season = field.season, wq.type = "lake")
 
   lake.flags %<>% dplyr::filter(!is.na(Median))
 
@@ -127,8 +127,8 @@ qcLakeWqFlags <- function(conn, path.to.data, park, site, field.season, data.sou
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
 #' @export
 #'
-qcStreamWqFlags <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  stream.flags <- qcWqFlags(conn, path.to.data, park, site, field.season, data.source, wq.type = "stream")
+qcStreamWqFlags <- function(park, site, field.season) {
+  stream.flags <- qcWqFlags(park = park, site = site, field.season = field.season, wq.type = "stream")
 
   stream.flags %<>% dplyr::filter(!is.na(Median))
 
@@ -147,11 +147,11 @@ qcStreamWqFlags <- function(conn, path.to.data, park, site, field.season, data.s
 #'
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
 #'
-qcWqFlags <- function(conn, path.to.data, park, site, field.season, data.source = "database", wq.type) {
+qcWqFlags <- function(park, site, field.season, wq.type) {
   if (wq.type == "stream") {
-    wq.flags.predata <- StreamWqMedian(conn, path.to.data, park, site, field.season, data.source)
+    wq.flags.predata <- StreamWqMedian(park = park, site = site, field.season = field.season)
   } else if (wq.type == "lake") {
-    wq.flags.predata <- LakeWqMedian(conn, path.to.data, park, site, field.season, data.source)
+    wq.flags.predata <- LakeWqMedian(park = park, site = site, field.season = field.season)
   } else {
     stop("Invalid wq.type")
   }
@@ -207,8 +207,8 @@ qcWqFlags <- function(conn, path.to.data, park, site, field.season, data.source 
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
 #' @export
 #'
-qcLakeWqCleaned <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  lake_cleaned <- qcWqCleaned(conn, path.to.data, park, site, field.season, data.source, "lake")
+qcLakeWqCleaned <- function(park, site, field.season) {
+  lake_cleaned <- qcWqCleaned(park = park, site = site, field.season = field.season, wq.type = "lake")
   return(lake_cleaned)
 }
 
@@ -225,8 +225,8 @@ qcLakeWqCleaned <- function(conn, path.to.data, park, site, field.season, data.s
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, Parameter, Units, Median, Flag, and FlagNote.
 #' @export
 #'
-qcStreamWqCleaned <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  stream_cleaned <- qcWqCleaned(conn, path.to.data, park, site, field.season, data.source, "stream")
+qcStreamWqCleaned <- function(park, site, field.season) {
+  stream_cleaned <- qcWqCleaned(park = park, site = site, field.season = field.season, wq.type = "stream")
   return(stream_cleaned)
 }
 
@@ -243,11 +243,11 @@ qcStreamWqCleaned <- function(conn, path.to.data, park, site, field.season, data
 #' @return A tibble with columns for Park, FieldSeason, SiteCode, VisitDate, MeasurementDepth_m (lake only), Parameter, Units, Median, Flag, and FlagNote.
 #' @export
 #'
-qcWqCleaned <- function(conn, path.to.data, park, site, field.season, data.source = "database", wq.type) {
+qcWqCleaned <- function(park, site, field.season, wq.type) {
   if (wq.type == "stream") {
-    wq.sanity.predata <- StreamWqMedian(conn, path.to.data, park, site, field.season, data.source)
+    wq.sanity.predata <- StreamWqMedian(park = park, site = site, field.season = field.season)
   } else if (wq.type == "lake") {
-    wq.sanity.predata <- LakeWqMedian(conn, path.to.data, park, site, field.season, data.source)
+    wq.sanity.predata <- LakeWqMedian(park = park, site = site, field.season = field.season)
   } else {
     stop("Invalid wq.type")
   }
@@ -302,9 +302,9 @@ qcWqCleaned <- function(conn, path.to.data, park, site, field.season, data.sourc
 #' @return Depth profile plot for lake water quality.
 #' @export
 #'
-WqPlotPHDepthProfile <- function(conn, path.to.data, park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
+WqPlotPHDepthProfile <- function(park, site, field.season, include.title = TRUE, plotly = FALSE) {
 
-  plot_ph <- WqPlotDepthProfile(conn = conn, path.to.data = path.to.data, param = "pH", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly, data.source = data.source)
+  plot_ph <- WqPlotDepthProfile(param = "pH", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly)
 
   return(plot_ph)
 }
@@ -324,9 +324,9 @@ WqPlotPHDepthProfile <- function(conn, path.to.data, park, site, field.season, i
 #' @return Depth profile plot for lake water quality.
 #' @export
 #'
-WqPlotDODepthProfile <- function(conn, path.to.data, units = "mg/L", park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
+WqPlotDODepthProfile <- function(units = "mg/L", park, site, field.season, include.title = TRUE, plotly = FALSE) {
 
-  plot_do <- WqPlotDepthProfile(conn = conn, path.to.data = path.to.data, param = "DO", units = units, park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly, data.source = data.source)
+  plot_do <- WqPlotDepthProfile(param = "DO", units = units, park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly)
 
   return(plot_do)
 }
@@ -345,9 +345,9 @@ WqPlotDODepthProfile <- function(conn, path.to.data, units = "mg/L", park, site,
 #' @return Depth profile plot for lake water quality.
 #' @export
 #'
-WqPlotSpCondDepthProfile <- function(conn, path.to.data, park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
+WqPlotSpCondDepthProfile <- function(park, site, field.season, include.title = TRUE, plotly = FALSE) {
 
-  plot_spcond <- WqPlotDepthProfile(conn = conn, path.to.data = path.to.data, param = "SpCond", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly, data.source = data.source)
+  plot_spcond <- WqPlotDepthProfile(param = "SpCond", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly)
 
   return(plot_spcond)
 }
@@ -359,9 +359,9 @@ WqPlotSpCondDepthProfile <- function(conn, path.to.data, park, site, field.seaso
 #' @return Depth profile plot for lake water quality.
 #' @export
 #'
-WqPlotTemperatureDepthProfile <- function(conn, path.to.data, park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
+WqPlotTemperatureDepthProfile <- function(park, site, field.season, include.title = TRUE, plotly = FALSE) {
 
-  plot_temp <- WqPlotDepthProfile(conn = conn, path.to.data = path.to.data, param = "Temperature", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly, data.source = data.source)
+  plot_temp <- WqPlotDepthProfile(param = "Temperature", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly)
 
   return(plot_temp)
 }
@@ -376,9 +376,9 @@ WqPlotTemperatureDepthProfile <- function(conn, path.to.data, park, site, field.
 #'
 #' @return Depth profile plot for lake water quality.
 #'
-WqPlotDepthProfile <- function(conn, path.to.data, param, units, park, site, field.season, include.title = TRUE, plotly = FALSE, data.source = "database") {
+WqPlotDepthProfile <- function(param, units, park, site, field.season, include.title = TRUE, plotly = FALSE) {
 
-  wq <- qcLakeWqCleaned(conn, path.to.data, park, site, field.season, data.source) %>%
+  wq <- qcLakeWqCleaned(param = param, units = units, park = park, site = site, field.season = field.season) %>%
     dplyr::filter(tolower(Parameter) == tolower(param), !is.na(Median)) %>%
     dplyr::rename(Depth_m = MeasurementDepth_m)
 

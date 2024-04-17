@@ -17,8 +17,8 @@
 #' qcChemFlags(conn, site = c("GRBA_S_MILL1", "GRBA_S_PINE1", "GRBA_S_RDGE1"), field.season = c("2018", "2019", "2020"))
 #' CloseDatabaseConnection(conn)
 #' }
-qcChemFlags <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+qcChemFlags <- function(park, site, field.season) {
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     flags.list <- chem %>%
       dplyr::filter(Flag %in% c("I", "W", "C")) %>%
@@ -49,8 +49,8 @@ return(flags.list)
 #' qcChemLabDupes(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
 #' CloseDatabaseConnection(conn)
 #' }
-qcChemLabDupes <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+qcChemLabDupes <- function(park, site, field.season) {
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     lab.dupes <- chem %>%
         dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType) %>%
@@ -109,8 +109,8 @@ qcChemLabDupes <- function(conn, path.to.data, park, site, field.season, data.so
 #' qcChemFieldDupes(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
 #' CloseDatabaseConnection(conn)
 #' }
-qcChemFieldDupes <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+qcChemFieldDupes <- function(park, site, field.season) {
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     field.dupes <- chem %>%
         dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, CharacteristicLabel, Unit, LabValue, SampleType) %>%
@@ -159,8 +159,8 @@ qcChemFieldDupes <- function(conn, path.to.data, park, site, field.season, data.
 #' qcChemFieldBlanks(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
 #' CloseDatabaseConnection(conn)
 #' }
-qcChemFieldBlanks <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+qcChemFieldBlanks <- function(park, site, field.season) {
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
     lookup <- getMDLLookup()
 
     field.blanks <- chem %>%
@@ -203,8 +203,8 @@ qcChemFieldBlanks <- function(conn, path.to.data, park, site, field.season, data
 #' qcChemTDN(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
 #' CloseDatabaseConnection(conn)
 #' }
-qcChemTDN <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+qcChemTDN <- function(park, site, field.season) {
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     TDN <- chem %>%
         dplyr::filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTN", "TDN", "NO3NO2-N")) %>%
@@ -242,8 +242,8 @@ qcChemTDN <- function(conn, path.to.data, park, site, field.season, data.source 
 #' qcChemNO3NO2(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
 #' CloseDatabaseConnection(conn)
 #' }
-qcChemNO3NO2 <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+qcChemNO3NO2 <- function(park, site, field.season) {
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     NO3NO2 <- chem %>%
         dplyr::filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTN", "TDN", "NO3NO2-N")) %>%
@@ -282,8 +282,8 @@ qcChemNO3NO2 <- function(conn, path.to.data, park, site, field.season, data.sour
 #' qcChemTDP(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
 #' CloseDatabaseConnection(conn)
 #' }
-qcChemTDP <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+qcChemTDP <- function(park, site, field.season) {
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     TDP <- chem %>%
         dplyr::filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTP", "TDP")) %>%
@@ -338,8 +338,8 @@ getMDLLookup <- function() {
 #' qcChemMDL(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
 #' CloseDatabaseConnection(conn)
 #' }
-qcChemMDL <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+qcChemMDL <- function(park, site, field.season) {
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
     lookup <- getMDLLookup()
 
     mdl <- chem %>%
@@ -382,8 +382,8 @@ qcChemMDL <- function(conn, path.to.data, park, site, field.season, data.source 
 #' qcChemML(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
 #' CloseDatabaseConnection(conn)
 #' }
-qcChemML <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+qcChemML <- function(park, site, field.season) {
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     ml <- chem %>%
         dplyr::filter(VisitType == "Primary", SampleType == "Routine") %>%
@@ -425,9 +425,9 @@ qcChemML <- function(conn, path.to.data, park, site, field.season, data.source =
 #' ChemANC(conn, site = "GRBA_L_DEAD0", field.season = "2018")
 #' CloseDatabaseConnection(conn)
 #' }
-ChemANC <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+ChemANC <- function(park, site, field.season) {
 
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     chem.anc.rows <- chem  %>%
         dplyr::filter(Characteristic == "ALK2") %>%
@@ -467,9 +467,9 @@ ChemANC <- function(conn, path.to.data, park, site, field.season, data.source = 
 #' CloseDatabaseConnection(conn)
 #' }
 #'
-ChemLakeANCPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+ChemLakeANCPlot <- function(park, site, field.season) {
 
-    chem.anc <- ChemANC(conn, path.to.data, park, site, field.season, data.source)
+    chem.anc <- ChemANC(park = park, site = site, field.season = field.season)
 
     chem.lake.anc <- chem.anc %>%
         dplyr::filter(VisitType == "Primary", SampleType == "Routine", SampleFrame == "Lake", Characteristic == "ANC")
@@ -514,9 +514,9 @@ ChemLakeANCPlot <- function(conn, path.to.data, park, site, field.season, data.s
 #' ChemStreamANCPlot(conn, site = "GRBA_S_PINE1")
 #' CloseDatabaseConnection(conn)
 #' }
-ChemStreamANCPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+ChemStreamANCPlot <- function(park, site, field.season) {
 
-    chem.anc <- ChemANC(conn, path.to.data, park, site, field.season, data.source)
+    chem.anc <- ChemANC(park = park, site = site, field.season = field.season)
 
     chem.stream.anc <- chem.anc %>%
         dplyr::filter(VisitType == "Primary", SampleType == "Routine", SampleFrame == "Stream", Characteristic == "ANC")
@@ -550,9 +550,9 @@ ChemStreamANCPlot <- function(conn, path.to.data, park, site, field.season, data
 #' @return A ggplot object
 #' @export
 #'
-ChemLakeNutrientPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+ChemLakeNutrientPlot <- function(park, site, field.season) {
 
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     lake.nut <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Nutrient") %>%
@@ -588,9 +588,9 @@ ChemLakeNutrientPlot <- function(conn, path.to.data, park, site, field.season, d
 #' @return A ggplot object
 #' @export
 #'
-ChemLakeNutrientBarPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+ChemLakeNutrientBarPlot <- function(park, site, field.season) {
 
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     lake.nut.bar <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Nutrient") %>%
@@ -632,9 +632,9 @@ ChemLakeNutrientBarPlot <- function(conn, path.to.data, park, site, field.season
 #' @return A ggplot object
 #' @export
 #'
-ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+ChemLakeIonPlot <- function(park, site, field.season) {
 
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     lake.ion <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Lake", ReportingGroup == "Ion",
@@ -670,9 +670,9 @@ ChemLakeIonPlot <- function(conn, path.to.data, park, site, field.season, data.s
 #' @return A ggplot object
 #' @export
 #'
-ChemStreamNutrientPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+ChemStreamNutrientPlot <- function(park, site, field.season) {
 
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     stream.nut <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Nutrient", SiteShort != "BAKR2") %>%
@@ -707,8 +707,8 @@ ChemStreamNutrientPlot <- function(conn, path.to.data, park, site, field.season,
 #' @return A ggplot object
 #' @export
 #'
-ChemStreamNutrientBarPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+ChemStreamNutrientBarPlot <- function(park, site, field.season) {
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     stream.nut.bar <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Nutrient", SiteShort != "BAKR2") %>%
@@ -749,9 +749,9 @@ ChemStreamNutrientBarPlot <- function(conn, path.to.data, park, site, field.seas
 #' @return A ggplot object
 #' @export
 #'
-ChemStreamIonPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+ChemStreamIonPlot <- function(park, site, field.season) {
 
-    chem <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Chemistry")
+    chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     stream.ion <- chem %>%
         dplyr::filter(SampleType == "Routine", VisitType == "Primary", SampleFrame == "Stream", ReportingGroup == "Ion", SiteShort != "BAKR2",

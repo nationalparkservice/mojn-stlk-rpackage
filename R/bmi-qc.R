@@ -18,8 +18,8 @@
 #' bmi_long_bakr_2015 <- BMILong(c, site = c("GRBA_S_BAKR2", "GRBA_S_BAKR3"), field.season = "2015")
 #' CloseDatabaseConnection(c)
 #' }
-BMILong <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "BMI")
+BMILong <- function(park, site, field.season) {
+  bmi <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "BMI")
   # Fix column names (will eventually be fixed in db and we can get rid of this code)
   if ("PlecopteraTaxa" %in% names(bmi)) {
     bmi %<>% dplyr::rename(PlecopteraTaxaCount = PlecopteraTaxa)
@@ -104,8 +104,8 @@ BMILong <- function(conn, path.to.data, park, site, field.season, data.source = 
 #' bmi_issues_bakr_2015 <- qcBMIDiscrepancies(c, site = c("GRBA_S_BAKR2", "GRBA_S_BAKR3"), field.season = "2015")  # Look at issues for Baker Creek sites in 2015
 #' CloseDatabaseConnection(c)
 #' }
-qcBMIDiscrepancies <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi_issues <- BMILong(conn, path.to.data, park, site, field.season, data.source) %>%
+qcBMIDiscrepancies <- function(park, site, field.season) {
+  bmi_issues <- BMILong(park = park, site = site, field.season = field.season) %>%
     dplyr::select(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, VisitType, SampleType, SampleCollectionMethod, BMIMethod, LabSampleNumber, TaxaGroup, TaxaGroupRichness, TaxaGroupDensity, LabNotes) %>%
     dplyr::filter((TaxaGroupRichness == 0 & TaxaGroupDensity > 0) | (TaxaGroupDensity == 0 & TaxaGroupRichness > 0))
 
@@ -132,9 +132,9 @@ qcBMIDiscrepancies <- function(conn, path.to.data, park, site, field.season, dat
 #' channel_STRW2_2016 <- ChannelCharacteristics(conn, site = "GRBA_S_STRW2", field.season = "2016")
 #' CloseDatabaseConnection(conn)
 #' }
-ChannelCharacteristics <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  data <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Channel")
-  visit <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit")
+ChannelCharacteristics <- function(park, site, field.season) {
+  data <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Channel")
+  visit <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit")
 
   channel_characteristics <- dplyr::left_join(data, visit[, c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate", "VisitType")], by = c("Park", "SiteShort", "SiteCode", "SiteName", "FieldSeason", "VisitDate")) %>%
     dplyr::filter(VisitType == "Primary") %>%
@@ -163,8 +163,8 @@ ChannelCharacteristics <- function(conn, path.to.data, park, site, field.season,
 #' channel_flow_STRW2_2016 <- ChannelFlow(conn, site = "GRBA_S_STRW2", field.season = "2016")
 #' CloseDatabaseConnection(conn)
 #' }
-ChannelFLow <-  function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  channel_flow <- ChannelCharacteristics(conn, path.to.data, park, site, field.season, data.source) %>%
+ChannelFLow <-  function(park, site, field.season) {
+  channel_flow <- ChannelCharacteristics(park = park, site = site, field.season = field.season) %>%
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, ChannelType) %>%
     dplyr::summarize(Count = n()) %>%
     dplyr::mutate(Rank = min_rank(desc(Count))) %>%
@@ -195,8 +195,8 @@ ChannelFLow <-  function(conn, path.to.data, park, site, field.season, data.sour
 #' channel_substrate_STRW2_2016 <- ChannelSubstrate(conn, site = "GRBA_S_STRW2", field.season = "2016")
 #' CloseDatabaseConnection(conn)
 #' }
-ChannelSubstrate <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  channel_substrate <- ChannelCharacteristics(conn, path.to.data, park, site, field.season, data.source) %>%
+ChannelSubstrate <- function(park, site, field.season) {
+  channel_substrate <- ChannelCharacteristics(park = park, site = site, field.season = field.season) %>%
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, Substrate) %>%
     dplyr::summarize(Count = n()) %>%
     dplyr::mutate(Rank = min_rank(desc(Count))) %>%
@@ -219,8 +219,8 @@ ChannelSubstrate <- function(conn, path.to.data, park, site, field.season, data.
 #' @return A tibble
 #' @export
 #'
-BMIFormatted <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi_long <- BMILong(conn, path.to.data, park, site, field.season, data.source)
+BMIFormatted <- function(park, site, field.season) {
+  bmi_long <- BMILong(park = park, site = site, field.season = field.season)
 
   bmi_formatted <- bmi_long %>%
     tidyr::pivot_longer(cols = c("TaxaGroupRichness", "TaxaGroupDensity"), names_to = "Metric", values_to = "Count")
@@ -249,8 +249,8 @@ BMIFormatted <- function(conn, path.to.data, park, site, field.season, data.sour
 #' @return A ggplot object
 #' @export
 #'
-BMIGeneralMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+BMIGeneralMetricsPlot <- function(park, site, field.season) {
+  bmi.formatted <- BMIFormatted(park = park, site = site, field.season = field.season)
 
   bmi.gen <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
@@ -294,8 +294,8 @@ BMIGeneralMetricsPlot <- function(conn, path.to.data, park, site, field.season, 
 #' @return A ggplot object
 #' @export
 #'
-BMIDiversityMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+BMIDiversityMetricsPlot <- function(park, site, field.season) {
+  bmi.formatted <- BMIFormatted(park = park, site = site, field.season = field.season)
 
   bmi.div <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2") %>%
@@ -339,8 +339,8 @@ BMIDiversityMetricsPlot <- function(conn, path.to.data, park, site, field.season
 #' @return A ggplot object
 #' @export
 #'
-BMIToleranceMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+BMIToleranceMetricsPlot <- function(park, site, field.season) {
+  bmi.formatted <- BMIFormatted(park = park, site = site, field.season = field.season)
 
   bmi.tol <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
@@ -383,8 +383,8 @@ BMIToleranceMetricsPlot <- function(conn, path.to.data, park, site, field.season
 #' @return A ggplot object
 #' @export
 #'
-BMIFunctionalMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+BMIFunctionalMetricsPlot <- function(park, site, field.season) {
+  bmi.formatted <- BMIFormatted(park = park, site = site, field.season = field.season)
 
   bmi.fun <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
@@ -427,8 +427,8 @@ BMIFunctionalMetricsPlot <- function(conn, path.to.data, park, site, field.seaso
 #' @return A ggplot object
 #' @export
 #'
-BMITaxonomicMetricsPlot <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  bmi.formatted <- BMIFormatted(conn, path.to.data, park, site, field.season, data.source)
+BMITaxonomicMetricsPlot <- function(park, site, field.season) {
+  bmi.formatted <- BMIFormatted(park = park, site = site, field.season = field.season)
 
   bmi.tax <- bmi.formatted %>%
     dplyr::filter(SampleType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",

@@ -20,11 +20,11 @@
 #'     qcSecchiGTDepth(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-qcSecchiGTDepth <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcSecchiGTDepth <- function(park, site, field.season) {
 
-  error.list <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "Clarity")
+  error.list <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Clarity")
 
-  error.list %<>%
+  error.list <- error.list |>
     dplyr::filter(SecchiDepth_m > DepthToBottom_m)
 
   return(error.list)
@@ -52,12 +52,12 @@ qcSecchiGTDepth <- function(conn, path.to.data, park, site, field.season, data.s
 #'     qcLakeDryMeasurementsExist(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-qcLakeDryMeasurementsExist <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcLakeDryMeasurementsExist <- function(park, site, field.season) {
 
-  error.list <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "Clarity")
+  error.list <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Clarity")
 
-  error.list %<>%
-    dplyr::filter(IsLakeDry == TRUE) %>%
+  error.list <- error.list |>
+    dplyr::filter(IsLakeDry == TRUE) |>
     dplyr::filter(!is.na(SurfaceCalm) | !is.na(OnBottom) |  !is.na(DepthToBottom_m) | !is.na(SecchiDepth_m))
 
   return(error.list)
@@ -85,12 +85,12 @@ qcLakeDryMeasurementsExist <- function(conn, path.to.data, park, site, field.sea
 #'     qcLakeNotDryMeasurementsMissing(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-qcLakeNotDryMeasurementsMissing <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcLakeNotDryMeasurementsMissing <- function(park, site, field.season) {
 
-  error.list <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "Clarity")
+  error.list <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Clarity")
 
-  error.list %<>%
-    dplyr::filter(IsLakeDry == 0) %>%
+  error.list <- error.list |>
+    dplyr::filter(IsLakeDry == 0) |>
     dplyr::filter(is.na(SurfaceCalm) | is.na(OnBottom) |  is.na(DepthToBottom_m))
 
   return(error.list)
@@ -118,12 +118,12 @@ qcLakeNotDryMeasurementsMissing <- function(conn, path.to.data, park, site, fiel
 #'     qcDepthMissing(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-qcSecchiDepthMissing <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+qcSecchiDepthMissing <- function(park, site, field.season) {
 
-  error.list <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "Clarity")
+  error.list <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Clarity")
 
-  error.list %<>%
-    dplyr::filter(OnBottom == "N") %>%
+  error.list <- error.list |>
+    dplyr::filter(OnBottom == "N") |>
     dplyr::filter(is.na(SecchiDepth_m))
 
   return(error.list)

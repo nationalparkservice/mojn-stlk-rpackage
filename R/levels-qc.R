@@ -15,9 +15,9 @@
 #'     SurveyPointElevation(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-    levels.import <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "LakeLevelSurvey")
-    dry <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "Visit") # Data to filter out dry lakes
+SurveyPointElevation <- function(park, site, field.season) {
+    levels.import <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelSurvey")
+    dry <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit") # Data to filter out dry lakes
     StandardTemperature_F <- 68  # Standard temperature to be used for temperature corrections
 
     dry %<>% dplyr::select(SiteCode, VisitDate, FieldSeason, IsLakeDry)
@@ -121,9 +121,9 @@ SurveyPointElevation <- function(conn, path.to.data, park, site, field.season, d
 #'     LakeSurfaceElevation(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+LakeSurfaceElevation <- function(park, site, field.season) {
 
-  t1 <- try(ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString"))
+  t1 <- try(ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelString"))
 
   if("try-error" %in% class(t1)) {
     string <- tibble::tibble(
@@ -141,10 +141,10 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
       Height_ft = double()
     )
   } else {
-    string <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString")
+    string <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelString")
   }
 
-  t2 <- try(SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source))
+  t2 <- try(SurveyPointElevation(park = park, site = site, field.season = field.season))
 
   if("try-error" %in% class(t2)) {
     survey <- tibble::tibble(
@@ -161,7 +161,7 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
       BenchmarkUsed = logical()
     )
   } else {
-  survey <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source) %>%
+  survey <- SurveyPointElevation(park = park, site = site, field.season = field.season) %>%
     dplyr::filter(Benchmark == "Water Surface") %>%
     dplyr::mutate(SurveyType = "Digital Level",
                   BenchmarkUsed = NA_character_) %>%
@@ -215,8 +215,8 @@ LakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, d
 #'     qcBenchmarkElevation(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-qcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
-  lvls <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source)
+qcBenchmarkElevation <- function(park, site, field.season, sd_cutoff = NA) {
+  lvls <- SurveyPointElevation(park = park, site = site, field.season = field.season)
 
   lvls %<>%
     dplyr::select(Park, SiteShort, SiteCode, SiteName, Benchmark, FinalCorrectedElevation_ft) %>%
@@ -252,8 +252,8 @@ qcBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, d
 #'     qcStringSurveyHeights(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-qcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
-  str_survey <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString") %>%
+qcStringSurveyHeights <- function(park, site, field.season, sd_cutoff = NA) {
+  str_survey <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelString") %>%
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, Benchmark) %>%
     dplyr::summarise(MeanHeight_ft = mean(Height_ft),
                      StDevHeight_ft = sd(Height_ft)) %>%
@@ -285,8 +285,8 @@ qcStringSurveyHeights <- function(conn, path.to.data, park, site, field.season, 
 #'     qcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-qcStringSurveyElevations <- function(conn, path.to.data, park, site, field.season, data.source = "database", sd_cutoff = NA) {
-  str_survey <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, "LakeLevelString") %>%
+qcStringSurveyElevations <- function(park, site, field.season, sd_cutoff = NA) {
+  str_survey <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelString") %>%
     dplyr::mutate(BenchmarkElevation_ft = measurements::conv_unit(RM1_GivenElevation_m, "m", "ft")) %>%
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, Benchmark) %>%
     dplyr::summarise(FinalElevation_ft = mean(BenchmarkElevation_ft - Height_ft)) %>%
@@ -324,9 +324,9 @@ qcStringSurveyElevations <- function(conn, path.to.data, park, site, field.seaso
 #'     qcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-qcElevationDiscrepancies <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
- r_elevs <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source)
- survey_elevs <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "LakeLevelSurvey")
+qcElevationDiscrepancies <- function(park, site, field.season) {
+ r_elevs <- SurveyPointElevation(park = park, site = site, field.season = field.season)
+ survey_elevs <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelSurvey")
 
  r_elevs_data <- r_elevs %>%
    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, SurveyPoint, Benchmark, FinalCorrectedElevation_ft) %>%
@@ -375,9 +375,9 @@ qcElevationDiscrepancies <- function(conn, path.to.data, park, site, field.seaso
 #'     qcStringSurveyElevations(path.to.data = "path/to/data", data.source = "local")
 #'     CloseDatabaseConnection(conn)
 #' }
-qcClosureErrorDiscrepancies <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
-  r_elevs <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source)
-  survey_elevs <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name = "LakeLevelSurvey")
+qcClosureErrorDiscrepancies <- function(park, site, field.season) {
+  r_elevs <- SurveyPointElevation(park = park, site = site, field.season = field.season)
+  survey_elevs <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelSurvey")
 
   r_ce_data <- r_elevs %>%
     dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, ClosureError_ft) %>%
@@ -416,8 +416,8 @@ qcClosureErrorDiscrepancies <- function(conn, path.to.data, park, site, field.se
 #' PlotBenchmarkElevation(conn, site = "GRBA_L_DEAD0", plotly = TRUE)
 #' CloseDatabaseConnection(conn)
 #' }
-PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", include.title = TRUE, plotly = FALSE) {
-  lvls <- SurveyPointElevation(conn, path.to.data, park, site, field.season, data.source) %>%
+PlotBenchmarkElevation <- function(park, site, field.season, include.title = TRUE, plotly = FALSE) {
+  lvls <- SurveyPointElevation(park = park, site = site, field.season = field.season) %>%
     dplyr::filter(Benchmark != "Water Surface") %>%
     tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left")
 
@@ -461,8 +461,8 @@ PlotBenchmarkElevation <- function(conn, path.to.data, park, site, field.season,
 #' PlotLakeSurfaceElevation(conn, site = "GRBA_L_DEAD0", plotly = TRUE)
 #' CloseDatabaseConnection(conn)
 #' }
-PlotLakeSurfaceElevation <- function(conn, path.to.data, park, site, field.season, data.source = "database", include.title = TRUE, plotly = FALSE) {
-  elev <- LakeSurfaceElevation(conn, path.to.data, park, site, field.season, data.source)
+PlotLakeSurfaceElevation <- function(park, site, field.season, include.title = TRUE, plotly = FALSE) {
+  elev <- LakeSurfaceElevation(park = park, site = site, field.season = field.season)
 
   elev %<>%
     tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName)) %>%
