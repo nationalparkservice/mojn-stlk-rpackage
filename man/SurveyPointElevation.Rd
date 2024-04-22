@@ -14,17 +14,14 @@ SurveyPointElevation(park, site, field.season)
 \item{field.season}{Optional. Field season name to filter on, e.g. "2019".}
 }
 \value{
-A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason,VisitType, DPL, SurveyPoint, Benchmark, FinalCorrectedElevation_ft.
+A tibble
 }
 \description{
 Calculates mean elevations for each survey point type in a survey
 }
 \examples{
 \dontrun{
-    conn <- OpenDatabaseConnection()
-    SurveyPointElevation(conn)
-    SurveyPointElevation(conn, site = "GRBA_L_BAKR0", field.season = "2019")
-    SurveyPointElevation(path.to.data = "path/to/data", data.source = "local")
-    CloseDatabaseConnection(conn)
+    SurveyPointElevation()
+    SurveyPointElevation(site = "GRBA_L_BAKR0", field.season = "2019")
 }
 }

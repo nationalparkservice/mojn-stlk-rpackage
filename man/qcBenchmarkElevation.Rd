@@ -16,17 +16,14 @@ qcBenchmarkElevation(park, site, field.season, sd_cutoff = NA)
 \item{sd_cutoff}{Optional. If specified, only return benchmarks where standard deviation of final corrected elevations is greater than or equal to \code{sd_cutoff}.}
 }
 \value{
-A tibble with columns Park, SiteShort, SiteCode, SiteName, Benchmark, MeanElevation_ft, StDevElevation_ft.
+A tibble
 }
 \description{
 Calculates mean and standard deviation of final corrected elevations for each benchmark across all field seasons
 }
 \examples{
 \dontrun{
-    conn <- OpenDatabaseConnection()
-    qcBenchmarkElevation(conn)
-    qcBenchmarkElevation(conn, site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
-    qcBenchmarkElevation(path.to.data = "path/to/data", data.source = "local")
-    CloseDatabaseConnection(conn)
+    qcBenchmarkElevation()
+    qcBenchmarkElevation(site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
 }
 }

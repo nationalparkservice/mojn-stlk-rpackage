@@ -21,9 +21,7 @@ Return list of streams and lakes that were not visited for annual monitoring dur
 }
 \examples{
 \dontrun{
-    conn <- OpenDatabaseConnection()
-    qcNoAnnualVisit(conn)
-    qcNoAnnualVisit(conn, site = "GRBA_L_DEAD0", field.season = c("2012", "2013", "2014", "2015"))
-    CloseDatabaseConnection(conn)
+    qcNoAnnualVisit()
+    qcNoAnnualVisit(site = "GRBA_L_DEAD0", field.season = c("2012", "2013", "2014", "2015"))
 }
 }

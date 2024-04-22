@@ -27,9 +27,7 @@ List all routine laboratory values that are less than or equal to the minimum de
 }
 \examples{
 \dontrun{
-conn <- OpenDatabaseConnection()
-qcChemMDL(conn)
-qcChemMDL(conn, site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
-CloseDatabaseConnection(conn)
+qcChemMDL()
+qcChemMDL(site = c("GRBA_L_DEAD0", "GRBA_L_JHNS0"), field.season = c("2018", "2019", "2020"))
 }
 }

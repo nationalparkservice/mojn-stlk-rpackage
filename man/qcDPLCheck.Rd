@@ -14,16 +14,14 @@ qcDPLCheck(park, site, field.season)
 \item{field.season}{Optional. Field season name to filter on, e.g. "2019".}
 }
 \value{
-A tibble with columns SiteCode, SiteName, VisitDate, FieldSeason, SampleFrame, VisitType, Visit.DPL, Chem.DPL, BMI.DPL, Channel.DPL, Clarity.DPL, LakeSurvey.DPL, LakeString.DPL, Xsection.DPL, TempC.DPL, pH.DPL, SpCond.DPL, DO.DPL
+A tibble
 }
 \description{
 Return list of site visits that have any data categorized as "Raw" or "Provisional"
 }
 \examples{
 \dontrun{
-    conn <- OpenDatabaseConnection()
-    qcDPLCheck(conn)
-    qcDPLCheck(conn, site = "GRBA_L_JHNS0", field.season = c("2018", "2019", "2020"))
-    CloseDatabaseConnection(conn)
+    qcDPLCheck()
+    qcDPLCheck(site = "GRBA_L_JHNS0", field.season = c("2018", "2019", "2020"))
 }
 }

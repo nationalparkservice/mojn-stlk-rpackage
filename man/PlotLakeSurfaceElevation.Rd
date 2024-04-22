@@ -31,9 +31,7 @@ Plot lake surface elevations over time
 }
 \examples{
 \dontrun{
-conn <- OpenDatabaseConnection()
-PlotLakeSurfaceElevation(conn)
-PlotLakeSurfaceElevation(conn, site = "GRBA_L_DEAD0", plotly = TRUE)
-CloseDatabaseConnection(conn)
+PlotLakeSurfaceElevation()
+PlotLakeSurfaceElevation(site = "GRBA_L_DEAD0", plotly = TRUE)
 }
 }

@@ -50,7 +50,7 @@ get_data <- function(data.name) {
 #' }
 OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), ...) {
   if (use.mojn.default) {
-    params <- readr::read_csv("M:/MONITORING/StreamsLakes/Data/Database/ConnectFromR/stlk-database-conn.csv", col_types = "cccc", ) %>%
+    params <- readr::read_csv("M:/MONITORING/StreamsLakes/Data/Database/ConnectFromR/stlk-database-conn.csv", col_types = "cccc", ) |>
       as.list()
     params$drv <- drv
     my.pool <- do.call(pool::dbPool, params)
@@ -269,8 +269,7 @@ GetAGOLColSpec <- function() {
     BMISpecies = readr::cols(
       SampleID = readr::col_integer(),
       CollectionDate = readr::col_date(),
-      SplitCount = readr::col_integer(),
-      LabCount = readr::col_double(),
+      LabCount = readr::col_integer(),
       BigRareCount = readr::col_integer(),
       Sample_ID = readr::col_double(),
       .default = readr::col_character()
@@ -696,17 +695,14 @@ SaveDataToCsv <- function(conn, dest.folder, create.folders = FALSE, overwrite =
 
 #' Raw data dump
 #'
-#' @param conn Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.
-#' @param path.to.data The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.
 #' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
 #' @param site Optional. Spring code to filter on, e.g. "GRBA_L_BAKR0".
 #' @param field.season Optional. Field season name to filter on, e.g. "2019".
-#' @param data.source Character string indicating whether to access data in the desert springs database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.
 #'
-#' @return A list of dataframes containing raw streams and lakes data.
+#' @return A list of dataframes containing raw streams and lakes data
 #' @export
 #'
-GetRawData <- function(conn, path.to.data, park, site, field.season, data.source = "database") {
+GetRawData <- function(park, site, field.season) {
   data.dump <- list()
   db.names <- names(GetColSpec())
   bmi.names <- names(GetAGOLColSpec())
@@ -715,7 +711,7 @@ GetRawData <- function(conn, path.to.data, park, site, field.season, data.source
   data.names <- c(db.names, bmi.names, aq.names)
 
   for (data.name in data.names) {
-    tryCatch(data.dump[[data.name]] <- ReadAndFilterData(conn, path.to.data, park, site, field.season, data.source, data.name),
+    tryCatch(data.dump[[data.name]] <- ReadAndFilterData(path.to.data, park, site, field.season, data.name),
              error = function(e) {
                if (e$message == "Aquarius connection does not exist.") {
                  warning(paste0("Cannot connect to Aquarius. ", data.name, " omitted from data."))
@@ -740,8 +736,8 @@ GetRawData <- function(conn, path.to.data, park, site, field.season, data.source
 #'
 GetSiteName <- function(conn, path.to.data, site.code, data.source = "database") {
   site <- ReadAndFilterData(conn, path.to.data, site = site.code, data.source = data.source, data.name = "Site")
-  site %<>% dplyr::select("SiteCode", "SiteName") %>%
-    unique() %>%
+  site %<>% dplyr::select("SiteCode", "SiteName") |>
+    unique() |>
     dplyr::filter(SiteCode == site.code)
 
   return(site$SiteName)
@@ -924,6 +920,7 @@ expect_dataframe_equal <- function(result, expected, ignore_col_order = FALSE, i
 #'
 #' @return A list of data frames and metadata
 #' @export
+#'
 fetchAndWrangleAGOL <- function(bmi_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_HYDRO_BMI_Database/FeatureServer",
                                 calibration_url = "https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/MOJN_Calibration_Database/FeatureServer",
                                 agol_username = "mojn_data",
@@ -940,8 +937,8 @@ fetchAndWrangleAGOL <- function(bmi_url = "https://services1.arcgis.com/fBc8EJBx
 
   raw_bmi$data <- lapply(raw_bmi$data, function(df) {
       df |>
-        dplyr::filter(SiteCode %in% c("GRBA_S_BAKR2", "GRBA_S_BAKR3", "GRBA_S_LHMN2", "GRBA_S_MILL1", "GRBA_S_PINE1", "GRBA_S_RDGE1", "GRBA_S_SFBW1", "GRBA_S_SHNG1", "GRBA_S_SNKE4", "GRBA_S_STRW2"))
-        # dplyr::mutate(CollectionDate = as.Date("CollectionDateText", tz = "America/Los_Angeles"))
+        dplyr::filter(SiteCode %in% c("GRBA_S_BAKR2", "GRBA_S_BAKR3", "GRBA_S_LHMN2", "GRBA_S_MILL1", "GRBA_S_PINE1", "GRBA_S_RDGE1", "GRBA_S_SFBW1", "GRBA_S_SHNG1", "GRBA_S_SNKE4", "GRBA_S_STRW2")) |>
+        dplyr::mutate(CollectionDate = as.Date(CollectionDateText, tz = "America/Los_Angeles"))
     })
 
   # Import WQ calibration database
@@ -962,7 +959,7 @@ fetchAndWrangleAGOL <- function(bmi_url = "https://services1.arcgis.com/fBc8EJBx
 #'
 ReadAGOL <- function(...) {
   #Placeholder until more STLK data beyond BMI are moved from SQL to AGOL
-  data <- fetchAndWrangleAGOL()$data # Change name of variable to bmi once there are more data
+  data <- fetchAndWrangleAGOL() # Change name of variable to bmi once there are more data
   # agol <- fetchAndWrangleAGOL()$data
 
   # data <- c(bmi, agol)
@@ -980,7 +977,7 @@ ReadSqlDatabase <- function(...) {
   col.spec <- GetColSpec()
   conn <- OpenDatabaseConnection(...)
   data <- lapply(names(col.spec), function(data.name){
-    df <- dplyr::tbl(conn$db, dbplyr::in_schema("analysis", data.name)) %>%
+    df <- dplyr::tbl(conn$db, dbplyr::in_schema("analysis", data.name)) |>
       dplyr::collect()
     return(df)
   })
@@ -1112,14 +1109,14 @@ LoadStreamsAndLakes <- function(data_path = c("database", "aquarius",
 
   # Tidy up the data
   data <- lapply(data, function(df) {
-    df %>%
-      dplyr::mutate_if(is.character, utf8::utf8_encode) %>%
-      dplyr::mutate_if(is.character, trimws, whitespace = "[\\h\\v]") %>%  # Trim leading and trailing whitespace
-      dplyr::mutate_if(is.character, dplyr::na_if, "") %>%  # Replace empty strings with NA
-      dplyr::mutate_if(is.character, dplyr::na_if, "\\\\n") %>%  # Replace newlines with NA
-      dplyr::mutate_if(is.numeric, dplyr::na_if, -9999) %>%  # Replace -9999 or -999 with NA
-      dplyr::mutate_if(is.numeric, dplyr::na_if, -999) %>%
-      dplyr::mutate_if(is.character, dplyr::na_if, "NA") %>%  # Replace "NA" strings with NA
+    df |>
+      dplyr::mutate_if(is.character, utf8::utf8_encode) |>
+      dplyr::mutate_if(is.character, trimws, whitespace = "[\\h\\v]") |>  # Trim leading and trailing whitespace
+      dplyr::mutate_if(is.character, dplyr::na_if, "") |>  # Replace empty strings with NA
+      dplyr::mutate_if(is.character, dplyr::na_if, "\\\\n") |>  # Replace newlines with NA
+      dplyr::mutate_if(is.numeric, dplyr::na_if, -9999) |>  # Replace -9999 or -999 with NA
+      dplyr::mutate_if(is.numeric, dplyr::na_if, -999) |>
+      dplyr::mutate_if(is.character, dplyr::na_if, "NA") |>  # Replace "NA" strings with NA
       dplyr::mutate_if(is.character, stringr::str_replace_all, pattern = "[\\v|\\n]+", replacement = ";  ")  # Replace newlines with semicolons - reading certain newlines into R can cause problems
   })
 

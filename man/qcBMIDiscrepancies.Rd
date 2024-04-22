@@ -2,7 +2,7 @@
 % Please edit documentation in R/bmi-qc.R
 \name{qcBMIDiscrepancies}
 \alias{qcBMIDiscrepancies}
-\title{Check for discrepancies between taxa count and abundance}
+\title{BROKEN! FIX! Check for discrepancies between taxa count and abundance}
 \usage{
 qcBMIDiscrepancies(park, site, field.season)
 }
@@ -12,25 +12,17 @@ qcBMIDiscrepancies(park, site, field.season)
 \item{site}{Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".}
 
 \item{field.season}{Optional. Field season name to filter on, e.g. "2019".}
-
-\item{conn}{Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.}
-
-\item{path.to.data}{The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.}
-
-\item{data.source}{Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.}
 }
 \value{
-A tibble with columns Park, SiteShort, SiteCode, SiteName, FieldSeason, VisitDate, VisitType, SampleType, SampleCollectionMethod, BMIMethod, LabSampleNumber, TaxaGroup, TaxaGroupCount, TaxaGroupAbundance, LabNotes.
+A tibble
 }
 \description{
-Check for discrepancies between taxa count and abundance
+BROKEN! FIX! Check for discrepancies between taxa count and abundance
 }
 \examples{
 \dontrun{
-c <- OpenDatabaseConnection
-bmi_issues <- qcBMIDiscrepancies(c)  # Get all instances of discrepancy between taxa count and abundance
-bmi_issues_mill <- qcBMIDiscrepancies(c, site = "GRBA_S_MILL1")  # Look at issues for Mill Creek only
-bmi_issues_bakr_2015 <- qcBMIDiscrepancies(c, site = c("GRBA_S_BAKR2", "GRBA_S_BAKR3"), field.season = "2015")  # Look at issues for Baker Creek sites in 2015
-CloseDatabaseConnection(c)
+  qcBMIDiscrepancies()
+  qcBMIDiscrepancies(site = "GRBA_S_MILL1")
+  qcBMIDiscrepancies(site = c("GRBA_S_BAKR2", "GRBA_S_BAKR3"), field.season = "2015")
 }
 }

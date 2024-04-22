@@ -30,7 +30,7 @@ WqPlotDepthProfile(
 \item{plotly}{Return an interactive plotly object instead of a ggplot object? Defaults to false.}
 }
 \value{
-Depth profile plot for lake water quality.
+ggplot or plotly object
 }
 \description{
 Generate lake depth profile plots.

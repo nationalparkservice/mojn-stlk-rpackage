@@ -12,24 +12,16 @@ WqDailyMean(park, site, field.season)
 \item{site}{Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".}
 
 \item{field.season}{Optional. Field season name to filter on, e.g. "2019".}
-
-\item{conn}{Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.}
-
-\item{path.to.data}{The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.}
-
-\item{data.source}{Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.}
 }
 \value{
-A tibble with columns Park, SiteShort, SiteCode, SiteName, SiteType, Date, FieldSeason, Temp_C, Temp_C_Grade, pH, pH_Grade, SpCond_uScm, SpCond_uScm_Grade, DO_pct, DO_pct_Grade, DO_mgL, DO_mgL_Grade
+A tibble
 }
 \description{
 Return summary of daily mean values (daily median values for pH) and grades for water quality parameters at streams.
 }
 \examples{
 \dontrun{
-    conn <- OpenDatabaseConnection()
-    WqDailyMean(conn)
-    WqDailyMean(conn, site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
-    CloseDatabaseConnection(conn)
+    WqDailyMean()
+    WqDailyMean(site = "GRBA_S_BAKR1", field.season = c("2018", "2019", "2020"))
 }
 }

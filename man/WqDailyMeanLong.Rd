@@ -14,16 +14,14 @@ WqDailyMeanLong(park, site, field.season)
 \item{field.season}{Optional. Field season name to filter on, e.g. "2019".}
 }
 \value{
-A tibble with columns Park, SiteShort, SiteCode, SiteName, SampleFrame, FieldSeason, Date, Parameter, Units, Value, Grade.
+A tibble
 }
 \description{
 Calculate daily mean values (daily median values for pH) for water quality parameters at streams based on hourly data. Determine the most frequent data grade level for each day based on hourly data. Include only those dates with greater than 80\% completeness (greater than 19 hourly values). Long format for ease of plotting.
 }
 \examples{
 \dontrun{
-    conn <- OpenDatabaseConnection()
-    WqDailyMeanLong(conn)
-    WqDailyMeanLong(conn, site = "GRBA_S_LHMN1", field.season = c("2012", "2013", "2014", "2015"))
-    CloseDatabaseConnection(conn)
+    WqDailyMeanLong()
+    WqDailyMeanLong(site = "GRBA_S_LHMN1", field.season = c("2012", "2013", "2014", "2015"))
 }
 }

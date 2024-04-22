@@ -31,9 +31,7 @@ Plot benchmark elevations over time
 }
 \examples{
 \dontrun{
-conn <- OpenDatabaseConnection()
-PlotBenchmarkElevation(conn)
-PlotBenchmarkElevation(conn, site = "GRBA_L_DEAD0", plotly = TRUE)
-CloseDatabaseConnection(conn)
+PlotBenchmarkElevation()
+PlotBenchmarkElevation(site = "GRBA_L_DEAD0", plotly = TRUE)
 }
 }

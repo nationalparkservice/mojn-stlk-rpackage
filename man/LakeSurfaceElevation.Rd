@@ -21,10 +21,7 @@ Calculates lake level elevations
 }
 \examples{
 \dontrun{
-    conn <- OpenDatabaseConnection()
-    LakeSurfaceElevation(conn)
-    LakeSurfaceElevation(conn, site = "GRBA_L_BAKR0", field.season = "2019")
-    LakeSurfaceElevation(path.to.data = "path/to/data", data.source = "local")
-    CloseDatabaseConnection(conn)
+    LakeSurfaceElevation()
+    LakeSurfaceElevation(site = "GRBA_L_BAKR0", field.season = "2019")
 }
 }
