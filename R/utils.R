@@ -61,15 +61,18 @@ OpenDatabaseConnection <- function(use.mojn.default = TRUE, drv = odbc::odbc(), 
   #Connect to Aquarius
   tryCatch({#fetchaquarius::connectToAquarius("aqreadonly", "aqreadonly")
     timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
-    aq <<- timeseries},
+    assign(x = "aq", value = timeseries, envir = pkg_globals)},
+    # aq <<- timeseries},
     error = function(e) {
-       aq <<- NA
+       assign(x = "aq", value = NA, envir = pkg_globals)
+       # aq <<- NA
        warning(paste("Could not connect to Aquarius. Verify that you are on the NPS network and that Aquarius is not down.", "Error message:", e, sep = "\n"))
     }
   )
 
   conn <- list(db = my.pool,
-               aquarius = aq)
+               aquarius = get(x = "aq",
+                              envir = pkg_globals))
 
   return(conn)
 }
@@ -112,71 +115,71 @@ GetColSpec <- function() {
       DataStoreReferenceCode = readr::col_integer(),
       .default = readr::col_character()
     ),
-    # BMI = readr::cols(
-    #   VisitDate = readr::col_date(),
-    #   DateCollected = readr::col_date(),
-    #   FieldSplit = readr::col_integer(),
-    #   LabSplit = readr::col_double(),
-    #   SampleArea_m2 = readr::col_double(),
-    #   Abundance = readr::col_integer(),
-    #   Richness = readr::col_integer(),
-    #   DominantTaxaPercent = readr::col_double(),
-    #   SplitCount = readr::col_integer(),
-    #   FixedCount = readr::col_integer(),
-    #   BigRareCount = readr::col_integer(),
-    #   ShannonsDiversity = readr::col_double(),
-    #   SimpsonsDiversity = readr::col_double(),
-    #   Evenness = readr::col_double(),
-    #   EPTTaxaCount = readr::col_integer(),
-    #   EPTTaxaAbundance = readr::col_integer(),
-    #   DominantFamilyAbundance = readr::col_integer(),
-    #   DominantTaxaAbundance = readr::col_integer(),
-    #   Hilsenhoff = readr::col_double(),
-    #   IntolerantTaxaCount = readr::col_integer(),
-    #   IntolerantTaxaAbundance = readr::col_integer(),
-    #   TolerantTaxaCount = readr::col_integer(),
-    #   TolerantTaxaAbundance = readr::col_integer(),
-    #   USFSCommunityToleranceQuo = readr::col_integer(),
-    #   ShredderTaxaCount = readr::col_integer(),
-    #   ShredderAbundance = readr::col_integer(),
-    #   ScraperTaxaCount = readr::col_integer(),
-    #   ScraperAbundance = readr::col_integer(),
-    #   CollectorFiltererCount = readr::col_integer(),
-    #   CollectorFiltererAbundance = readr::col_integer(),
-    #   CollectorGathererCount = readr::col_integer(),
-    #   CollectorGathererAbundance = readr::col_integer(),
-    #   PredatorTaxaCount = readr::col_integer(),
-    #   PredatorTaxaAbundance = readr::col_integer(),
-    #   ClingerTaxaCount = readr::col_integer(),
-    #   LongLivedTaxa = readr::col_integer(),
-    #   EphemeropteraTaxaCount = readr::col_integer(),
-    #   EphemeropteraTaxaAbundance = readr::col_integer(),
-    #   PlecopteraTaxa = readr::col_integer(),
-    #   PlecopteraTaxaAbundance = readr::col_integer(),
-    #   TrichopteraTaxaCount = readr::col_integer(),
-    #   TrichopteraAbundance = readr::col_integer(),
-    #   ColeopteraTaxaCount = readr::col_integer(),
-    #   ColeopteraAbundance = readr::col_integer(),
-    #   ElmidaeTaxaCount = readr::col_integer(),
-    #   ElmidaeAbundance = readr::col_integer(),
-    #   MegalopteraTaxaCount = readr::col_integer(),
-    #   MegalopteraAbundance = readr::col_integer(),
-    #   DipteraTaxaCount = readr::col_integer(),
-    #   DipteraAbundance = readr::col_integer(),
-    #   ChironomidaeTaxaCount = readr::col_integer(),
-    #   ChironomidaeAbundance = readr::col_integer(),
-    #   CrustaceaTaxaCount = readr::col_integer(),
-    #   CrustaceaAbundance = readr::col_integer(),
-    #   OligochaeteTaxaCount = readr::col_integer(),
-    #   OligochaeteAbundance = readr::col_integer(),
-    #   MolluscaTaxaCount = readr::col_integer(),
-    #   MolluscaAbundance = readr::col_integer(),
-    #   InsectTaxaCount = readr::col_integer(),
-    #   InsectAbundance = readr::col_integer(),
-    #   NonInsectTaxaCount = readr::col_integer(),
-    #   NonInsectAbundance = readr::col_integer(),
-    #   .default = readr::col_character()
-    # ),
+    BMI = readr::cols(
+      VisitDate = readr::col_date(),
+      DateCollected = readr::col_date(),
+      FieldSplit = readr::col_integer(),
+      LabSplit = readr::col_double(),
+      SampleArea_m2 = readr::col_double(),
+      Abundance = readr::col_integer(),
+      Richness = readr::col_integer(),
+      DominantTaxaPercent = readr::col_double(),
+      SplitCount = readr::col_integer(),
+      FixedCount = readr::col_integer(),
+      BigRareCount = readr::col_integer(),
+      ShannonsDiversity = readr::col_double(),
+      SimpsonsDiversity = readr::col_double(),
+      Evenness = readr::col_double(),
+      EPTTaxaCount = readr::col_integer(),
+      EPTTaxaAbundance = readr::col_integer(),
+      DominantFamilyAbundance = readr::col_integer(),
+      DominantTaxaAbundance = readr::col_integer(),
+      Hilsenhoff = readr::col_double(),
+      IntolerantTaxaCount = readr::col_integer(),
+      IntolerantTaxaAbundance = readr::col_integer(),
+      TolerantTaxaCount = readr::col_integer(),
+      TolerantTaxaAbundance = readr::col_integer(),
+      USFSCommunityToleranceQuo = readr::col_integer(),
+      ShredderTaxaCount = readr::col_integer(),
+      ShredderAbundance = readr::col_integer(),
+      ScraperTaxaCount = readr::col_integer(),
+      ScraperAbundance = readr::col_integer(),
+      CollectorFiltererCount = readr::col_integer(),
+      CollectorFiltererAbundance = readr::col_integer(),
+      CollectorGathererCount = readr::col_integer(),
+      CollectorGathererAbundance = readr::col_integer(),
+      PredatorTaxaCount = readr::col_integer(),
+      PredatorTaxaAbundance = readr::col_integer(),
+      ClingerTaxaCount = readr::col_integer(),
+      LongLivedTaxa = readr::col_integer(),
+      EphemeropteraTaxaCount = readr::col_integer(),
+      EphemeropteraTaxaAbundance = readr::col_integer(),
+      PlecopteraTaxa = readr::col_integer(),
+      PlecopteraTaxaAbundance = readr::col_integer(),
+      TrichopteraTaxaCount = readr::col_integer(),
+      TrichopteraAbundance = readr::col_integer(),
+      ColeopteraTaxaCount = readr::col_integer(),
+      ColeopteraAbundance = readr::col_integer(),
+      ElmidaeTaxaCount = readr::col_integer(),
+      ElmidaeAbundance = readr::col_integer(),
+      MegalopteraTaxaCount = readr::col_integer(),
+      MegalopteraAbundance = readr::col_integer(),
+      DipteraTaxaCount = readr::col_integer(),
+      DipteraAbundance = readr::col_integer(),
+      ChironomidaeTaxaCount = readr::col_integer(),
+      ChironomidaeAbundance = readr::col_integer(),
+      CrustaceaTaxaCount = readr::col_integer(),
+      CrustaceaAbundance = readr::col_integer(),
+      OligochaeteTaxaCount = readr::col_integer(),
+      OligochaeteAbundance = readr::col_integer(),
+      MolluscaTaxaCount = readr::col_integer(),
+      MolluscaAbundance = readr::col_integer(),
+      InsectTaxaCount = readr::col_integer(),
+      InsectAbundance = readr::col_integer(),
+      NonInsectTaxaCount = readr::col_integer(),
+      NonInsectAbundance = readr::col_integer(),
+      .default = readr::col_character()
+      ),
     Channel = readr::cols(
       VisitDate = readr::col_date(),
       .default = readr::col_character()
@@ -734,8 +737,8 @@ GetRawData <- function(park, site, field.season) {
 #' @return The name of the site
 #' @export
 #'
-GetSiteName <- function(conn, path.to.data, site.code, data.source = "database") {
-  site <- ReadAndFilterData(conn, path.to.data, site = site.code, data.source = data.source, data.name = "Site")
+GetSiteName <- function(site.code, data.source = "database") {
+  site <- ReadAndFilterData(site = site.code, data.name = "Site")
   site %<>% dplyr::select("SiteCode", "SiteName") |>
     unique() |>
     dplyr::filter(SiteCode == site.code)
