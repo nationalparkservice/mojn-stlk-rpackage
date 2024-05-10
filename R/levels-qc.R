@@ -1,4 +1,4 @@
-#' Calculates mean elevations for each survey point type in a survey
+#' Calculates mean elevations for each survey point type in a survey (digital level)
 #'
 #' @inheritParams ReadAndFilterData
 #'
@@ -63,7 +63,8 @@ SurveyPointElevation <- function(park, site, field.season) {
       # Calc elevations for current setup
       bs <- bs |>
         dplyr::select(-RM1_GivenElevation_m, -TempCorrectedHeight_ft, -SurveyPoint)
-      temp_lvls <- levels |> dplyr::filter(SetupNumber == setup) |>
+      temp_lvls <- levels |>
+        dplyr::filter(SetupNumber == setup) |>
         dplyr::left_join(bs, by = c("SiteCode", "VisitDate", "FieldSeason", "VisitType", "SetupNumber")) |>
         dplyr::mutate(TempCorrectedElevation_ft = InstrumentHeight_ft - TempCorrectedHeight_ft)
       temp_corrected_lvls <- rbind(temp_corrected_lvls, temp_lvls)
@@ -98,9 +99,54 @@ SurveyPointElevation <- function(park, site, field.season) {
       unique() |>
       dplyr::filter(!grepl("TP", SurveyPoint)) |>
       dplyr::ungroup() |>
-      dplyr::filter(!(SiteShort == "DEAD0" & FieldSeason == "2021" & SurveyPoint == "WS"))
+      dplyr::filter(!(SiteShort == "DEAD0" & FieldSeason == "2021" & SurveyPoint == "WS")) |>
+      dplyr::filter(VisitType == "Primary") |>
+      dplyr::select(-c(VisitType, DPL, SurveyPoint)) |>
+      dplyr::rename(FinalElevation_ft = FinalCorrectedElevation_ft) |>
+      dplyr::relocate(ClosureError_ft, .after = "FinalElevation_ft") |>
+      tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left")
 
     return(final_lvls)
+}
+
+#' Calculates mean elevations for each survey point type in a survey (string)
+#'
+#' @inheritParams ReadAndFilterData
+#'
+#' @return A tibble
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'     StringSurveyElevation()
+#'     StringSurveyElevation(site = "GRBA_L_BAKR0", field.season = "2016")
+#' }
+
+StringSurveyElevation <- function(park, site, field.season) {
+  str <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelString")
+
+  elevs <- str |>
+    dplyr::filter(VisitType == "Primary") |>
+    dplyr::select(-c(VisitType, DPL, RM1_GivenElevation_m)) |>
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, Benchmark) |>
+    dplyr::summarise(MeanHeight_ft = mean(Height_ft),
+                     StDev_ft = sd(Height_ft),
+                     Count = dplyr::n()) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(Offset_ft = dplyr::case_when(grepl("BM1", Benchmark)  ~ (measurements::conv_unit(100, "m", "ft") - MeanHeight_ft),
+                                               (SiteCode %in% c("GRBA_L_DEAD0") & grepl("BM4", Benchmark))  ~ (measurements::conv_unit(102.105, "m", "ft") - MeanHeight_ft),
+                                               TRUE ~ NA)) |>
+    dplyr::group_by(SiteCode, FieldSeason) |>
+    tidyr::fill(Offset_ft) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(FinalElevation_ft = dplyr::case_when(grepl("BM1", Benchmark) ~ (measurements::conv_unit(100, "m", "ft")),
+                                                       TRUE ~ MeanHeight_ft + Offset_ft)) |>
+    dplyr::select(-c(MeanHeight_ft, Offset_ft)) |>
+    tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left") |>
+    dplyr::relocate(FinalElevation_ft, .after = "Benchmark")
+
+  return(elevs)
+
 }
 
 #' Calculates lake level elevations
@@ -159,15 +205,16 @@ LakeSurfaceElevation <- function(park, site, field.season) {
     dplyr::filter(Benchmark == "Water Surface") |>
     dplyr::mutate(SurveyType = "Digital Level",
                   BenchmarkUsed = NA_character_) |>
-    dplyr::rename(FinalElevation_ft = FinalCorrectedElevation_ft) |>
-    dplyr::select(-SurveyPoint, -Benchmark, -DPL) |>
-    dplyr::relocate(SurveyType, .after = "VisitType") |>
-    dplyr::relocate(FinalElevation_ft, .after = "SurveyType")
+    dplyr::select(-Benchmark) |>
+    dplyr::relocate(FinalElevation_ft, .after = "SurveyType") |>
+    dplyr::relocate(ClosureError_ft, .after = "FinalElevation_ft")
   }
 
   string <- string |>
+    dplyr::filter(VisitType == "Primary") |>
+    dplyr::select(-c(DPL, VisitType)) |>
     dplyr::mutate(BenchmarkNumber = substring(Benchmark, nchar(Benchmark))) |>
-    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType) |>
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason) |>
     dplyr::mutate(MinBenchmark = min(BenchmarkNumber),
                   BenchmarkElevation_ft = measurements::conv_unit(RM1_GivenElevation_m, "m", "ft")) |>
     dplyr::filter(BenchmarkNumber == MinBenchmark) |>
@@ -176,7 +223,7 @@ LakeSurfaceElevation <- function(park, site, field.season) {
     dplyr::mutate(BenchmarkUsed = Benchmark,
                   ClosureError_ft = as.double(NA),
                   SurveyType = "String") |>
-    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SurveyType, FinalElevation_ft, ClosureError_ft, BenchmarkUsed) |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, SurveyType, FinalElevation_ft, ClosureError_ft, BenchmarkUsed) |>
     unique()
 
   not_all_na <- function(x) any(!is.na(x))
@@ -186,7 +233,8 @@ LakeSurfaceElevation <- function(park, site, field.season) {
     dplyr::select(where(not_all_na)) |>
     dplyr::mutate(FinalElevation_m = measurements::conv_unit(FinalElevation_ft, "ft", "m"),
                   ClosureError_m = measurements::conv_unit(ClosureError_ft, "ft", "m")) |>
-    dplyr::relocate(any_of("BenchmarkUsed"), .after = "ClosureError_m")
+    dplyr::relocate(any_of("BenchmarkUsed"), .after = "ClosureError_m") |>
+    dplyr::select(-c(ClosureError_ft, ClosureError_m, BenchmarkUsed))
 
   return(lake_elevation)
 }
@@ -201,33 +249,82 @@ LakeSurfaceElevation <- function(park, site, field.season) {
 #'
 #' @examples
 #' \dontrun{
-#'     qcBenchmarkElevation()
-#'     qcBenchmarkElevation(site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
+#'     qcBenchmarkConsistency()
+#'     qcBenchmarkConsistency(site = "GRBA_L_BAKR0", field.season = c("2016", "2017", "2018", "2019"))
 #' }
-qcBenchmarkElevation <- function(park, site, field.season, sd_cutoff = NA) {
-  lvls <- SurveyPointElevation(park = park, site = site, field.season = field.season)
+qcBenchmarkConsistency <- function(park, site, field.season, sd_cutoff = NA) {
+  lvls.dl <- SurveyPointElevation(park = park, site = site, field.season = field.season) |>
+    dplyr::mutate(Method = "Digital Level") |>
+    dplyr::select(-c(ClosureError_ft))
 
-  lvls <- lvls |>
-    dplyr::select(Park, SiteShort, SiteCode, SiteName, Benchmark, FinalCorrectedElevation_ft) |>
+  lvls.str <- StringSurveyElevation(park = park, site = site, field.season = field.season) |>
+    dplyr::mutate(Method = "String") |>
+    dplyr::select(-c(StDev_ft, Count))
+
+  lvls.all <- rbind(lvls.dl, lvls.str) |>
     dplyr::filter(Benchmark != "Water Surface") |>
-    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, Benchmark) |>
-    dplyr::summarize(MeanElevation_ft = mean(FinalCorrectedElevation_ft),
-                  StDevElevation_ft = sd(FinalCorrectedElevation_ft),
-                  Count = n()) |>
-    dplyr::ungroup()
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, Benchmark, Method) |>
+    dplyr::summarize(MeanElevation_ft = mean(FinalElevation_ft),
+                     StDev_ft = sd(FinalElevation_ft),
+                     Count = dplyr::n()) |>
+    dplyr::ungroup() |>
+    tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left")
 
   if (!is.na(sd_cutoff)) {
     lvls <- lvls |>
-      dplyr::filter(StDevElevation_ft >= sd_cutoff)
+      dplyr::filter(StDev_ft >= sd_cutoff)
   }
 
-  return(lvls)
+  return(lvls.all)
+}
+
+#' Plot median, quartile, and outlier elevations for each benchmark that is not assigned a given elevation (e.g., Benchmark 1)
+#'
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#'
+#' @return A ggplot object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'     BenchmarkConsistencyPlot()
+#'     BenchmarkConsistencyPlot(site = "GRBA_L_BAKR0")
+#' }
+BenchmarkConsistencyPlot <- function(park, site, field.season) {
+  lvls.dl <- SurveyPointElevation(park = park, site = site, field.season = field.season) |>
+    dplyr::mutate(Method = "Digital Level") |>
+    dplyr::select(-c(ClosureError_ft))
+
+  lvls.str <- StringSurveyElevation(park = park, site = site, field.season = field.season) |>
+    dplyr::mutate(Method = "String") |>
+    dplyr::select(-c(StDev_ft, Count))
+
+  lvls.all <- rbind(lvls.dl, lvls.str) |>
+    tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left") |>
+    dplyr::filter(!(Benchmark %in% c("Water Surface", "BM1", "BM4")))
+
+  plt <- ggplot2::ggplot(data = lvls.all,
+                         ggplot2::aes(x = Benchmark,
+                                      y = FinalElevation_ft,
+                                      group = interaction(Benchmark, Method),
+                                      fill = Method)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_wrap(SiteName~.,
+                        ncol = 3,
+                        scales = "free") +
+    khroma::scale_fill_bright() +
+    ggplot2::theme(legend.position="bottom")
+
+  return(plt)
+
 }
 
 
 #' Calculates mean and standard deviation of string survey heights for each benchmark
 #'
-#' @inheritParams qcBenchmarkElevation
+#' @inheritParams qcBenchmarkConsistency
 #'
 #' @return A tibble
 #' @export
@@ -241,7 +338,8 @@ qcStringSurveyHeights <- function(park, site, field.season, sd_cutoff = NA) {
   str_survey <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelString") |>
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, Benchmark) |>
     dplyr::summarise(MeanHeight_ft = mean(Height_ft),
-                     StDevHeight_ft = sd(Height_ft)) |>
+                     StDevHeight_ft = sd(Height_ft),
+                     Count = dplyr::n()) |>
     dplyr::ungroup()
 
   if (!is.na(sd_cutoff)) {
@@ -255,9 +353,9 @@ qcStringSurveyHeights <- function(park, site, field.season, sd_cutoff = NA) {
 
 #' Calculates mean and standard deviation of string survey lake level elevations for each year
 #'
-#' @inheritParams qcBenchmarkElevation
+#' @inheritParams qcBenchmarkConsistency
 #'
-#' @return A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, MeanFinalElevation_ft, StDevFinalElevation_ft
+#' @return A tibble
 #' @export
 #'
 #' @examples
@@ -383,32 +481,46 @@ qcClosureErrorDiscrepancies <- function(park, site, field.season) {
 #' PlotBenchmarkElevation(site = "GRBA_L_DEAD0", plotly = TRUE)
 #' }
 PlotBenchmarkElevation <- function(park, site, field.season, include.title = TRUE, plotly = FALSE) {
-  lvls <- SurveyPointElevation(park = park, site = site, field.season = field.season) |>
+  str <- StringSurveyElevation(park = park, site = site, field.season = field.season) |>
+    dplyr::select(-c(StDev_ft, Count)) |>
+    dplyr::mutate(Method = "String")
+
+  dl <- SurveyPointElevation(park = park, site = site, field.season = field.season) |>
+    dplyr::select(-c(ClosureError_ft)) |>
     dplyr::filter(Benchmark != "Water Surface") |>
-    tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left")
+    dplyr::mutate(Method = "Digital Level")
+
+  lvls <- rbind(str, dl) |>
+    tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left") |>
+    tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, Benchmark, Method))
 
   ptol_muted_6 <- c("#CC6677", "#332288", "#DDCC77", "#117733", "#88CCEE", "#882255")
 
-  plt <- FormatPlot(lvls,
-                    FieldSeason,
-                    FinalCorrectedElevation_ft,
-                    SiteName,
-                    # plot.title = ifelse(include.title, "Benchmark elevation over time", ""),
-                    x.lab = "Field Season",
-                    y.lab = "Elevation (ft)") +
-    ggplot2::aes(color = Benchmark,
-                 group = Benchmark,
-                 text = paste0("Field Season: ", FieldSeason, "<br>",
-                               "Survey Point: ", SurveyPoint, "<br>",
-                               "Benchmark: ", Benchmark, "<br>",
-                               "Elevation (ft): ", round(FinalCorrectedElevation_ft, 2))) +
-    ggplot2::geom_point(ggplot2::aes()) +
-    ggplot2::geom_line(linewidth = 1) +
-    khroma::scale_color_muted()
+  plt <- ggplot2::ggplot(data = lvls,
+                         ggplot2::aes(x = FieldSeason,
+                                      y = FinalElevation_ft,
+                                      color = Benchmark,
+                                      group = interaction(Benchmark, Method, SiteName),
+                                      text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                    "Benchmark: ", Benchmark, "<br>",
+                                                    "Elevation (ft): ", round(FinalElevation_ft, 2), "<br>",
+                                                    "Method: ", Method))) +
+    ggplot2::geom_point(size = 2.2,
+                        ggplot2::aes(shape = Method)) +
+    ggplot2::geom_line(linewidth = 1,
+                       ggplot2::aes(linetype = Method)) +
+    ggplot2::facet_wrap(SiteName~.,
+                        ncol = 2,
+                        scales = "free_y") +
+    khroma::scale_color_muted() +
+    ggplot2::labs(title = "Benchmark elevation over time",
+                  x = "Field Season",
+                  y = "Elevation (ft)") +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 
-    if (plotly) {
-      plt <- plotly::ggplotly(plt, tooltip = "text")
-    }
+  if (plotly) {
+    plt <- plotly::ggplotly(plt, tooltip = "text")
+  }
 
    return(plt)
 }
@@ -444,7 +556,7 @@ PlotLakeSurfaceElevation <- function(park, site, field.season, include.title = T
                  text = paste0("Field Season: ", FieldSeason, "<br>",
                                "Survey Type: ", SurveyType, "<br>",
                                "Elevation (ft): ", round(FinalElevation_ft, 2))) +
-    ggplot2::geom_point(ggplot2::aes()) +
+    ggplot2::geom_point(size = 2.2) +
     ggplot2::geom_line(linewidth = 1) +
     ggplot2::scale_shape_discrete(na.translate = FALSE) +
     khroma::scale_color_muted()
@@ -452,6 +564,54 @@ PlotLakeSurfaceElevation <- function(park, site, field.season, include.title = T
     if (plotly) {
       plt <- plotly::ggplotly(plt, tooltip = "text")
     }
+
+  return(plt)
+}
+
+#' Plot lake levels determined by all benchmarks where string method was used
+#'
+#' @param park
+#' @param site
+#' @param field.season
+#'
+#' @return A ggplot object
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' PlotStringComparisons()
+#' PlotStringComparisons(site = "GRBA_L_DEAD0")
+#' }
+PlotStringComparisons <- function(park, site, field.season) {
+  str <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelString")
+
+  mean <- str |>
+    dplyr::filter(VisitType == "Primary",
+                  IsLakeDry == FALSE) |>
+    dplyr::select(-c(VisitType, DPL, IsLakeDry)) |>
+    dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, Benchmark, RM1_GivenElevation_m) |>
+    dplyr::summarize(MeanHeight_ft = mean(Height_ft)) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(GivenElevation_ft = measurements::conv_unit(RM1_GivenElevation_m, "m", "ft"),
+                  LakeElevation_ft = GivenElevation_ft - MeanHeight_ft) |>
+    tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left") |>
+    tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName))
+
+  plt <- ggplot2::ggplot(mean,
+                         ggplot2::aes(x = FieldSeason,
+                                      y = LakeElevation_ft,
+                                      group = Benchmark,
+                                      color = Benchmark)) +
+    ggplot2::geom_point(size = 2.5,
+                        ggplot2::aes(shape = Benchmark)) +
+    ggplot2::facet_wrap(SiteName~.,
+                        ncol = 2,
+                        scales = "free_y") +
+    khroma::scale_color_muted() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)) +
+    ggplot2::labs(title = "Lake surface elevations by benchmark",
+                  x = "Field Season",
+                  y = "Elevation (ft)")
 
   return(plt)
 }

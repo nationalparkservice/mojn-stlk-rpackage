@@ -16,7 +16,7 @@ qcStringSurveyElevations(park, site, field.season, sd_cutoff = NA)
 \item{sd_cutoff}{Optional. If specified, only return benchmarks where standard deviation of final corrected elevations is greater than or equal to \code{sd_cutoff}.}
 }
 \value{
-A tibble with columns Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, MeanFinalElevation_ft, StDevFinalElevation_ft
+A tibble
 }
 \description{
 Calculates mean and standard deviation of string survey lake level elevations for each year
