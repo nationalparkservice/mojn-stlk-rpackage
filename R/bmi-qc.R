@@ -15,13 +15,13 @@
 BMIMetricsLong <- function(park, site, field.season) {
   metrics <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "BMIMetrics")
   visit <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "BMIVisit")
-  meta <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit")
+  meta <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit") # Delete once VisitType is added to BMIVisit table
 
-  meta <- meta |>
+  meta <- meta |> # Delete once VisitType is added to BMIVisit table
     dplyr::select(SiteCode, VisitDate, SiteShort, VisitType) |>
     unique()
 
-  visit <- visit |>
+  visit <- visit |> # Add VisitType to selected columns once added to BMIVisit table in AGOL
     dplyr::select(SampleID, Laboratory, Project, Park, SiteCode, SiteName, CollectionDate, FieldSeason, AnalysisType, SamplerType, Area, FieldSplit, LabSplit, SplitCount) |>
     dplyr::rename(VisitDate = CollectionDate) |>
     unique()
@@ -477,4 +477,105 @@ BMITaxonomicMetricsPlot <- function(park, site, field.season) {
 
   return(bmi.tax.plot)
 
+}
+
+
+#' Pivot BMI data to long format (Deprecated data! Use for QC purposes only)
+#'
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#'
+#' @return A tibble
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' BMILong()
+#' BMILong(site = "GRBA_S_MILL1")
+#' BMILong(site = c("GRBA_S_BAKR2", "GRBA_S_BAKR3"), field.season = "2015")
+#' }
+BMILong <- function(park, site, field.season) {
+  bmi <- ReadAndFilterData(data.name = "BMI") |>
+    dplyr::rename(AnalysisType = SampleType,
+                  SamplerType = SampleCollectionMethod,
+                  SampleID = LabSampleNumber,
+                  Area = SampleArea_m2) |>
+    dplyr::select(-c(DPL, BMIMethod, DateCollected, LabNotes, FieldNotes, FixedCount, BigRareCount, DominantFamily, DominantTaxa, LabName)) |>
+    dplyr::mutate(Laboratory = "NAMC",
+                  Project = "STLK",
+                  Delivery = "Deprecated") |>
+    dplyr::relocate(Delivery, Laboratory, SampleID, Project, Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, AnalysisType, SamplerType, Area, FieldSplit, LabSplit, SplitCount) |>
+    dplyr::mutate(DominantFamily = DominantFamilyAbundance/Abundance) |>
+    tidyr::pivot_longer(cols = Abundance:DominantFamily, names_to = "Attribute", values_to = "Value") |>
+    dplyr::mutate(Attribute = dplyr::case_when(Attribute == "PlecopteraTaxa" ~ "PlecopteraTaxaCount",
+                                               Attribute == "LongLivedTaxa" ~ "LongLivedTaxaCount",
+                                               Attribute == "Richness" ~ "TotalCount",
+                                               Attribute == "Abundance" ~ "TotalAbundance",
+                                               Attribute == "DominantTaxa" ~ "DominantTaxon",
+                                               Attribute == "InsectTaxaCount" ~ "InsectaTaxaCount",
+                                               Attribute == "InsectAbundance" ~ "InsectaAbundance",
+                                               Attribute == "DominantTaxaAbundance" ~ "DominantTaxonAbundance",
+                                               Attribute == "DominantTaxaPercent" ~ "DominantTaxonPercent",
+                                               TRUE ~ Attribute)) |>
+    dplyr::mutate(Metric = dplyr::case_when(grepl("Count", Attribute) ~ "Richness",
+                                            grepl("Abundance", Attribute) ~ "Density",
+                                            grepl("Hilsenhoff|Shannons|Simpsons|Evenness|USFS", Attribute) ~ "Index",
+                                            grepl("DominantFamily", Attribute) ~ "Fraction",
+                                            grepl("DominantTaxon", Attribute) ~ "Fraction",
+                                            TRUE ~ as.character(Attribute))) |>
+    dplyr::mutate(Category = dplyr::case_when(Attribute %in% c("TotalCount") ~ "Overall",
+                                              Attribute %in% c("TotalAbundance") ~ "Overall",
+                                              grepl("Shredder|Scraper|Collector|Predator", Attribute) ~ "Functional Feeding Group",
+                                              grepl("Clinger", Attribute) ~ "Habitat",
+                                              grepl("LongLived|Intolerant|Tolerant", Attribute) ~ "Sensitivity",
+                                              grepl("Insect|Ephemeroptera|Plecoptera|Trichoptera|Coleoptera|Elmidae|Diptera|Chironomidae|Megaloptera|Crustacea|NonInsect|Oligochaete|Mollusca", Attribute) ~ "Taxa Group",
+                                              grepl("DominantFamily", Attribute) ~ "Dominant Family",
+                                              grepl("DominantTaxon", Attribute) ~ "Dominant Taxon",
+                                              grepl("Hilsenhoff", Attribute) ~ "Hilsenhoff",
+                                              grepl("Shannons", Attribute) ~ "Shannons",
+                                              grepl("Simpsons", Attribute) ~ "Simpsons",
+                                              grepl("Evenness", Attribute) ~ "Evenness",
+                                              grepl("USFS", Attribute) ~ "USFS Community Tolerance Quotient",
+                                              TRUE ~ as.character(Attribute))) |>
+    dplyr::mutate(Type = dplyr::case_when(grepl("CollectorFilterer", Attribute) ~ "Collector Filterer",
+                                          grepl("CollectorGatherer", Attribute) ~ "Collector Gatherer",
+                                          grepl("Scraper", Attribute) ~ "Scraper",
+                                          grepl("Shredder", Attribute) ~ "Shredder",
+                                          grepl("Parasite", Attribute) ~ "Parasite",
+                                          grepl("Predator", Attribute) ~ "Predator",
+                                          grepl("PiercerHerbivore", Attribute) ~ "Piercer Herbivore",
+                                          grepl("Clinger", Attribute) ~ "Clinger",
+                                          grepl("Planktonic", Attribute) ~ "Planktonic",
+                                          grepl("Skater", Attribute) ~ "Skater",
+                                          grepl("Climber", Attribute) ~ "Climber",
+                                          grepl("Crawler", Attribute) ~ "Crawler",
+                                          grepl("Swimmer", Attribute) ~ "Swimmer",
+                                          grepl("Burrower", Attribute) ~ "Burrower",
+                                          grepl("Sprawler", Attribute) ~ "Sprawler",
+                                          grepl("LongLived", Attribute) ~ "Long Lived",
+                                          grepl("Intolerant", Attribute) ~ "Intolerant",
+                                          grepl("Tolerant", Attribute) ~ "Tolerant",
+                                          grepl("Insecta", Attribute) ~ "Insecta",
+                                          grepl("Ephemeroptera", Attribute) ~ "Ephemeroptera",
+                                          grepl("Plecoptera", Attribute) ~ "Plecoptera",
+                                          grepl("Trichoptera", Attribute) ~ "Trichoptera",
+                                          grepl("Coleoptera", Attribute) ~ "Coleoptera",
+                                          grepl("Elmidae", Attribute) ~ "Elmidae",
+                                          grepl("Diptera", Attribute) ~ "Diptera",
+                                          grepl("Chironomidae", Attribute) ~ "Chironomidae",
+                                          grepl("Megaloptera", Attribute) ~ "Megaloptera",
+                                          grepl("Crustacea", Attribute) ~ "Crustacea",
+                                          grepl("NonInsect", Attribute) ~ "NonInsects",
+                                          grepl("Oligochaete", Attribute) ~ "Oligochaeta",
+                                          grepl("Mollusca", Attribute) ~ "Mollusca",
+                                          TRUE ~ NA_character_)) |>
+    dplyr::mutate(Label = dplyr::case_when(Category %in% c("Functional Feeding Group", "Habitat", "Sensitivity") ~ paste0(Category, ": ", Type),
+                                           Category %in% c("Taxa Group") ~ paste0(Category, ": ", Type),
+                                           Category %in% c("Overall") ~ paste0(Category, " ", Metric),
+                                           Metric %in% c("Index") ~ paste0(Metric, ": ", Category),
+                                           Metric %in% c("Fraction") ~ paste0(Metric, ": ", Category),
+                                           TRUE ~ NA_character_))
+
+  return(bmi)
 }
