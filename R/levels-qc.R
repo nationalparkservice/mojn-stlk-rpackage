@@ -195,7 +195,7 @@ LakeSurfaceElevation <- function(park, site, field.season) {
       FieldSeason = character(),
       VisitType = character(),
       SurveyType = character(),
-      FinalElevation_ft = double(),
+      Elevation_ft = double(),
       ClosureError_ft = double(),
       BenchmarkUsed = logical()
     )
@@ -261,8 +261,8 @@ qcBenchmarkConsistency <- function(park, site, field.season, sd_cutoff = NA) {
   lvls.all <- rbind(lvls.dl, lvls.str) |>
     dplyr::filter(Benchmark != "Water Surface") |>
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, Benchmark, Method) |>
-    dplyr::summarize(MeanElevation_ft = mean(FinalElevation_ft),
-                     StDev_ft = sd(FinalElevation_ft),
+    dplyr::summarize(MeanElevation_ft = mean(Elevation_ft),
+                     StDev_ft = sd(Elevation_ft),
                      Count = dplyr::n()) |>
     dplyr::ungroup() |>
     tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left")
@@ -304,7 +304,7 @@ BenchmarkConsistencyPlot <- function(park, site, field.season) {
 
   plt <- ggplot2::ggplot(data = lvls.all,
                          ggplot2::aes(x = Benchmark,
-                                      y = FinalElevation_ft,
+                                      y = Elevation_ft,
                                       group = interaction(Benchmark, Method),
                                       fill = Method)) +
     ggplot2::geom_boxplot() +
@@ -398,8 +398,8 @@ qcElevationDiscrepancies <- function(park, site, field.season) {
  survey_elevs <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelSurvey")
 
  r_elevs_data <- r_elevs |>
-   dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, SurveyPoint, Benchmark, FinalCorrectedElevation_ft) |>
-   dplyr::rename(R_Elev_ft = FinalCorrectedElevation_ft)
+   dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, Benchmark, Elevation_ft) |>
+   dplyr::rename(R_Elev_ft = Elevation_ft)
 
  survey_elevs_data <- survey_elevs |>
    dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, FieldCalculatedWaterSurfaceElevation_m, FieldCalculatedRM2Elevation_m, FieldCalculatedRM3Elevation_m) |>
@@ -416,7 +416,7 @@ qcElevationDiscrepancies <- function(park, site, field.season) {
    dplyr::select(-c("Survey_Elev_m"))
 
  elevs_data_joined <- r_elevs_data |>
-   dplyr::inner_join(survey_elevs_data, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason", "SurveyPoint")) |>
+   dplyr::inner_join(survey_elevs_data, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason")) |>
    dplyr::mutate(Elev_diff = round(as.numeric(format(R_Elev_ft - Survey_Elev_ft, scientific = FALSE)), 5)) |>
    dplyr::arrange(desc(abs(Elev_diff)))
 
@@ -452,9 +452,7 @@ qcClosureErrorDiscrepancies <- function(park, site, field.season) {
     dplyr::select(SiteCode, SiteName, VisitDate, FieldSeason, FieldCalculatedClosureError) |>
     dplyr::rename(Survey_CE_ft = FieldCalculatedClosureError) |>
     unique() |>
-    dplyr::mutate(Survey_CE_ft = round(as.numeric(format(Survey_CE_ft, scientific = FALSE)), 4)) |>
     dplyr::filter(!is.na(Survey_CE_ft))
-
 
   ce_data_joined <- r_ce_data |>
     dplyr::inner_join(survey_ce_data, by = c("SiteCode", "SiteName", "VisitDate", "FieldSeason")) |>
@@ -495,12 +493,12 @@ PlotBenchmarkElevation <- function(park, site, field.season, include.title = TRU
 
   plt <- ggplot2::ggplot(data = lvls,
                          ggplot2::aes(x = FieldSeason,
-                                      y = FinalElevation_ft,
+                                      y = Elevation_ft,
                                       color = Benchmark,
                                       group = interaction(Benchmark, Method, SiteName),
                                       text = paste0("Field Season: ", FieldSeason, "<br>",
                                                     "Benchmark: ", Benchmark, "<br>",
-                                                    "Elevation (ft): ", round(FinalElevation_ft, 2), "<br>",
+                                                    "Elevation (ft): ", round(Elevation_ft, 2), "<br>",
                                                     "Method: ", Method))) +
     ggplot2::geom_point(size = 2.2,
                         ggplot2::aes(shape = Method)) +
