@@ -102,8 +102,8 @@ SurveyPointElevation <- function(park, site, field.season) {
       dplyr::filter(!(SiteShort == "DEAD0" & FieldSeason == "2021" & SurveyPoint == "WS")) |>
       dplyr::filter(VisitType == "Primary") |>
       dplyr::select(-c(VisitType, DPL, SurveyPoint)) |>
-      dplyr::rename(FinalElevation_ft = FinalCorrectedElevation_ft) |>
-      dplyr::relocate(ClosureError_ft, .after = "FinalElevation_ft") |>
+      dplyr::rename(Elevation_ft = FinalCorrectedElevation_ft) |>
+      dplyr::relocate(ClosureError_ft, .after = "Elevation_ft") |>
       tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left")
 
     return(final_lvls)
@@ -205,7 +205,6 @@ LakeSurfaceElevation <- function(park, site, field.season) {
     dplyr::mutate(SurveyType = "Digital Level",
                   BenchmarkUsed = NA_character_) |>
     dplyr::select(-Benchmark) |>
-    dplyr::rename(Elevation_ft = FinalElevation_ft) |>
     dplyr::relocate(Elevation_ft, .after = "SurveyType") |>
     dplyr::relocate(ClosureError_ft, .after = "Elevation_ft")
   }
