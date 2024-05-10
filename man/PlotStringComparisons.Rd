@@ -7,7 +7,11 @@
 PlotStringComparisons(park, site, field.season)
 }
 \arguments{
-\item{field.season}{}
+\item{park}{Optional. Four-letter park code to filter on, e.g. "GRBA".}
+
+\item{site}{Optional. Site code to filter on, e.g. "GRBA_L_BAKR1".}
+
+\item{field.season}{Optional. Field season name to filter on, e.g. "2019".}
 }
 \value{
 A ggplot object

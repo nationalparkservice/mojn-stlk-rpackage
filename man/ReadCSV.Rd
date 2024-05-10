@@ -2,13 +2,21 @@
 % Please edit documentation in R/utils.R
 \name{ReadCSV}
 \alias{ReadCSV}
-\title{Title}
+\title{Read data from one or more CSVs}
 \usage{
 ReadCSV(data_path)
 }
 \arguments{
 \item{data_path}{}
 }
+\value{
+A list of data frames
+}
 \description{
-Title
+Read data from one or more CSVs
+}
+\examples{
+\dontrun{
+ReadCSV("path/to/csv/folder")
+}
 }

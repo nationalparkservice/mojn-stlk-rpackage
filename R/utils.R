@@ -990,14 +990,17 @@ ReadSqlDatabase <- function(...) {
   return(data)
 }
 
-#' Title
+#' Read data from one or more CSVs
 #'
 #' @param data_path
 #'
-#' @return
+#' @return A list of data frames
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' ReadCSV("path/to/csv/folder")
+#' }
 ReadCSV <- function(data_path) {
   data_path <- normalizePath(data_path)
   col.spec <- GetColSpec()
