@@ -223,7 +223,7 @@ BMIFormatted <- function(park, site, field.season) {
     dplyr::mutate(Category = dplyr::case_when(Attribute %in% c("UniqueRichness") ~ "Overall",
                                               Attribute %in% c("Density") ~ "Overall",
                                               grepl("Feed", Attribute) ~ "Functional Feeding Group",
-                                              grepl("Habit", Attribute) ~ "Habitat",
+                                              grepl("Habit", Attribute) ~ "Habit",
                                               grepl("LongLived|Intolerant|Tolerant", Attribute) ~ "Sensitivity",
                                               grepl("Insecta|Ephemeroptera|Plecoptera|Trichoptera|Coleoptera|Elmidae|Diptera|Chironomidae|Megaloptera|Crustacea|NonInsects|Oligochaeta|Mollusca", Attribute) ~ "Taxa Group",
                                               grepl("DominantFamily", Attribute) ~ "Dominant Family",
@@ -265,7 +265,7 @@ BMIFormatted <- function(park, site, field.season) {
                                           grepl("Oligochaeta", Attribute) ~ "Oligochaeta",
                                           grepl("Mollusca", Attribute) ~ "Mollusca",
                                           TRUE ~ NA_character_)) |>
-    dplyr::mutate(Label = dplyr::case_when(Category %in% c("Functional Feeding Group", "Habitat", "Sensitivity") ~ paste0(Category, ": ", Type),
+    dplyr::mutate(Label = dplyr::case_when(Category %in% c("Functional Feeding Group", "Habit", "Sensitivity") ~ paste0(Category, ": ", Type),
                                            Category %in% c("Taxa Group") ~ paste0(Category, ": ", Type),
                                            Category %in% c("Overall") ~ paste0(Category, " ", Metric),
                                            Metric %in% c("Index") ~ paste0(Metric, ": ", Category),
@@ -439,6 +439,47 @@ BMIFunctionalMetricsPlot <- function(park, site, field.season) {
 }
 
 
+#' Plot habit-related richness and abundance metrics for each BMI sample.
+#'
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#'
+#' @return A ggplot object
+#' @export
+#'
+BMIHabitMetricsPlot <- function(park, site, field.season) {
+  bmi.formatted <- BMIFormatted(park = park, site = site, field.season = field.season)
+
+  bmi.hab <- bmi.formatted |>
+    dplyr::filter(AnalysisType == "Routine", VisitType == "Primary", SiteShort != "BAKR2",
+                  Category %in% c("Habit"))
+
+  bmi.hab$Metric_f = factor(bmi.hab$Metric, levels = c("Richness", "Density"))
+  bmi.hab$Type_f = factor(bmi.hab$Type, levels = c("Burrower", "Climber", "Clinger", "Crawler", "Planktonic", "Skater", "Sprawler", "Swimmer"))
+
+  bmi.hab.plot <- ggplot2::ggplot(bmi.hab, ggplot2::aes(x = FieldSeason,
+                                                        y = Value,
+                                                        color = Type_f,
+                                                        text = paste0("Field Season: ", FieldSeason, "<br>",
+                                                                      "Count: ", Value, "<br>",
+                                                                      "Habit: ", Type_f))) +
+    ggplot2::geom_point() +
+    ggplot2::geom_line(ggplot2::aes(group = Type),
+                       linewidth = 1) +
+    ggplot2::facet_grid(Metric_f~SiteShort, scales = "free_y") +
+    ggplot2::ylab(label = "Count") +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90), legend.position = "bottom") +
+    ggplot2::labs(title = "BMI habit metrics", color = "Habit") +
+    ggplot2::scale_y_continuous(breaks = scales::pretty_breaks(), limits = c(0, NA)) +
+    ggplot2::scale_x_discrete(breaks = scales::pretty_breaks()) +
+    khroma::scale_color_muted()
+
+  return(bmi.hab.plot)
+
+}
+
+
 #' Plot taxonomic-related richness and abundance metrics for each BMI sample.
 #'
 #' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
@@ -527,7 +568,7 @@ BMILong <- function(park, site, field.season) {
     dplyr::mutate(Category = dplyr::case_when(Attribute %in% c("TotalCount") ~ "Overall",
                                               Attribute %in% c("TotalAbundance") ~ "Overall",
                                               grepl("Shredder|Scraper|Collector|Predator", Attribute) ~ "Functional Feeding Group",
-                                              grepl("Clinger", Attribute) ~ "Habitat",
+                                              grepl("Clinger", Attribute) ~ "Habit",
                                               grepl("LongLived|Intolerant|Tolerant", Attribute) ~ "Sensitivity",
                                               grepl("Insect|Ephemeroptera|Plecoptera|Trichoptera|Coleoptera|Elmidae|Diptera|Chironomidae|Megaloptera|Crustacea|NonInsect|Oligochaete|Mollusca", Attribute) ~ "Taxa Group",
                                               grepl("DominantFamily", Attribute) ~ "Dominant Family",
@@ -570,7 +611,7 @@ BMILong <- function(park, site, field.season) {
                                           grepl("Oligochaete", Attribute) ~ "Oligochaeta",
                                           grepl("Mollusca", Attribute) ~ "Mollusca",
                                           TRUE ~ NA_character_)) |>
-    dplyr::mutate(Label = dplyr::case_when(Category %in% c("Functional Feeding Group", "Habitat", "Sensitivity") ~ paste0(Category, ": ", Type),
+    dplyr::mutate(Label = dplyr::case_when(Category %in% c("Functional Feeding Group", "Habit", "Sensitivity") ~ paste0(Category, ": ", Type),
                                            Category %in% c("Taxa Group") ~ paste0(Category, ": ", Type),
                                            Category %in% c("Overall") ~ paste0(Category, " ", Metric),
                                            Metric %in% c("Index") ~ paste0(Metric, ": ", Category),
