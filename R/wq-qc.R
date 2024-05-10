@@ -378,6 +378,7 @@ WqPlotDepthProfile <- function(param, units, park, site, field.season, include.t
     #                            "Value: ", Median, "<br>",
     #                            "Measurement Depth (m): ", Depth_m, "<br>")) +
     ggplot2::labs(color = paste0("Median ", param, ifelse(tolower(param) == "ph", "", paste0(" (", units, ")")))) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 60, hjust = 1)) +
     ggplot2::geom_point(size = 3, pch = 19, stroke = 2, color = "black") +
     ggplot2::geom_point(size = 3, pch = 19) # color = "#3b3b3b", pch = 21
 
