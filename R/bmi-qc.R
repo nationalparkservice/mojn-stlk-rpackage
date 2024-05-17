@@ -15,14 +15,14 @@
 BMIMetricsLong <- function(park, site, field.season) {
   metrics <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "BMIMetrics")
   visit <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "BMIVisit")
-  meta <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit") # Delete once VisitType is added to BMIVisit table
+  meta <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Visit")
 
-  meta <- meta |> # Delete once VisitType is added to BMIVisit table
-    dplyr::select(SiteCode, VisitDate, SiteShort, VisitType) |>
+  meta <- meta |>
+    dplyr::select(SiteCode, SiteShort) |>
     unique()
 
-  visit <- visit |> # Add VisitType to selected columns once added to BMIVisit table in AGOL
-    dplyr::select(SampleID, Laboratory, Project, Park, SiteCode, SiteName, CollectionDate, FieldSeason, AnalysisType, SamplerType, Area, FieldSplit, LabSplit, SplitCount) |>
+  visit <- visit |>
+    dplyr::select(SampleID, Laboratory, Project, Park, SiteCode, SiteName, CollectionDate, FieldSeason, VisitType, AnalysisType, SamplerType, Area, FieldSplit, LabSplit, SplitCount) |>
     dplyr::rename(VisitDate = CollectionDate) |>
     unique()
 
@@ -32,7 +32,7 @@ BMIMetricsLong <- function(park, site, field.season) {
 
   join <- metrics |>
     dplyr::left_join(visit, by = "SampleID", relationship = "many-to-one") |>
-    dplyr::left_join(meta, by = c("SiteCode", "VisitDate"), relationship = "many-to-one") |>
+    dplyr::left_join(meta, by = "SiteCode", relationship = "many-to-one") |>
     dplyr::select(Laboratory, SampleID, Project, Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, AnalysisType, SamplerType, Area, FieldSplit, LabSplit, SplitCount, Attribute, Value) |>
     unique()
 
