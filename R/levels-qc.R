@@ -230,8 +230,8 @@ LakeSurfaceElevation <- function(park, site, field.season) {
     dplyr::select(where(not_all_na)) |>
     dplyr::mutate(Elevation_m = measurements::conv_unit(Elevation_ft, "ft", "m"),
                   ClosureError_m = measurements::conv_unit(ClosureError_ft, "ft", "m")) |>
-    dplyr::relocate(any_of("BenchmarkUsed"), .after = "ClosureError_m") |>
-    dplyr::select(-c(ClosureError_ft, ClosureError_m, BenchmarkUsed))
+    dplyr::relocate(any_of("BenchmarkUsed"), .after = "ClosureError_m")
+#    dplyr::select(-c(ClosureError_ft, ClosureError_m, BenchmarkUsed))
 
   return(lake_elevation)
 }
