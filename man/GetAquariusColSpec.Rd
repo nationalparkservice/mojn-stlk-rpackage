@@ -2,13 +2,13 @@
 % Please edit documentation in R/utils.R
 \name{GetAquariusColSpec}
 \alias{GetAquariusColSpec}
-\title{Get column specifications for Aquarius data that have been written to csv.}
+\title{Get column specifications for Aquarius database}
 \usage{
 GetAquariusColSpec()
 }
 \value{
-A list of column specifications for each csv of Aquarius data.
+A list of column specifications for each table of Aquarius data.
 }
 \description{
-Get column specifications for Aquarius data that have been written to csv.
+Get column specifications for Aquarius database
 }

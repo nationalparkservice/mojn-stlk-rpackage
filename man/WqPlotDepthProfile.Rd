@@ -5,23 +5,16 @@
 \title{Generate lake depth profile plots.}
 \usage{
 WqPlotDepthProfile(
-  conn,
-  path.to.data,
   param,
   units,
   park,
   site,
   field.season,
   include.title = TRUE,
-  plotly = FALSE,
-  data.source = "database"
+  plotly = FALSE
 )
 }
 \arguments{
-\item{conn}{Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.}
-
-\item{path.to.data}{The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.}
-
 \item{param}{The water quality parameter to plot. One of "pH", "DO", "SpCond", or "Temperature".}
 
 \item{units}{Units of dissolved oxygen. Either "mg/L" or "\%". Ignored if \code{param != "DO"}.}
@@ -35,11 +28,9 @@ WqPlotDepthProfile(
 \item{include.title}{Include plot title? Defaults to true.}
 
 \item{plotly}{Return an interactive plotly object instead of a ggplot object? Defaults to false.}
-
-\item{data.source}{Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.}
 }
 \value{
-Depth profile plot for lake water quality.
+ggplot or plotly object
 }
 \description{
 Generate lake depth profile plots.

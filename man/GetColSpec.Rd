@@ -2,13 +2,13 @@
 % Please edit documentation in R/utils.R
 \name{GetColSpec}
 \alias{GetColSpec}
-\title{Get column specifications}
+\title{Get column specifications for SQL database}
 \usage{
 GetColSpec()
 }
 \value{
-A list of column specifications for each table of data.
+A list of column specifications for each table of SQL data.
 }
 \description{
-Get column specifications
+Get column specifications for SQL database
 }

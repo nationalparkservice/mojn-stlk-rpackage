@@ -4,27 +4,14 @@
 \alias{qcNoAnnualVisit}
 \title{Return list of streams and lakes that were not visited for annual monitoring during a field season}
 \usage{
-qcNoAnnualVisit(
-  conn,
-  path.to.data,
-  park,
-  site,
-  field.season,
-  data.source = "database"
-)
+qcNoAnnualVisit(park, site, field.season)
 }
 \arguments{
-\item{conn}{Database connection generated from call to \code{OpenDatabaseConnection()}. Ignored if \code{data.source} is \code{"local"}.}
-
-\item{path.to.data}{The directory containing the csv data exports generated from \code{SaveDataToCsv()}. Ignored if \code{data.source} is \code{"database"}.}
-
 \item{park}{Optional. Four-letter park code to filter on, e.g. "GRBA".}
 
 \item{site}{Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".}
 
 \item{field.season}{Optional. Field season name to filter on, e.g. "2019".}
-
-\item{data.source}{Character string indicating whether to access data in the live Streams and Lakes database (\code{"database"}, default) or to use data saved locally (\code{"local"}). In order to access the most up-to-date data, it is recommended that you select \code{"database"} unless you are working offline or your code will be shared with someone who doesn't have access to the database.}
 }
 \value{
 A tibble with columns Park, SiteShort, SiteCode, SiteName, SampleFrame, FieldSeason, VisitDate
@@ -34,9 +21,7 @@ Return list of streams and lakes that were not visited for annual monitoring dur
 }
 \examples{
 \dontrun{
-    conn <- OpenDatabaseConnection()
-    qcNoAnnualVisit(conn)
-    qcNoAnnualVisit(conn, site = "GRBA_L_DEAD0", field.season = c("2012", "2013", "2014", "2015"))
-    CloseDatabaseConnection(conn)
+    qcNoAnnualVisit()
+    qcNoAnnualVisit(site = "GRBA_L_DEAD0", field.season = c("2012", "2013", "2014", "2015"))
 }
 }
