@@ -1036,7 +1036,7 @@ ReadSqlDatabase <- function(...) {
   # -------- LakeLevelSurvey --------
 
   data$LakeLevelSurvey <- data$LakeLevelSurvey |>
-    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, NumberOfInstrumentSetups, RodMaterial, RodTemperatureSetup1_F, RodTemperatureSetup2_F, NumberOfBenchmarksUsed, RM1_GivenElevation_m, RM1, RM2, RM3, RM4, RM5, RM6, SurveyPointType, Height_ft) |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, NumberOfInstrumentSetups, RodMaterial, RodTemperatureSetup1_F, RodTemperatureSetup2_F, CTE, NumberOfBenchmarksUsed, RM1_GivenElevation_m, RM1, RM2, RM3, RM4, RM5, RM6, SurveyPointType, Height_ft) |>
     dplyr::mutate(RM4 = dplyr::case_when(RM4 == "-999" ~ "-none-",
                                          is.na(RM4) ~ "-none-",
                                          TRUE ~ RM4)) |>

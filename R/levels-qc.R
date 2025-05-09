@@ -95,13 +95,13 @@ SurveyPointElevation <- function(park, site, field.season) {
       dplyr::mutate(ClosureError_ft = abs(ClosureError_ft)) |> # Re-added the absolute value calculation applied to closure error. Keep or remove?
       dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SurveyPoint) |>
       dplyr::mutate(FinalCorrectedElevation_ft = mean(FinalCorrectedElevation_ft)) |>
-      dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, DPL, SurveyPoint, Benchmark, ClosureError_ft, FinalCorrectedElevation_ft) |>
+      dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, SurveyPoint, Benchmark, ClosureError_ft, FinalCorrectedElevation_ft) |>
       unique() |>
       dplyr::filter(!grepl("TP", SurveyPoint)) |>
       dplyr::ungroup() |>
       dplyr::filter(!(SiteShort == "DEAD0" & FieldSeason == "2021" & SurveyPoint == "WS")) |>
-      dplyr::filter(VisitType == "Primary") |>
-      dplyr::select(-c(VisitType, DPL, SurveyPoint)) |>
+       dplyr::filter(VisitType == "Primary") |>
+      dplyr::select(-c(VisitType, SurveyPoint)) |>
       dplyr::rename(Elevation_ft = FinalCorrectedElevation_ft) |>
       dplyr::relocate(ClosureError_ft, .after = "Elevation_ft") |>
       tidyr::separate(Benchmark, c(NA, "Benchmark"), sep = "-", fill = "left")
