@@ -1002,7 +1002,7 @@ ReadSqlDatabase <- function(...) {
   # -------- BMI --------
 
   data$BMI <- data$BMI |>
-    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, BMIMethod, SampleCollectionMethod, SampleType, LabSampleNumber, FieldSplit, LabSplit, SampleArea_m2) |>
+    # dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, BMIMethod, SampleCollectionMethod, SampleType, LabSampleNumber, FieldSplit, LabSplit, SampleArea_m2) |>
     dplyr::arrange(SiteCode, VisitDate)
 
   # -------- Channel --------
@@ -1015,7 +1015,7 @@ ReadSqlDatabase <- function(...) {
 
   data$Chemistry <- data$Chemistry |>
     dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, SampleFrame, VisitType, SampleCollectionMethod, SampleType, ReportingGroup, Characteristic, CharacteristicLabel, Unit, LabValue, Flag, FlagNote) |>
-    dplyr::arrange(SiteCode, VisitDate, SampleType, ReportingGroup, Characterist)
+    dplyr::arrange(SiteCode, VisitDate, SampleType, ReportingGroup, Characteristic)
 
   # -------- Clarity --------
 
