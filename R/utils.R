@@ -1021,6 +1021,10 @@ ReadSqlDatabase <- function(...) {
 
   data$Clarity <- data$Clarity |>
     dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, IsLakeDry, SurfaceCalm, OnBottom, DepthToBottom_m, SecchiDepth_m) |>
+    dplyr::mutate(SurfaceCalm = dplyr::case_when(is.na(SurfaceCalm) ~ "-none-",
+                                                 TRUE ~ SurfaceCalm)) |>
+    dplyr::mutate(OnBottom = dplyr::case_when(is.na(OnBottom) ~ "-none-",
+                                              TRUE ~ OnBottom)) |>
     dplyr::arrange(SiteCode, VisitDate)
 
   # -------- LakeLevelString --------
