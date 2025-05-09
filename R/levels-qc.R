@@ -127,7 +127,7 @@ StringSurveyElevation <- function(park, site, field.season) {
   elevs <- str |>
     dplyr::filter(VisitType == "Primary") |>
     dplyr::mutate(GivenElevation_ft = measurements::conv_unit(RM1_GivenElevation_m, "m", "ft")) |>
-    dplyr::select(-c(VisitType, DPL, RM1_GivenElevation_m)) |>
+    dplyr::select(-c(VisitType, RM1_GivenElevation_m)) |>
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, AuthoritativeBenchmark, Benchmark, GivenElevation_ft) |>
     dplyr::summarise(MeanHeight_ft = mean(Height_ft),
                      StDev_ft = sd(Height_ft),
@@ -173,7 +173,6 @@ LakeSurfaceElevation <- function(park, site, field.season) {
       VisitDate = date(),
       FieldSeason = character(),
       VisitType = character(),
-      DPL = character(),
       Benchmark = character(),
       RM1_GivenElevation_m = double(),
       IsLakeDry = logical(),
@@ -210,9 +209,9 @@ LakeSurfaceElevation <- function(park, site, field.season) {
   }
 
   string <- import |>
-    dplyr::filter(VisitType == "Primary", IsLakeDry == FALSE, Benchmark == AuthoritativeBenchmark) |>
+    dplyr::filter(VisitType == "Primary", Benchmark == AuthoritativeBenchmark) |>
     dplyr::mutate(GivenElevation_ft = measurements::conv_unit(RM1_GivenElevation_m, "m", "ft")) |>
-    dplyr::select(-c(DPL, VisitType, RM1_GivenElevation_m, IsLakeDry, AuthoritativeBenchmark)) |>
+    dplyr::select(-c(VisitType, RM1_GivenElevation_m, AuthoritativeBenchmark)) |>
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, Benchmark, GivenElevation_ft) |>
     dplyr::summarize(MeanHeight_ft = mean(Height_ft)) |>
     dplyr::ungroup() |>
