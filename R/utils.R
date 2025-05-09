@@ -1030,7 +1030,7 @@ ReadSqlDatabase <- function(...) {
   # -------- LakeLevelString --------
 
   data$LakeLevelString <- data$LakeLevelString |>
-    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, Benchmark, RM1_GivenElevation_m, Height_ft, AuthoritativeBenchmark) |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, Benchmark, RM1_GivenElevation_m, Height_ft, AuthoritativeBenchmark) |>
     dplyr::arrange(SiteCode, VisitDate, Benchmark)
 
   # -------- LakeLevelSurvey --------
