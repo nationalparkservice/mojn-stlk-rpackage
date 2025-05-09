@@ -363,6 +363,88 @@ qcChemML <- function(park, site, field.season) {
 
 }
 
+#' Calculate ratios for assessing nutrient limitation
+#'
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#'
+#' @returns tibble
+#' @export
+#'
+ChemNutrientRatios <- function(park, site, field.season) {
+  chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
+
+  chemRatios <- chem |>
+    dplyr::filter(Characteristic %in% c("UTN", "TDN", "NO3NO2-N", "NO3-N", "UTP", "TDP", "DOC"),
+                  VisitType == "Primary",
+                  SampleType == "Routine") |>
+    dplyr::mutate(Characteristic = dplyr::case_when(Characteristic == "NO3NO2-N" ~ "DIN",
+                                                    Characteristic == "NO3-N" ~ "DIN",
+                                                    TRUE ~ Characteristic)) |>
+    dplyr::select(-c("SampleType", "VisitType", "SampleCollectionMethod", "CharacteristicLabel", "Flag", "FlagNote", "Unit")) |>
+    tidyr::pivot_wider(names_from = Characteristic, values_from = LabValue) |>
+    dplyr::mutate(`DIN:TP` = DIN/UTP,
+                  `TN:TP` = UTN/UTP,
+                  `DIN:TN` = DIN/UTN)
+
+  return(chemRatios)
+}
+
+#' Plot ratios for assessing nutrient limitation -- WIP
+#'
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#'
+#' @returns ggplot object
+#' @export
+#'
+ChemNutrientRatiosPlot <- function(park, site, field.season) {
+  chemRatios <- ChemNutrientRatios()
+
+  DINtoTN <- ggplot2::ggplot(chemRatios |> dplyr::filter(SampleFrame == "Lake"),
+                             ggplot2::aes(x = FieldSeason,
+                                          y = `DIN:TN`,
+                                          group = 1)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_grid(.~SiteShort) +
+    ggplot2::scale_y_log10()
+
+  DINtoTP <- ggplot2::ggplot(chemRatios |> dplyr::filter(SampleFrame == "Lake"),
+                             ggplot2::aes(x = FieldSeason,
+                                          y = `DIN:TP`,
+                                          group = 1)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_grid(.~SiteShort) +
+    ggplot2::ylim(0, 5)
+
+  TNtoTP <- ggplot2::ggplot(chemRatios |> dplyr::filter(SampleFrame == "Lake"),
+                            ggplot2::aes(x = FieldSeason,
+                                         y = `TN:TP`,
+                                         group = 1)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_grid(.~SiteShort) +
+    ggplot2::scale_y_log10()
+
+  UTN <- ggplot2::ggplot(chemRatios |> dplyr::filter(SampleFrame == "Lake"),
+                  ggplot2::aes(x = FieldSeason,
+                               y = UTN,
+                               group = 1)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_grid(.~SiteShort) +
+    ggplot2::scale_y_log10()
+
+  UTP <- ggplot2::ggplot(chemRatios |> dplyr::filter(SampleFrame == "Lake"),
+                  ggplot2::aes(x = FieldSeason,
+                               y = UTP,
+                               group = 1)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_grid(.~SiteShort) +
+    #ggplot2::ylim(0, 0.1) +
+    ggplot2::scale_y_continuous(breaks = seq(0, 0.1, by = 0.01), limits = c(0, 0.1))
+
+}
 
 #' Calculate acid neutralizing capacity (ANC) from alkalinity (ALK2) and fill missing years with NAs for ease of plotting
 #'
