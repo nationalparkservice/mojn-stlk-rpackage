@@ -407,3 +407,121 @@ WqPlotDepthProfile <- function(param, units, park, site, field.season, include.t
 
   return(plot_wq)
 }
+
+#' Generate stream water quality plots.
+#'
+#' @inheritParams ReadAndFilterData
+#' @param include.title Include plot title? Defaults to true.
+#' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
+#' @param param The water quality parameter to plot. One of "pH", "DO", "SpCond", or "Temperature".
+#' @param units Units of dissolved oxygen. Either "mg/L" or "%". Ignored if `param != "DO"`.
+#'
+#' @return ggplot or plotly object
+#'
+WqPlotStream <- function(param, units, park, site, field.season, include.title = TRUE, plotly = FALSE) {
+  wq <- qcStreamWqCleaned(park = park, site = site, field.season = field.season) |>
+    dplyr::filter(tolower(Parameter) == tolower(param), !is.na(Median)) |>
+    dplyr::filter(SiteCode != "GRBA_S_BAKR2")
+
+  # Filter on unit if looking at DO. If not DO, set units
+  if (tolower(param) == "do") {
+    if (missing(units) | !(units %in% c("mg/L", "%"))) {
+      stop("Please specify correct units for DO. Must be mg/L or %.")
+    }
+    wq <- wq |>
+      dplyr::filter(tolower(Units) == tolower(units))
+  } else {
+    units <- unique(wq$Units)
+  }
+
+  plot_wq <- FormatPlot(
+    data = wq,
+    x.col = FieldSeason,
+    y.col = Median,
+    facet.col = SiteCode,
+    plot.title = dplyr::if_else(include.title, paste("Stream Water Quality:", param), ""),
+    x.lab = "Field Season",
+    y.lab = paste(param),
+    n.col.facet = 3
+  ) +
+    ggplot2::geom_point(size = 3) +
+    ggplot2::geom_line(group = 1,
+                       linewidth = 1) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 60, hjust = 1))
+
+  if (plotly) {
+    plot_wq <- plotly::ggplotly(plot_wq
+                              # , tooltip = "text"
+    )
+  }
+
+  return(plot_wq)
+}
+
+#' Generate stream water temperature plots.
+#'
+#' @inheritParams ReadAndFilterData
+#' @param include.title Include plot title? Defaults to true.
+#' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
+#' @param param The water quality parameter to plot. One of "pH", "DO", "SpCond", or "Temperature".
+#' @param units Units of dissolved oxygen. Either "mg/L" or "%". Ignored if `param != "DO"`.
+#'
+#' @return ggplot or plotly object
+#'
+WqPlotStreamTemperature <- function(park, site, field.season, include.title = TRUE, plotly = FALSE) {
+    plot_temp <- WqPlotStream(param = "Temperature", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly) +
+      ggplot2::ylab("Water Temperature (C)")
+
+  return(plot_temp)
+}
+
+#' Generate stream pH plots.
+#'
+#' @inheritParams ReadAndFilterData
+#' @param include.title Include plot title? Defaults to true.
+#' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
+#' @param param The water quality parameter to plot. One of "pH", "DO", "SpCond", or "Temperature".
+#' @param units Units of dissolved oxygen. Either "mg/L" or "%". Ignored if `param != "DO"`.
+#'
+#' @return ggplot or plotly object
+#'
+WqPlotStreamPH <- function(park, site, field.season, include.title = TRUE, plotly = FALSE) {
+  plot_temp <- WqPlotStream(param = "pH", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly) +
+    ggplot2::ylab("pH")
+
+  return(plot_temp)
+}
+
+#' Generate stream specific conductance plots.
+#'
+#' @inheritParams ReadAndFilterData
+#' @param include.title Include plot title? Defaults to true.
+#' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
+#' @param param The water quality parameter to plot. One of "pH", "DO", "SpCond", or "Temperature".
+#' @param units Units of dissolved oxygen. Either "mg/L" or "%". Ignored if `param != "DO"`.
+#'
+#' @return ggplot or plotly object
+#'
+WqPlotStreamSpCond <- function(park, site, field.season, include.title = TRUE, plotly = FALSE) {
+  plot_temp <- WqPlotStream(param = "SpCond", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly) +
+    ggplot2::ylab("Specific Conductance (mg/L)")
+
+  return(plot_temp)
+}
+
+#' Generate stream dissolved oxygen plots.
+#'
+#' @inheritParams ReadAndFilterData
+#' @param include.title Include plot title? Defaults to true.
+#' @param plotly Return an interactive plotly object instead of a ggplot object? Defaults to false.
+#' @param param The water quality parameter to plot. One of "pH", "DO", "SpCond", or "Temperature".
+#' @param units Units of dissolved oxygen. Either "mg/L" or "%". Ignored if `param != "DO"`.
+#'
+#' @return ggplot or plotly object
+#'
+WqPlotStreamDO <- function(park, site, field.season, include.title = TRUE, plotly = FALSE) {
+  plot_temp <- WqPlotStream(param = "DO", units = "mg/L", park = park, site = site, field.season = field.season, include.title = include.title, plotly = plotly) +
+    ggplot2::ylab("Dissolved Oxygen (mg/L)")
+
+  return(plot_temp)
+}
