@@ -84,7 +84,7 @@ BMISpecies <- function(park, site, field.season) {
 }
 
 
-#' BROKEN! FIX! Check for discrepancies between taxa count and abundance
+#' Check for discrepancies between taxa richness and density
 #'
 #' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
 #' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
@@ -104,11 +104,12 @@ qcBMIDiscrepancies <- function(park, site, field.season) {
 
   bmi_issues <- import |>
     dplyr::filter(Metric %in% c("Richness", "Density")) |>
-    dplyr::mutate(Pivot = dplyr::case_when(Category %in% c("Overall") ~ paste0(Category),
+    dplyr::filter(AnalysisType == "Routine") |>
+    dplyr::mutate(TaxaGroup = dplyr::case_when(Category %in% c("Overall") ~ paste0(Category),
                                            TRUE ~ paste0(Type))) |>
-    dplyr::select(Park, SiteShort, SiteCode, SiteName, CollectionDate, FieldSeason, Metric, Pivot, Value) |>
-    tidyr::pivot_wider(names_from = Pivot, values_from = Value)
-    dplyr::filter((TaxaGroupRichness == 0 & TaxaGroupDensity > 0) | (TaxaGroupDensity == 0 & TaxaGroupRichness > 0))
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, Metric, TaxaGroup, Value) |>
+    tidyr::pivot_wider(names_from = Metric, values_from = Value) |>
+    dplyr::filter((Richness == 0 & Density > 0) | (Density == 0 & Richness > 0))
 
   return(bmi_issues)
 }
@@ -138,7 +139,7 @@ ChannelCharacteristics <- function(park, site, field.season) {
   channel_characteristics <- channel |>
     dplyr::left_join(visit, by = c("SiteCode", "VisitDate")) |>
     dplyr::filter(VisitType == "Primary")|>
-    dplyr::select(-c(DPL, VisitType)) |>
+    dplyr::select(-c(VisitType)) |>
     dplyr::arrange(SiteCode, VisitDate, Transect)
 
   return(channel_characteristics)

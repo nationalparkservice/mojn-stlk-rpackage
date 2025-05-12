@@ -580,9 +580,10 @@ PlotStringComparisons <- function(park, site, field.season) {
   str <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "LakeLevelString")
 
   mean <- str |>
-    dplyr::filter(VisitType == "Primary",
-                  IsLakeDry == FALSE) |>
-    dplyr::select(-c(VisitType, DPL, IsLakeDry)) |>
+    dplyr::filter(VisitType == "Primary"
+                  #, IsLakeDry == FALSE
+                  ) |>
+    dplyr::select(-c(VisitType)) |>
     dplyr::group_by(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, Benchmark, RM1_GivenElevation_m) |>
     dplyr::summarize(MeanHeight_ft = mean(Height_ft)) |>
     dplyr::ungroup() |>

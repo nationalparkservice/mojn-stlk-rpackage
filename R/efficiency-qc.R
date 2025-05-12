@@ -120,10 +120,8 @@ qcDPLCheck <- function(park, site, field.season) {
     dplyr::filter_all(any_vars(. %in% c("Raw", "Provisional"))) |>
     dplyr::arrange(SampleFrame, FieldSeason, SiteCode)
 
-return(dpl)
-
+  return(dpl)
 }
-
 
 #' Calculate daily mean values (daily median values for pH) for water quality parameters at streams based on hourly data. Determine the most frequent data grade level for each day based on hourly data. Include only those dates with greater than 80% completeness (greater than 19 hourly values). Long format for ease of plotting.
 #'
@@ -273,7 +271,6 @@ WqDailyMeanLong <- function(park, site, field.season) {
     dplyr::relocate(SiteName, .after = SiteCode)
 
   return(wq.long)
-
 }
 
 
@@ -312,8 +309,7 @@ wq.daily <- wq.long |>
                 warn_missing = FALSE) |>
   dplyr::select(Park, SiteShort, SiteCode, SiteName, SampleFrame, Date, FieldSeason, Temp_C, Temp_C_Grade, pH, pH_Grade, SpCond_uScm, SpCond_uScm_Grade, DO_pct, DO_pct_Grade, everything())
 
-return(wq.daily)
-
+  return(wq.daily)
 }
 
 
@@ -333,31 +329,30 @@ return(wq.daily)
 #' }
 qcWqCompleteness <- function(park, site, field.season) {
 
-wq.long <- WqDailyMeanLong(park = park, site = site, field.season = field.season)
+  wq.long <- WqDailyMeanLong(park = park, site = site, field.season = field.season)
 
-wq.comp <- wq.long |>
-  dplyr::mutate(Month = lubridate::month(Date),
-                Day = lubridate::day(Date)) |>
-  dplyr::filter(Month == 7 | Month == 8 | (Month == 9 & Day <= 15)) |>
-  dplyr::group_by(Park,
-                  SiteShort,
-                  SiteCode,
-                  SiteName,
-                  SampleFrame,
-                  FieldSeason,
-                  Parameter,
-                  Units) |>
-  dplyr::summarise(CompletedDays = sum(!is.na(Value))) |>
-  dplyr::mutate(PercentCompleteness = CompletedDays/77*100) |>
-  dplyr::ungroup() |>
-  tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Parameter, Units), fill = list(CompletedDays = 0, PercentCompleteness = 0)) |>
-  dplyr::relocate(FieldSeason, .after = SampleFrame) |>
-  dplyr::arrange(SiteCode, FieldSeason, Parameter)
+  wq.comp <- wq.long |>
+    dplyr::mutate(Month = lubridate::month(Date),
+                  Day = lubridate::day(Date)) |>
+    dplyr::filter(Month == 7 | Month == 8 | (Month == 9 & Day <= 15)) |>
+    dplyr::group_by(Park,
+                    SiteShort,
+                    SiteCode,
+                    SiteName,
+                    SampleFrame,
+                    FieldSeason,
+                    Parameter,
+                    Units) |>
+    dplyr::summarise(CompletedDays = sum(!is.na(Value))) |>
+    dplyr::mutate(PercentCompleteness = CompletedDays/77*100) |>
+    dplyr::ungroup() |>
+    tidyr::complete(FieldSeason, tidyr::nesting(Park, SiteShort, SiteCode, SiteName, SampleFrame, Parameter, Units), fill = list(CompletedDays = 0, PercentCompleteness = 0)) |>
+    dplyr::relocate(FieldSeason, .after = SampleFrame) |>
+    dplyr::arrange(SiteCode, FieldSeason, Parameter)
 
-wq.comp$PercentCompleteness <- round(wq.comp$PercentCompleteness, 2)
+  wq.comp$PercentCompleteness <- round(wq.comp$PercentCompleteness, 2)
 
-return(wq.comp)
-
+  return(wq.comp)
 }
 
 
@@ -392,9 +387,7 @@ wq.grds.long <- wq.long |>
   dplyr::relocate(FieldSeason, .after = SampleFrame) |>
   dplyr::arrange(SiteCode, FieldSeason, Parameter, Grade)
 
-
 return(wq.grds.long)
-
 }
 
 
