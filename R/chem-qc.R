@@ -182,19 +182,20 @@ qcChemTDN <- function(park, site, field.season) {
     chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     TDN <- chem |>
-        dplyr::filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTN", "TDN", "NO3NO2-N")) |>
+        dplyr::filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTN", "TDN", "NO3NO2-N", "NO3-N")) |>
+        dplyr::mutate(Characteristic = dplyr::case_when(Characteristic == "NO3-N" ~ "NO3NO2-N",
+                                                        TRUE ~ Characteristic)) |>
         dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, Unit, LabValue)
 
     TDN.wide <- tidyr::pivot_wider(data = TDN, names_from = Characteristic, values_from = LabValue)
 
     TDN.list <- TDN.wide |>
         dplyr::rename(NO3NO2 = `NO3NO2-N`) |>
-        dplyr::mutate(TDNvUTN = ifelse(TDN > UTN, round(TDN - UTN, 2), NA)) |>
-        dplyr::mutate(TDNFlag = ifelse(TDNvUTN > 0.01, "TDN is greater than UTN outside the normal limits of variability", "TDN is greater than UTN within precision limits")) |>
-        dplyr::filter(!is.na(TDNvUTN))
+        dplyr::mutate(Difference = ifelse(TDN > UTN, round(TDN - UTN, 2), NA)) |>
+        dplyr::mutate(TDNFlag = ifelse(Difference > 0.01, "TDN is greater than UTN outside the normal limits of variability", "TDN is greater than UTN within precision limits")) |>
+        dplyr::filter(!is.na(Difference))
 
     return(TDN.list)
-
 }
 
 
@@ -216,22 +217,22 @@ qcChemNO3NO2 <- function(park, site, field.season) {
     chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
 
     NO3NO2 <- chem |>
-        dplyr::filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTN", "TDN", "NO3NO2-N")) |>
+        dplyr::filter(VisitType == "Primary", SampleType == "Routine", ReportingGroup == "Nutrient", Characteristic %in% c("UTN", "TDN", "NO3NO2-N", "NO3-N")) |>
+        dplyr::mutate(Characteristic = dplyr::case_when(Characteristic == "NO3-N" ~ "NO3NO2-N",
+                                                        TRUE ~ Characteristic)) |>
         dplyr::select(SampleFrame, SiteCode, SiteName, FieldSeason, VisitDate, Characteristic, Unit, LabValue)
 
     NO3NO2.wide <- tidyr::pivot_wider(data = NO3NO2, names_from = Characteristic, values_from = LabValue)
 
     NO3NO2.list <- NO3NO2.wide |>
         dplyr::rename(NO3NO2 = `NO3NO2-N`) |>
-        dplyr::mutate(NO3NO2vUTN = ifelse(NO3NO2 > UTN, round(NO3NO2 - UTN, 3), NA)) |>
-        dplyr::mutate(NO3NO2vTDN = ifelse(NO3NO2 > TDN, round(NO3NO2 - TDN, 3), NA)) |>
-        dplyr::mutate(NO3NO2Flag = ifelse(NO3NO2vUTN > 0.01 | NO3NO2vTDN > 0.01, "NO3NO2 is greater than UTN and/or TDN outside the normal limits of variability", "NO3NO2 is greater than TDN and/or UTN within precision limits")) |>
-        dplyr::filter(!is.na(NO3NO2vUTN | NO3NO2vTDN))
+        dplyr::mutate(Difference = ifelse(NO3NO2 > UTN, round(NO3NO2 - UTN, 3), NA)) |>
+        #dplyr::mutate(NO3NO2vTDN = ifelse(NO3NO2 > TDN, round(NO3NO2 - TDN, 3), NA)) |>
+        dplyr::mutate(NO3NO2Flag = ifelse(Difference > 0.01, "NO3NO2 is greater than UTN outside the normal limits of variability", "NO3NO2 is greater than TDN and/or UTN within precision limits")) |>
+        dplyr::filter(!is.na(Difference))
 
     return(NO3NO2.list)
-
 }
-
 
 #' List all routine samples where total dissolved phosphorous (TDP) values exceeded total phosphorus (UTP) values, and flag whether the discrepancy was within precision limits or outside of the expected error.
 #'
@@ -262,9 +263,7 @@ qcChemTDP <- function(park, site, field.season) {
         dplyr::filter(!is.na(TDPvUTP))
 
     return(TDP.list)
-
 }
-
 
 #' Create tibble with MDL and ML values for each characteristic.
 #'
@@ -272,17 +271,15 @@ qcChemTDP <- function(park, site, field.season) {
 #' @export
 #'
 getMDLLookup <- function() {
-    lookup <- tibble::tibble(Characteristic = c("ALK2", "Ca", "DOC", "Cl", "Mg", "NO3NO2-N", "UTN", "UTP", "K", "Na", "SO4-S"),
-                             Unit = c("mg CaCO3/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L", "mg/L"),
-                             StartYear = c(2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009),
-                             EndYear = c(2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024),
-                             MDL = c(0.2, 0.06, 0.05, 0.01, 0.02, 0.001, 0.01, 0.002, 0.03, 0.01, 0.01),
-                             ML = c(0.6, 0.19, 0.16, 0.03, 0.06, 0.003, 0.03, 0.006, 0.10, 0.03, 0.03))
+    lookup <- tibble::tibble(Characteristic = c("ALK2", "Ca", "DOC", "Cl", "Mg", "NO3NO2-N", "NO3-N", "UTN", "TDN", "UTP", "TDP", "K", "Na", "SO4-S"),
+                             Unit = c("mg CaCO3/L", "mg/L", "mg C/L", "mg/L", "mg/L", "mg N/L", "mg N/L", "mg N/L", "mg N/L", "mg P/L", "mg P/L", "mg/L", "mg/L", "mg S/L"),
+                             StartYear = c(2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009, 2009),
+                             EndYear = c(2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024),
+                             MDL = c(0.2, 0.06, 0.05, 0.01, 0.02, 0.001, 0.001, 0.01, 0.01, 0.002, 0.002, 0.03, 0.01, 0.01),
+                             ML = c(0.6, 0.19, 0.16, 0.03, 0.06, 0.003, 0.003, 0.03, 0.03, 0.006, 0.006, 0.10, 0.03, 0.03))
 
     return(lookup)
-
 }
-
 
 #' List all routine laboratory values that are less than or equal to the minimum detection level (MDL) for that analyte.
 #'
@@ -322,9 +319,7 @@ qcChemMDL <- function(park, site, field.season) {
         dplyr::arrange(SampleFrame, VisitDate, SiteCode)
 
     return(mdl.list)
-
 }
-
 
 #' List all routine laboratory values that are less than or equal to the minimum level of quantitation (ML) for that analyte.
 #'
@@ -360,9 +355,90 @@ qcChemML <- function(park, site, field.season) {
         dplyr::arrange(SampleFrame, VisitDate, SiteCode)
 
     return(ml.list)
-
 }
 
+#' Calculate ratios for assessing nutrient limitation
+#'
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#'
+#' @returns tibble
+#' @export
+#'
+ChemNutrientRatios <- function(park, site, field.season) {
+  chem <- ReadAndFilterData(park = park, site = site, field.season = field.season, data.name = "Chemistry")
+
+  chemRatios <- chem |>
+    dplyr::filter(Characteristic %in% c("UTN", "TDN", "NO3NO2-N", "NO3-N", "UTP", "TDP", "DOC"),
+                  VisitType == "Primary",
+                  SampleType == "Routine") |>
+    dplyr::mutate(Characteristic = dplyr::case_when(Characteristic == "NO3NO2-N" ~ "DIN",
+                                                    Characteristic == "NO3-N" ~ "DIN",
+                                                    TRUE ~ Characteristic)) |>
+    dplyr::select(-c("SampleType", "VisitType", "SampleCollectionMethod", "CharacteristicLabel", "Flag", "FlagNote", "Unit")) |>
+    tidyr::pivot_wider(names_from = Characteristic, values_from = LabValue) |>
+    dplyr::mutate(`DIN:TP` = DIN/UTP,
+                  `TN:TP` = UTN/UTP,
+                  `DIN:TN` = DIN/UTN)
+
+  return(chemRatios)
+}
+
+#' Plot ratios for assessing nutrient limitation -- WIP
+#'
+#' @param park Optional. Four-letter park code to filter on, e.g. "GRBA".
+#' @param site Optional. Site code to filter on, e.g. "GRBA_L_BAKR0".
+#' @param field.season Optional. Field season name to filter on, e.g. "2019".
+#'
+#' @returns ggplot object
+#' @export
+#'
+ChemNutrientRatiosPlot <- function(park, site, field.season) {
+  chemRatios <- ChemNutrientRatios()
+
+  DINtoTN <- ggplot2::ggplot(chemRatios |> dplyr::filter(SampleFrame == "Lake"),
+                             ggplot2::aes(x = FieldSeason,
+                                          y = `DIN:TN`,
+                                          group = 1)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_grid(.~SiteShort) +
+    ggplot2::scale_y_log10()
+
+  DINtoTP <- ggplot2::ggplot(chemRatios |> dplyr::filter(SampleFrame == "Lake"),
+                             ggplot2::aes(x = FieldSeason,
+                                          y = `DIN:TP`,
+                                          group = 1)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_grid(.~SiteShort) +
+    ggplot2::ylim(0, 5)
+
+  TNtoTP <- ggplot2::ggplot(chemRatios |> dplyr::filter(SampleFrame == "Lake"),
+                            ggplot2::aes(x = FieldSeason,
+                                         y = `TN:TP`,
+                                         group = 1)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_grid(.~SiteShort) +
+    ggplot2::scale_y_log10()
+
+  UTN <- ggplot2::ggplot(chemRatios |> dplyr::filter(SampleFrame == "Lake"),
+                  ggplot2::aes(x = FieldSeason,
+                               y = UTN,
+                               group = 1)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_grid(.~SiteShort) +
+    ggplot2::scale_y_log10()
+
+  UTP <- ggplot2::ggplot(chemRatios |> dplyr::filter(SampleFrame == "Lake"),
+                  ggplot2::aes(x = FieldSeason,
+                               y = UTP,
+                               group = 1)) +
+    ggplot2::geom_boxplot() +
+    ggplot2::facet_grid(.~SiteShort) +
+    #ggplot2::ylim(0, 0.1) +
+    ggplot2::scale_y_continuous(breaks = seq(0, 0.1, by = 0.01), limits = c(0, 0.1))
+
+}
 
 #' Calculate acid neutralizing capacity (ANC) from alkalinity (ALK2) and fill missing years with NAs for ease of plotting
 #'
@@ -392,7 +468,11 @@ ChemFormatted <- function(park, site, field.season) {
                LabValue = LabValue*20)
 
     chem.joined <- rbind(chem, chem.anc.rows) |>
-      dplyr::mutate(Year = as.integer(FieldSeason))
+      dplyr::mutate(Year = as.integer(FieldSeason)) |>
+      dplyr::mutate(Characteristic = dplyr::case_when(Characteristic == "NO3-N" ~ "NO3NO2-N",
+                                                      TRUE ~ Characteristic)) |>
+      dplyr::mutate(CharacteristicLabel = dplyr::case_when(CharacteristicLabel == "Nitrate as N" ~ "Nitrite + Nitrate as N",
+                                                           TRUE ~ CharacteristicLabel))
 
     min.year <- min(chem.joined$Year)
     max.year <- max(chem.joined$Year)
@@ -403,11 +483,10 @@ ChemFormatted <- function(park, site, field.season) {
       dplyr::ungroup() |>
       dplyr::mutate(FieldSeason = dplyr::case_when(is.na(FieldSeason) ~ as.character(Year),
                                                    TRUE ~ FieldSeason)) |>
-      dplyr::select(SampleFrame, Park, SiteCode, SiteShort, SiteName, FieldSeason, VisitDate, VisitType, SampleType, SampleCollectionMethod, ReportingGroup, Characteristic, CharacteristicLabel, Unit, LabValue, Flag, FlagNote, DPL) |>
+      dplyr::select(SampleFrame, Park, SiteCode, SiteShort, SiteName, FieldSeason, VisitDate, VisitType, SampleType, SampleCollectionMethod, ReportingGroup, Characteristic, CharacteristicLabel, Unit, LabValue, Flag, FlagNote) |>
       dplyr::arrange(SiteCode, FieldSeason, Characteristic)
 
     return(chem.formatted)
-
 }
 
 #' Plot acid neutralizing capacity (ANC) at lakes, and include EPA thresholds
@@ -761,7 +840,6 @@ ChemLakeIonSplitPlot <- function(park, site, field.season) {
   return(lake.ion.plot)
 
 }
-
 
 #' Plot stream nutrient (UTN, TDN, NO2No3-N, UTP, TDP, DOC) concentration data for all parks and field seasons.
 #'

@@ -259,7 +259,7 @@ GetColSpec <- function() {
 
 #' Get column specifications for AGOL database
 #'
-#' @return A list of column specifications for each table of Aquarius data.
+#' @return A list of column specifications for each table of AGOL data.
 #'
 GetAGOLColSpec <- function() {
   col.spec <- list(
@@ -986,6 +986,100 @@ ReadSqlDatabase <- function(...) {
   })
 
   names(data) <- names(col.spec)
+
+  # -------- Site --------
+
+  data$Site <- data$Site |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, SiteLabel, SampleFrame, SiteProtectedStatus, Lat_WGS84, Lon_WGS84, X_UTM_NAD83_11N, Y_UTM_NAD83_11N) |>
+    dplyr::arrange(SiteCode)
+
+  # -------- Visit --------
+
+  data$Visit <- data$Visit |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, SampleFrame, VisitType, IsLakeDry, CloudCover, Precipitation, Temperature, WindSpeed, Notes) |>
+    dplyr::arrange(SiteCode, VisitDate)
+
+  # -------- BMI --------
+
+  data$BMI <- data$BMI |>
+    # dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, BMIMethod, SampleCollectionMethod, SampleType, LabSampleNumber, FieldSplit, LabSplit, SampleArea_m2) |>
+    dplyr::arrange(SiteCode, VisitDate)
+
+  # -------- Channel --------
+
+  data$Channel <- data$Channel |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, Transect, TransectSide, Substrate, ChannelType, Notes) |>
+    dplyr::arrange(SiteCode, VisitDate)
+
+  # -------- Chemistry --------
+
+  data$Chemistry <- data$Chemistry |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, SampleFrame, VisitType, SampleCollectionMethod, SampleType, ReportingGroup, Characteristic, CharacteristicLabel, Unit, LabValue, Flag, FlagNote) |>
+    dplyr::arrange(SiteCode, VisitDate, SampleType, ReportingGroup, Characteristic)
+
+  # -------- Clarity --------
+
+  data$Clarity <- data$Clarity |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, IsLakeDry, SurfaceCalm, OnBottom, DepthToBottom_m, SecchiDepth_m) |>
+    dplyr::mutate(SurfaceCalm = dplyr::case_when(is.na(SurfaceCalm) ~ "-none-",
+                                                 TRUE ~ SurfaceCalm)) |>
+    dplyr::mutate(OnBottom = dplyr::case_when(is.na(OnBottom) ~ "-none-",
+                                              TRUE ~ OnBottom)) |>
+    dplyr::arrange(SiteCode, VisitDate)
+
+  # -------- LakeLevelString --------
+
+  data$LakeLevelString <- data$LakeLevelString |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, Benchmark, RM1_GivenElevation_m, Height_ft, AuthoritativeBenchmark) |>
+    dplyr::arrange(SiteCode, VisitDate, Benchmark)
+
+  # -------- LakeLevelSurvey --------
+
+  data$LakeLevelSurvey <- data$LakeLevelSurvey |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, VisitType, NumberOfInstrumentSetups, RodMaterial, RodTemperatureSetup1_F, RodTemperatureSetup2_F, CTE, NumberOfBenchmarksUsed, RM1_GivenElevation_m, RM1, RM2, RM3, RM4, RM5, RM6, SurveyPointType, Height_ft) |>
+    dplyr::mutate(RM4 = dplyr::case_when(RM4 == "-999" ~ "-none-",
+                                         is.na(RM4) ~ "-none-",
+                                         TRUE ~ RM4)) |>
+    dplyr::mutate(RM5 = dplyr::case_when(RM5 == "-999" ~ "-none-",
+                                         is.na(RM5) ~ "-none-",
+                                         TRUE ~ RM5)) |>
+    dplyr::mutate(RM6 = dplyr::case_when(RM6 == "-999" ~ "-none-",
+                                         is.na(RM6) ~ "-none-",
+                                         TRUE ~ RM6)) |>
+    dplyr::mutate(RodMaterial = dplyr::case_when(RodMaterial == "Fib" ~ "Fiberglass",
+                                                 TRUE ~ RodMaterial)) |>
+    dplyr::arrange(SiteCode, VisitDate)
+
+  # -------- WaterQualityDO --------
+
+  data$WaterQualityDO <- data$WaterQualityDO |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, MeasurementDepth_m, DissolvedOxygen_mg_per_L, DissolvedOxygen_percent, Flag, FlagNote) |>
+    dplyr::arrange(SiteCode, VisitDate, MeasurementDepth_m)
+
+  # -------- WaterQualitypH --------
+
+  data$WaterQualitypH <- data$WaterQualitypH |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, MeasurementDepth_m, pH, Flag, FlagNote) |>
+    dplyr::arrange(SiteCode, VisitDate, MeasurementDepth_m)
+
+  # -------- WaterQualitySpCond --------
+
+  data$WaterQualitySpCond <- data$WaterQualitySpCond  |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, MeasurementDepth_m, SpecificConductance_microS_per_cm, Flag, FlagNote) |>
+    dplyr::arrange(SiteCode, VisitDate, MeasurementDepth_m)
+
+  # -------- WaterQualityTemperature --------
+
+  data$WaterQualityTemperature <- data$WaterQualityTemperature  |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, MeasurementDepth_m, WaterTemperature_C, Flag, FlagNote) |>
+    dplyr::arrange(SiteCode, VisitDate, MeasurementDepth_m)
+
+  # -------- WQStreamXSection --------
+
+  data$WQStreamXSection <- data$WQStreamXSection  |>
+    dplyr::select(Park, SiteShort, SiteCode, SiteName, VisitDate, FieldSeason, TransectSide, WaterTemperature_C, TemperatureFlag, pH, pHFlag, SpecificConductance_microS_per_cm, SpCondFlag, DissolvedOxygen_mg_per_L, DOFlag, FlagNote) |>
+    dplyr::arrange(SiteCode, VisitDate, TransectSide)
+
   CloseDatabaseConnection(conn)
   return(data)
 }
